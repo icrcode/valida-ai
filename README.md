@@ -125,5 +125,3 @@ Veja `.env.docker.example` para Docker e `backend/.env.example` para o backend.
 - Logs estruturados com Winston
 - Arquitetura orientada por eventos (Event-Driven)
 - Processamento assíncrono para ETL
-
----
