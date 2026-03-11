@@ -2,6 +2,8 @@
 
 ETL de captação de documentos universitários com triagem e classificação utilizando arquitetura baseada em eventos.
 
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=icrcode_valida-ai&metric=alert_status)](https://sonarcloud.io/project/overview?id=icrcode_valida-ai)
+
 **Valida AI** é um sistema que automatiza o processamento de documentos universitários através de um pipeline ETL event-driven:
 
 1. **Captação (Extract)**
