@@ -3,6 +3,11 @@ import cors from 'cors';
 import helmet from 'helmet';
 import registrador from './utils/registrador';
 import rotasVerificacao from './routes/verificacao';
+import rotasAuth from './modulos/auth/rotas';
+import rotasUsuarios from './modulos/usuarios/rotas';
+import rotasDocumentos from './modulos/documentos/rotas';
+import rotasValidacao from './modulos/validacao/rotas';
+import { garantirBalde } from './servicos/armazenamento';
 
 const aplicativo: Express = express();
 
@@ -22,6 +27,10 @@ aplicativo.use((req, _res, next) => {
 
 // Rotas
 aplicativo.use('/', rotasVerificacao);
+aplicativo.use('/api/auth', rotasAuth);
+aplicativo.use('/api/usuarios', rotasUsuarios);
+aplicativo.use('/api/documentos', rotasDocumentos);
+aplicativo.use('/api/documentos', rotasValidacao);
 
 // Manipulador de 404
 aplicativo.use((_req, res) => {
@@ -32,16 +41,18 @@ aplicativo.use((_req, res) => {
 });
 
 // Manipulador de erros
-aplicativo.use((err: any, _req: express.Request, res: express.Response) => {
-  registrador.error(err.message);
+aplicativo.use((err: unknown, _req: express.Request, res: express.Response) => {
+  const mensagem = err instanceof Error ? err.message : 'Erro Interno do Servidor';
+  const status = (err as { status?: number }).status || 500;
 
-  const status = err.status || 500;
-  const mensagem = err.message || 'Erro Interno do Servidor';
+  registrador.error(mensagem);
+  res.status(status).json({ erro: mensagem, status });
+});
 
-  res.status(status).json({
-    erro: mensagem,
-    status,
-  });
+// Inicializar bucket MinIO
+garantirBalde().catch((err: unknown) => {
+  const mensagem = err instanceof Error ? err.message : String(err);
+  registrador.warn(`Não foi possível inicializar o MinIO: ${mensagem}`);
 });
 
 export default aplicativo;
