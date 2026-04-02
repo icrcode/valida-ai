@@ -3,6 +3,7 @@ import { autenticar } from '../../middleware/autenticacao';
 import { exigirPerfil } from '../../middleware/autorizacao';
 import { buscarPorId as buscarDocumento } from '../documentos/repositorio';
 import * as repositorio from './repositorio';
+import { tratarErro, tratarErroComNaoEncontrado } from '../../utils/erros';
 
 const router = Router();
 
@@ -15,12 +16,7 @@ router.patch('/:id/aprovar', autenticar, exigirPerfil('coordenador', 'admin'), a
     const resultado = await repositorio.executarAcao(id, req.usuario!.sub, 'aprovar', observacoes);
     res.json(resultado);
   } catch (err: unknown) {
-    const mensagem = err instanceof Error ? err.message : 'Erro desconhecido';
-    if (mensagem.includes('não encontrado')) {
-      res.status(404).json({ erro: mensagem });
-      return;
-    }
-    res.status(500).json({ erro: 'Erro interno', detalhe: mensagem });
+    tratarErroComNaoEncontrado(res, err);
   }
 });
 
@@ -37,12 +33,7 @@ router.patch('/:id/reprovar', autenticar, exigirPerfil('coordenador', 'admin'), 
     const resultado = await repositorio.executarAcao(id, req.usuario!.sub, 'reprovar', observacoes);
     res.json(resultado);
   } catch (err: unknown) {
-    const mensagem = err instanceof Error ? err.message : 'Erro desconhecido';
-    if (mensagem.includes('não encontrado')) {
-      res.status(404).json({ erro: mensagem });
-      return;
-    }
-    res.status(500).json({ erro: 'Erro interno', detalhe: mensagem });
+    tratarErroComNaoEncontrado(res, err);
   }
 });
 
@@ -97,8 +88,7 @@ router.get('/:id/historico', autenticar, async (req, res) => {
     const historico = await repositorio.buscarHistoricoPorDocumento(id);
     res.json(historico);
   } catch (err: unknown) {
-    const mensagem = err instanceof Error ? err.message : 'Erro desconhecido';
-    res.status(500).json({ erro: 'Erro interno', detalhe: mensagem });
+    tratarErro(res, err);
   }
 });
 

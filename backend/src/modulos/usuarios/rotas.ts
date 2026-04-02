@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { autenticar } from '../../middleware/autenticacao';
 import { exigirPerfil } from '../../middleware/autorizacao';
 import * as repositorio from './repositorio';
+import { tratarErro } from '../../utils/erros';
 
 const router = Router();
 
@@ -15,8 +16,7 @@ router.get('/perfil', autenticar, async (req, res) => {
     }
     res.json(usuario);
   } catch (err: unknown) {
-    const mensagem = err instanceof Error ? err.message : 'Erro desconhecido';
-    res.status(500).json({ erro: 'Erro interno', detalhe: mensagem });
+    tratarErro(res, err);
   }
 });
 
@@ -36,8 +36,7 @@ router.put('/perfil', autenticar, async (req, res) => {
     }
     res.json(usuario);
   } catch (err: unknown) {
-    const mensagem = err instanceof Error ? err.message : 'Erro desconhecido';
-    res.status(500).json({ erro: 'Erro interno', detalhe: mensagem });
+    tratarErro(res, err);
   }
 });
 
@@ -47,8 +46,7 @@ router.get('/', autenticar, exigirPerfil('admin'), async (_req, res) => {
     const usuarios = await repositorio.listarTodos();
     res.json(usuarios);
   } catch (err: unknown) {
-    const mensagem = err instanceof Error ? err.message : 'Erro desconhecido';
-    res.status(500).json({ erro: 'Erro interno', detalhe: mensagem });
+    tratarErro(res, err);
   }
 });
 
