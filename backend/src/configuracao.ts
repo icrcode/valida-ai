@@ -4,12 +4,12 @@ dotenv.config();
 
 export const configuracao = {
   ambienteNode: process.env.NODE_ENV || 'development',
-  porta: parseInt(process.env.PORT || '3000', 10),
+  porta: Number.parseInt(process.env.PORT || '3000', 10),
   nivelLog: process.env.LOG_LEVEL || 'info',
 
   baseDados: {
     servidor: process.env.DB_HOST || 'localhost',
-    porta: parseInt(process.env.DB_PORT || '5432', 10),
+    porta: Number.parseInt(process.env.DB_PORT || '5432', 10),
     usuario: process.env.DB_USER || 'postgres',
     senha: process.env.DB_PASSWORD || 'postgres',
     nome: process.env.DB_NAME || 'valida_db',
@@ -17,7 +17,7 @@ export const configuracao = {
 
   redis: {
     servidor: process.env.REDIS_HOST || 'localhost',
-    porta: parseInt(process.env.REDIS_PORT || '6379', 10),
+    porta: Number.parseInt(process.env.REDIS_PORT || '6379', 10),
     senha: process.env.REDIS_PASSWORD || '',
   },
 
