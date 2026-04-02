@@ -3,7 +3,7 @@ import { autenticar } from '../../middleware/autenticacao';
 import { exigirPerfil } from '../../middleware/autorizacao';
 import { buscarPorId as buscarDocumento } from '../documentos/repositorio';
 import * as repositorio from './repositorio';
-import { tratarErro, tratarErroComNaoEncontrado } from '../../utils/erros';
+import { tratarErro, tratarErroComNaoEncontrado, verificarAcessoDocumento } from '../../utils/erros';
 
 const router = Router();
 
@@ -59,12 +59,7 @@ router.patch(
       );
       res.json(resultado);
     } catch (err: unknown) {
-      const mensagem = err instanceof Error ? err.message : 'Erro desconhecido';
-      if (mensagem.includes('não encontrado')) {
-        res.status(404).json({ erro: mensagem });
-        return;
-      }
-      res.status(500).json({ erro: 'Erro interno', detalhe: mensagem });
+      tratarErroComNaoEncontrado(res, err);
     }
   },
 );
@@ -75,16 +70,7 @@ router.get('/:id/historico', autenticar, async (req, res) => {
 
   try {
     const documento = await buscarDocumento(id);
-    if (!documento) {
-      res.status(404).json({ erro: 'Documento não encontrado' });
-      return;
-    }
-
-    if (req.usuario!.perfil === 'estudante' && documento.estudante_id !== req.usuario!.sub) {
-      res.status(403).json({ erro: 'Sem permissão para este documento' });
-      return;
-    }
-
+    if (!verificarAcessoDocumento(res, documento, req.usuario!.perfil, req.usuario!.sub)) return;
     const historico = await repositorio.buscarHistoricoPorDocumento(id);
     res.json(historico);
   } catch (err: unknown) {

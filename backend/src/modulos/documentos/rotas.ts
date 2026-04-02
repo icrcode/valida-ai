@@ -7,7 +7,7 @@ import { exigirPerfil } from '../../middleware/autorizacao';
 import * as repositorio from './repositorio';
 import { buscarPorId as buscarUsuario } from '../usuarios/repositorio';
 import * as armazenamento from '../../servicos/armazenamento';
-import { tratarErro } from '../../utils/erros';
+import { tratarErro, verificarAcessoDocumento } from '../../utils/erros';
 
 const router = Router();
 
@@ -56,16 +56,7 @@ router.get('/:id', autenticar, async (req, res) => {
   const { id } = req.params as { id: string };
   try {
     const documento = await repositorio.buscarPorId(id);
-    if (!documento) {
-      res.status(404).json({ erro: 'Documento não encontrado' });
-      return;
-    }
-
-    if (req.usuario!.perfil === 'estudante' && documento.estudante_id !== req.usuario!.sub) {
-      res.status(403).json({ erro: 'Sem permissão para este documento' });
-      return;
-    }
-
+    if (!verificarAcessoDocumento(res, documento, req.usuario!.perfil, req.usuario!.sub)) return;
     res.json(documento);
   } catch (err: unknown) {
     tratarErro(res, err);
@@ -77,17 +68,8 @@ router.get('/:id/download', autenticar, async (req, res) => {
   const { id } = req.params as { id: string };
   try {
     const documento = await repositorio.buscarPorId(id);
-    if (!documento) {
-      res.status(404).json({ erro: 'Documento não encontrado' });
-      return;
-    }
-
-    if (req.usuario!.perfil === 'estudante' && documento.estudante_id !== req.usuario!.sub) {
-      res.status(403).json({ erro: 'Sem permissão para este documento' });
-      return;
-    }
-
-    const url = await armazenamento.gerarUrlAssinada(documento.caminho_arquivo);
+    if (!verificarAcessoDocumento(res, documento, req.usuario!.perfil, req.usuario!.sub)) return;
+    const url = await armazenamento.gerarUrlAssinada(documento!.caminho_arquivo);
     res.json({ url, expira_em: new Date(Date.now() + 3600 * 1000).toISOString() });
   } catch (err: unknown) {
     tratarErro(res, err);
