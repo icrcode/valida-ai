@@ -2,7 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { autenticar } from '../../../src/middleware/autenticacao';
 
-const SEGREDO = 'segredo-de-teste';
+// Lido do .env.test via setup.ts — nunca hard-codado aqui
+const SEGREDO = String(process.env.JWT_SECRET);
 
 function mockReq(authHeader?: string): Request {
   return { headers: { authorization: authHeader } } as Request;

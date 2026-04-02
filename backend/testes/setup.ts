@@ -1,10 +1,10 @@
-// Variáveis de ambiente para o ambiente de testes
-// Devem ser definidas antes de qualquer import de módulo
-process.env.NODE_ENV = 'test';
-process.env.JWT_SECRET = 'segredo-de-teste';
-process.env.DB_HOST = 'localhost';
-process.env.DB_PORT = '5432';
-process.env.DB_USER = 'postgres';
-process.env.DB_PASSWORD = 'postgres';
-process.env.DB_NAME = 'valida_test';
-process.env.MINIO_ENDPOINT = 'localhost:9000';
+import { config } from 'dotenv';
+import { resolve } from 'node:path';
+
+// Carrega variáveis de ambiente do arquivo .env.test (nunca commitado)
+// Copie .env.test.example para .env.test e preencha os valores
+config({ path: resolve(__dirname, '../.env.test') });
+
+if (!process.env.JWT_SECRET) {
+  throw new Error('JWT_SECRET não definido. Copie .env.test.example para .env.test e configure os valores.');
+}
