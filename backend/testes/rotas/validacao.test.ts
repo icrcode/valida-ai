@@ -1,51 +1,24 @@
-import express from 'express';
 import request from 'supertest';
 
 jest.mock('../../src/modulos/validacao/repositorio');
 jest.mock('../../src/modulos/documentos/repositorio');
-jest.mock('../../src/middleware/autenticacao', () => ({
-  autenticar: (req: express.Request, _res: express.Response, next: express.NextFunction) => {
-    (req as any).usuario = {
-      sub: 'coord-id',
-      perfil: 'coordenador',
-      email: 'coord@test.com',
-      nome: 'Coordenador Teste',
-    };
-    next();
-  },
-}));
-jest.mock('../../src/middleware/autorizacao', () => ({
-  exigirPerfil: () => (_req: express.Request, _res: express.Response, next: express.NextFunction) => next(),
-}));
+jest.mock('../../src/middleware/autenticacao', () =>
+  require('../helpers/mocks').criarModuloAutenticacao('coord-id', 'coordenador', 'coord@test.com', 'Coordenador Teste')
+);
+jest.mock('../../src/middleware/autorizacao', () =>
+  require('../helpers/mocks').moduloAutorizacao
+);
 
 import * as repositorio from '../../src/modulos/validacao/repositorio';
 import * as repositorioDoc from '../../src/modulos/documentos/repositorio';
-import { Documento } from '../../src/modulos/documentos/repositorio';
 import router from '../../src/modulos/validacao/rotas';
+import { criarApp } from '../helpers/app';
+import { DOC_MOCK } from '../helpers/fixtures';
 
 const mockRepo = repositorio as jest.Mocked<typeof repositorio>;
 const mockDoc = repositorioDoc as jest.Mocked<typeof repositorioDoc>;
 
-const app = express();
-app.use(express.json());
-app.use('/', router);
-
-const DOC_MOCK: Documento = {
-  id: 'doc-1',
-  titulo: 'Estágio XYZ',
-  tipo: 'estagio',
-  carga_horaria: 40,
-  estudante_id: 'estudante-id',
-  curso_id: 'curso-1',
-  status: 'pendente',
-  coordenador_id: null,
-  nome_arquivo: 'estagio.pdf',
-  caminho_arquivo: 'documentos/estudante-id/estagio.pdf',
-  tamanho_arquivo: 1024,
-  mime_type: 'application/pdf',
-  criado_em: new Date(),
-  atualizado_em: new Date(),
-};
+const app = criarApp(router);
 
 const RESULTADO_MOCK = {
   documento: { ...DOC_MOCK, status: 'aprovado', coordenador_id: 'coord-id' },
@@ -166,13 +139,9 @@ describe('GET /:id/historico', () => {
     expect(res.status).toBe(404);
   });
 
-  it('retorna 403 quando estudante tenta ver histórico de documento de outro', async () => {
-    // Coordenador mock acima tem perfil 'coordenador', então o check de estudante não se aplica.
-    // Este teste recria o cenário com mock de autenticação de estudante inline.
-    // Para cobrir esse caminho, verificamos que a lógica existe via test do repositório de documentos.
+  it('retorna 200 quando coordenador acessa histórico de documento de outro estudante', async () => {
     mockDoc.buscarPorId.mockResolvedValueOnce({ ...DOC_MOCK, estudante_id: 'outro-id' });
     mockRepo.buscarHistoricoPorDocumento.mockResolvedValueOnce([]);
-    // Coordenador NÃO é bloqueado — esse teste confirma que coordenadores passam
     const res = await request(app).get('/doc-1/historico');
     expect(res.status).toBe(200);
   });

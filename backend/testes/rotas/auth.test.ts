@@ -1,4 +1,3 @@
-import express from 'express';
 import request from 'supertest';
 
 jest.mock('../../src/banco/conexao', () => ({
@@ -7,12 +6,10 @@ jest.mock('../../src/banco/conexao', () => ({
 
 import { pool } from '../../src/banco/conexao';
 import router from '../../src/modulos/auth/rotas';
+import { criarApp } from '../helpers/app';
 
 const mockQuery = pool.query as jest.Mock;
-
-const app = express();
-app.use(express.json());
-app.use('/', router);
+const app = criarApp(router);
 
 describe('POST /login-dev', () => {
   beforeEach(() => jest.clearAllMocks());

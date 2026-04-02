@@ -1,30 +1,19 @@
-import express from 'express';
 import request from 'supertest';
 
 jest.mock('../../src/modulos/usuarios/repositorio');
-jest.mock('../../src/middleware/autenticacao', () => ({
-  autenticar: (req: express.Request, _res: express.Response, next: express.NextFunction) => {
-    (req as any).usuario = {
-      sub: 'usuario-id',
-      perfil: 'estudante',
-      email: 'est@test.com',
-      nome: 'Estudante Teste',
-    };
-    next();
-  },
-}));
-jest.mock('../../src/middleware/autorizacao', () => ({
-  exigirPerfil: () => (_req: express.Request, _res: express.Response, next: express.NextFunction) => next(),
-}));
+jest.mock('../../src/middleware/autenticacao', () =>
+  require('../helpers/mocks').criarModuloAutenticacao('usuario-id', 'estudante', 'est@test.com', 'Estudante Teste')
+);
+jest.mock('../../src/middleware/autorizacao', () =>
+  require('../helpers/mocks').moduloAutorizacao
+);
 
 import * as repositorio from '../../src/modulos/usuarios/repositorio';
 import router from '../../src/modulos/usuarios/rotas';
+import { criarApp } from '../helpers/app';
 
 const mockRepo = repositorio as jest.Mocked<typeof repositorio>;
-
-const app = express();
-app.use(express.json());
-app.use('/', router);
+const app = criarApp(router);
 
 const USUARIO_MOCK = {
   id: 'usuario-id',
