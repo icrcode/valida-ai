@@ -6,7 +6,7 @@ const [host, portStr] = configuracao.minio.endpoint.split(':');
 
 const cliente = new Client({
   endPoint: host,
-  port: parseInt(portStr || '9000', 10),
+  port: Number.parseInt(portStr || '9000', 10),
   useSSL: configuracao.minio.usarSSL,
   accessKey: configuracao.minio.chaveAcesso,
   secretKey: configuracao.minio.chaveSecreta,
@@ -16,11 +16,11 @@ const balde = configuracao.minio.balde;
 
 export async function garantirBalde(): Promise<void> {
   const existe = await cliente.bucketExists(balde);
-  if (!existe) {
+  if (existe) {
+    registrador.info(`Balde MinIO já existe: ${balde}`);
+  } else {
     await cliente.makeBucket(balde, 'us-east-1');
     registrador.info(`Balde MinIO criado: ${balde}`);
-  } else {
-    registrador.info(`Balde MinIO já existe: ${balde}`);
   }
 }
 

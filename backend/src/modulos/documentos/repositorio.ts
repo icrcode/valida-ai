@@ -99,7 +99,7 @@ export async function listar(
     `SELECT COUNT(*) FROM documentos ${where}`,
     params,
   );
-  const total = parseInt(contagemRes.rows[0].count as string, 10);
+  const total = Number.parseInt(contagemRes.rows[0].count as string, 10);
 
   params.push(limite, offset);
   const dadosRes = await pool.query(

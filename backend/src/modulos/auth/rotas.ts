@@ -2,6 +2,7 @@ import { Router } from 'express';
 import jwt from 'jsonwebtoken';
 import { pool } from '../../banco/conexao';
 import { configuracao } from '../../configuracao';
+import { tratarErro } from '../../utils/erros';
 
 const router = Router();
 
@@ -51,8 +52,7 @@ router.post('/login-dev', async (req, res) => {
       usuario: { id: usuario.id, nome: usuario.nome, email: usuario.email, perfil: usuario.perfil },
     });
   } catch (err: unknown) {
-    const mensagem = err instanceof Error ? err.message : 'Erro desconhecido';
-    res.status(500).json({ erro: 'Erro interno', detalhe: mensagem });
+    tratarErro(res, err);
   }
 });
 

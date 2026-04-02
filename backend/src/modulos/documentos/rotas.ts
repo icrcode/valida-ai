@@ -1,12 +1,13 @@
 import { Router } from 'express';
 import multer from 'multer';
-import crypto from 'crypto';
-import path from 'path';
+import crypto from 'node:crypto';
+import path from 'node:path';
 import { autenticar } from '../../middleware/autenticacao';
 import { exigirPerfil } from '../../middleware/autorizacao';
 import * as repositorio from './repositorio';
 import { buscarPorId as buscarUsuario } from '../usuarios/repositorio';
 import * as armazenamento from '../../servicos/armazenamento';
+import { tratarErro } from '../../utils/erros';
 
 const router = Router();
 
@@ -32,8 +33,8 @@ router.get('/', autenticar, async (req, res) => {
         status,
         tipo,
         estudante_id,
-        page: page ? parseInt(page, 10) : undefined,
-        limite: limite ? parseInt(limite, 10) : undefined,
+        page: page ? Number.parseInt(page, 10) : undefined,
+        limite: limite ? Number.parseInt(limite, 10) : undefined,
       },
       req.usuario!.sub,
       req.usuario!.perfil,
@@ -42,12 +43,11 @@ router.get('/', autenticar, async (req, res) => {
     res.json({
       dados: resultado.dados,
       total: resultado.total,
-      pagina: parseInt(page || '1', 10),
-      limite: Math.min(parseInt(limite || '10', 10), 100),
+      pagina: Number.parseInt(page || '1', 10),
+      limite: Math.min(Number.parseInt(limite || '10', 10), 100),
     });
   } catch (err: unknown) {
-    const mensagem = err instanceof Error ? err.message : 'Erro desconhecido';
-    res.status(500).json({ erro: 'Erro interno', detalhe: mensagem });
+    tratarErro(res, err);
   }
 });
 
@@ -68,8 +68,7 @@ router.get('/:id', autenticar, async (req, res) => {
 
     res.json(documento);
   } catch (err: unknown) {
-    const mensagem = err instanceof Error ? err.message : 'Erro desconhecido';
-    res.status(500).json({ erro: 'Erro interno', detalhe: mensagem });
+    tratarErro(res, err);
   }
 });
 
@@ -91,8 +90,7 @@ router.get('/:id/download', autenticar, async (req, res) => {
     const url = await armazenamento.gerarUrlAssinada(documento.caminho_arquivo);
     res.json({ url, expira_em: new Date(Date.now() + 3600 * 1000).toISOString() });
   } catch (err: unknown) {
-    const mensagem = err instanceof Error ? err.message : 'Erro desconhecido';
-    res.status(500).json({ erro: 'Erro interno', detalhe: mensagem });
+    tratarErro(res, err);
   }
 });
 
@@ -109,8 +107,8 @@ router.post('/', autenticar, exigirPerfil('estudante'), upload.single('arquivo')
     return;
   }
 
-  const cargaHorariaNum = parseInt(carga_horaria, 10);
-  if (isNaN(cargaHorariaNum) || cargaHorariaNum <= 0) {
+  const cargaHorariaNum = Number.parseInt(carga_horaria, 10);
+  if (Number.isNaN(cargaHorariaNum) || cargaHorariaNum <= 0) {
     res.status(400).json({ erro: 'carga_horaria deve ser um número inteiro positivo' });
     return;
   }
@@ -141,8 +139,7 @@ router.post('/', autenticar, exigirPerfil('estudante'), upload.single('arquivo')
 
     res.status(201).json(documento);
   } catch (err: unknown) {
-    const mensagem = err instanceof Error ? err.message : 'Erro desconhecido';
-    res.status(500).json({ erro: 'Erro interno', detalhe: mensagem });
+    tratarErro(res, err);
   }
 });
 
@@ -159,8 +156,7 @@ router.delete('/:id', autenticar, exigirPerfil('estudante'), async (req, res) =>
     }
     res.json({ mensagem: 'Documento cancelado com sucesso', documento });
   } catch (err: unknown) {
-    const mensagem = err instanceof Error ? err.message : 'Erro desconhecido';
-    res.status(500).json({ erro: 'Erro interno', detalhe: mensagem });
+    tratarErro(res, err);
   }
 });
 
