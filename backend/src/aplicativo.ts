@@ -13,7 +13,14 @@ const aplicativo: Express = express();
 
 // Middlewares de segurança
 aplicativo.use(helmet());
-aplicativo.use(cors());
+aplicativo.use(
+  cors({
+    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+  })
+);
 
 // Analisador de corpo
 aplicativo.use(express.json({ limit: '10mb' }));
