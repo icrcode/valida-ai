@@ -13,9 +13,21 @@ const aplicativo: Express = express();
 
 // Middlewares de segurança
 aplicativo.use(helmet());
+
+const origensPermitidas = (process.env.CORS_ORIGIN || 'http://localhost:5173')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+
 aplicativo.use(
   cors({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    origin: (origem, callback) => {
+      if (!origem || origensPermitidas.includes(origem)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Origem não permitida pelo CORS'));
+      }
+    },
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
