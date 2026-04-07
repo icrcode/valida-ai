@@ -26,6 +26,7 @@ export const configuracao = {
     chaveAcesso: process.env.MINIO_ACCESS_KEY || 'minioadmin',
     chaveSecreta: process.env.MINIO_SECRET_KEY || 'minioadmin',
     balde: process.env.MINIO_BUCKET || 'valida-files',
+    baldeCertificados: process.env.MINIO_BUCKET_CERTIFICADOS || 'valida-certificados',
     usarSSL: process.env.MINIO_USE_SSL === 'true',
   },
 
