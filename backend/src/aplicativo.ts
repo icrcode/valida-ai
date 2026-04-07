@@ -8,6 +8,7 @@ import rotasUsuarios from './modulos/usuarios/rotas';
 import rotasDocumentos from './modulos/documentos/rotas';
 import rotasValidacao from './modulos/validacao/rotas';
 import { garantirBalde } from './servicos/armazenamento';
+import { registrarHandlers } from './eventos/registrar';
 
 const aplicativo: Express = express();
 
@@ -67,6 +68,9 @@ aplicativo.use((err: unknown, _req: express.Request, res: express.Response) => {
   registrador.error(mensagem);
   res.status(status).json({ erro: mensagem, status });
 });
+
+// Registrar handlers de eventos
+registrarHandlers();
 
 // Inicializar bucket MinIO
 garantirBalde().catch((err: unknown) => {

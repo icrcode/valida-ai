@@ -2,6 +2,9 @@ import request from 'supertest';
 
 jest.mock('../../src/modulos/validacao/repositorio');
 jest.mock('../../src/modulos/documentos/repositorio');
+jest.mock('../../src/eventos/barramento', () => ({
+  barramento: { emitir: jest.fn() },
+}));
 jest.mock('../../src/middleware/autenticacao', () =>
   require('../helpers/mocks').criarModuloAutenticacao('coord-id', 'coordenador', 'coord@test.com', 'Coordenador Teste')
 );
@@ -11,12 +14,14 @@ jest.mock('../../src/middleware/autorizacao', () =>
 
 import * as repositorio from '../../src/modulos/validacao/repositorio';
 import * as repositorioDoc from '../../src/modulos/documentos/repositorio';
+import { barramento } from '../../src/eventos/barramento';
 import router from '../../src/modulos/validacao/rotas';
 import { criarApp } from '../helpers/app';
 import { DOC_MOCK } from '../helpers/fixtures';
 
 const mockRepo = repositorio as jest.Mocked<typeof repositorio>;
 const mockDoc = repositorioDoc as jest.Mocked<typeof repositorioDoc>;
+const mockEmitir = barramento.emitir as jest.Mock;
 
 const app = criarApp(router);
 
@@ -35,13 +40,22 @@ const RESULTADO_MOCK = {
 };
 
 describe('PATCH /:id/aprovar', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => { jest.clearAllMocks(); mockEmitir.mockReset(); });
 
   it('retorna 200 ao aprovar um documento com sucesso', async () => {
     mockRepo.executarAcao.mockResolvedValueOnce(RESULTADO_MOCK as any);
     const res = await request(app).patch('/doc-1/aprovar').send({ observacoes: 'Documentação completa' });
     expect(res.status).toBe(200);
     expect(res.body.documento.status).toBe('aprovado');
+    expect(mockEmitir).toHaveBeenCalledWith(
+      'documento_aprovado',
+      expect.objectContaining({
+        documentoId: 'doc-1',
+        coordenadorId: 'coord-id',
+        estudanteId: RESULTADO_MOCK.documento.estudante_id,
+        titulo: RESULTADO_MOCK.documento.titulo,
+      }),
+    );
   });
 
   it('retorna 200 ao aprovar sem observacoes (campo opcional)', async () => {
@@ -64,7 +78,7 @@ describe('PATCH /:id/aprovar', () => {
 });
 
 describe('PATCH /:id/reprovar', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => { jest.clearAllMocks(); mockEmitir.mockReset(); });
 
   it('retorna 400 quando observacoes não são enviadas', async () => {
     const res = await request(app).patch('/doc-1/reprovar').send({});
@@ -72,7 +86,7 @@ describe('PATCH /:id/reprovar', () => {
     expect(res.body.erro).toContain('Observações');
   });
 
-  it('retorna 200 ao reprovar com observacoes', async () => {
+  it('retorna 200 ao reprovar com observacoes e emite evento documento_reprovado', async () => {
     const resultadoReprovado = {
       ...RESULTADO_MOCK,
       documento: { ...RESULTADO_MOCK.documento, status: 'reprovado' },
@@ -82,6 +96,19 @@ describe('PATCH /:id/reprovar', () => {
     const res = await request(app).patch('/doc-1/reprovar').send({ observacoes: 'Documentação incompleta' });
     expect(res.status).toBe(200);
     expect(res.body.documento.status).toBe('reprovado');
+    expect(mockEmitir).toHaveBeenCalledWith(
+      'documento_reprovado',
+      expect.objectContaining({
+        documentoId: 'doc-1',
+        coordenadorId: 'coord-id',
+        observacoes: 'Documentação incompleta',
+      }),
+    );
+  });
+
+  it('não emite evento quando reprovar retorna 400 por falta de observacoes', async () => {
+    await request(app).patch('/doc-1/reprovar').send({});
+    expect(mockEmitir).not.toHaveBeenCalled();
   });
 
   it('retorna 404 quando o documento não é encontrado', async () => {
@@ -92,7 +119,7 @@ describe('PATCH /:id/reprovar', () => {
 });
 
 describe('PATCH /:id/solicitar-revisao', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => { jest.clearAllMocks(); mockEmitir.mockReset(); });
 
   it('retorna 400 quando observacoes não são enviadas', async () => {
     const res = await request(app).patch('/doc-1/solicitar-revisao').send({});
@@ -100,7 +127,7 @@ describe('PATCH /:id/solicitar-revisao', () => {
     expect(res.body.erro).toContain('Observações');
   });
 
-  it('retorna 200 ao solicitar revisão com observacoes', async () => {
+  it('retorna 200 ao solicitar revisão e emite evento documento_revisao_solicitada', async () => {
     const resultadoRevisao = {
       ...RESULTADO_MOCK,
       documento: { ...RESULTADO_MOCK.documento, status: 'revisao_solicitada' },
@@ -110,6 +137,19 @@ describe('PATCH /:id/solicitar-revisao', () => {
       .patch('/doc-1/solicitar-revisao')
       .send({ observacoes: 'Revisar a seção de carga horária' });
     expect(res.status).toBe(200);
+    expect(mockEmitir).toHaveBeenCalledWith(
+      'documento_revisao_solicitada',
+      expect.objectContaining({
+        documentoId: 'doc-1',
+        coordenadorId: 'coord-id',
+        observacoes: 'Revisar a seção de carga horária',
+      }),
+    );
+  });
+
+  it('não emite evento quando solicitar-revisao retorna 400 por falta de observacoes', async () => {
+    await request(app).patch('/doc-1/solicitar-revisao').send({});
+    expect(mockEmitir).not.toHaveBeenCalled();
   });
 });
 

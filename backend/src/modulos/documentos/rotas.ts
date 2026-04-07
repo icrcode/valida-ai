@@ -8,6 +8,7 @@ import * as repositorio from './repositorio';
 import { buscarPorId as buscarUsuario } from '../usuarios/repositorio';
 import * as armazenamento from '../../servicos/armazenamento';
 import { tratarErro, verificarAcessoDocumento } from '../../utils/erros';
+import { barramento } from '../../eventos/barramento';
 
 const router = Router();
 
@@ -117,6 +118,14 @@ router.post('/', autenticar, exigirPerfil('estudante'), upload.single('arquivo')
       caminho_arquivo: chaveArquivo,
       tamanho_arquivo: req.file.size,
       mime_type: req.file.mimetype,
+    });
+
+    barramento.emitir('documento_submetido', {
+      documentoId: documento.id,
+      estudanteId: documento.estudante_id,
+      cursoId: documento.curso_id,
+      titulo: documento.titulo,
+      tipo: documento.tipo,
     });
 
     res.status(201).json(documento);

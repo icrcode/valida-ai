@@ -3,6 +3,9 @@ import request from 'supertest';
 jest.mock('../../src/modulos/documentos/repositorio');
 jest.mock('../../src/modulos/usuarios/repositorio');
 jest.mock('../../src/servicos/armazenamento');
+jest.mock('../../src/eventos/barramento', () => ({
+  barramento: { emitir: jest.fn() },
+}));
 jest.mock('../../src/middleware/autenticacao', () =>
   require('../helpers/mocks').criarModuloAutenticacao('estudante-id', 'estudante', 'est@test.com', 'Estudante Teste')
 );
@@ -13,6 +16,7 @@ jest.mock('../../src/middleware/autorizacao', () =>
 import * as repositorioDoc from '../../src/modulos/documentos/repositorio';
 import * as repositorioUsr from '../../src/modulos/usuarios/repositorio';
 import * as armazenamento from '../../src/servicos/armazenamento';
+import { barramento } from '../../src/eventos/barramento';
 import router from '../../src/modulos/documentos/rotas';
 import { criarApp } from '../helpers/app';
 import { DOC_MOCK } from '../helpers/fixtures';
@@ -20,6 +24,7 @@ import { DOC_MOCK } from '../helpers/fixtures';
 const mockDoc = repositorioDoc as jest.Mocked<typeof repositorioDoc>;
 const mockUsr = repositorioUsr as jest.Mocked<typeof repositorioUsr>;
 const mockArm = armazenamento as jest.Mocked<typeof armazenamento>;
+const mockEmitir = barramento.emitir as jest.Mock;
 
 const app = criarApp(router);
 
@@ -93,7 +98,10 @@ describe('GET /:id/download', () => {
 });
 
 describe('POST /', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockEmitir.mockReset();
+  });
 
   it('retorna 400 quando nenhum arquivo é enviado', async () => {
     const res = await request(app)
@@ -163,6 +171,30 @@ describe('POST /', () => {
     expect(res.status).toBe(201);
     expect(res.body.id).toBe('doc-1');
     expect(res.body.titulo).toBe('Estágio XYZ');
+    expect(mockEmitir).toHaveBeenCalledWith(
+      'documento_submetido',
+      expect.objectContaining({
+        documentoId: 'doc-1',
+        estudanteId: 'estudante-id',
+        cursoId: 'curso-1',
+        titulo: 'Estágio XYZ',
+        tipo: 'estagio',
+      }),
+    );
+  });
+
+  it('não emite evento quando o upload falha', async () => {
+    mockUsr.buscarPorId.mockResolvedValueOnce({ id: 'estudante-id', curso_id: 'curso-1' } as any);
+    mockArm.fazerUpload.mockRejectedValueOnce(new Error('MinIO indisponível'));
+
+    await request(app)
+      .post('/')
+      .attach('arquivo', Buffer.from('%PDF-1.4'), { filename: 'estagio.pdf', contentType: 'application/pdf' })
+      .field('titulo', 'Estágio XYZ')
+      .field('tipo', 'estagio')
+      .field('carga_horaria', '40');
+
+    expect(mockEmitir).not.toHaveBeenCalled();
   });
 });
 
