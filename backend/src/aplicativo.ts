@@ -3,11 +3,13 @@ import cors from 'cors';
 import helmet from 'helmet';
 import registrador from './utils/registrador';
 import rotasVerificacao from './routes/verificacao';
+import rotasPublica from './routes/publica';
 import rotasAuth from './modulos/auth/rotas';
 import rotasUsuarios from './modulos/usuarios/rotas';
 import rotasDocumentos from './modulos/documentos/rotas';
 import rotasValidacao from './modulos/validacao/rotas';
-import { garantirBalde } from './servicos/armazenamento';
+import rotasCertificados from './modulos/certificados/rotas';
+import { garantirBalde, garantirBaldeCertificados } from './servicos/armazenamento';
 import { registrarHandlers } from './eventos/registrar';
 
 const aplicativo: Express = express();
@@ -47,10 +49,12 @@ aplicativo.use((req, _res, next) => {
 
 // Rotas
 aplicativo.use('/', rotasVerificacao);
+aplicativo.use('/api/publica', rotasPublica);
 aplicativo.use('/api/auth', rotasAuth);
 aplicativo.use('/api/usuarios', rotasUsuarios);
 aplicativo.use('/api/documentos', rotasDocumentos);
 aplicativo.use('/api/documentos', rotasValidacao);
+aplicativo.use('/api/certificados', rotasCertificados);
 
 // Manipulador de 404
 aplicativo.use((_req, res) => {
@@ -72,10 +76,15 @@ aplicativo.use((err: unknown, _req: express.Request, res: express.Response) => {
 // Registrar handlers de eventos
 registrarHandlers();
 
-// Inicializar bucket MinIO
+// Inicializar buckets MinIO
 garantirBalde().catch((err: unknown) => {
   const mensagem = err instanceof Error ? err.message : String(err);
   registrador.warn(`Não foi possível inicializar o MinIO: ${mensagem}`);
+});
+
+garantirBaldeCertificados().catch((err: unknown) => {
+  const mensagem = err instanceof Error ? err.message : String(err);
+  registrador.warn(`Não foi possível inicializar o balde de certificados: ${mensagem}`);
 });
 
 export default aplicativo;
