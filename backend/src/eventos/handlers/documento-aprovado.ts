@@ -1,34 +1,63 @@
 import registrador from '../../utils/registrador';
-import { buscarPorId } from '../../modulos/usuarios/repositorio';
+import { buscarPorId as buscarUsuario } from '../../modulos/usuarios/repositorio';
+import { buscarPorId as buscarDocumento } from '../../modulos/documentos/repositorio';
 import { notificar } from '../../servicos/notificacao';
+import { gerarEArmazenarCertificado } from '../../servicos/gerador-certificado';
+import * as repositorioCert from '../../modulos/certificados/repositorio';
 import type { EventoDocumentoAprovado } from '../tipos';
 
-/**
- * Ao receber documento_aprovado:
- *  1. Notifica o estudante dono do documento.
- *  2. Dispara a geração do certificado (stub — implementar no módulo 2.5).
- */
+const URL_BASE = process.env.APP_URL || 'http://localhost:3000';
+
 export async function aoDocumentoAprovado(payload: EventoDocumentoAprovado): Promise<void> {
   try {
-    const estudante = await buscarPorId(payload.estudanteId);
-    if (estudante) {
-      await notificar({
-        destinatarioId: estudante.id,
-        destinatarioEmail: estudante.email,
-        destinatarioNome: estudante.nome,
-        assunto: 'Seu documento foi aprovado!',
-        mensagem:
-          `Parabéns, ${estudante.nome}!\n\n` +
-          `Seu documento "${payload.titulo}" foi aprovado.\n` +
-          `Em breve seu certificado estará disponível para download.`,
-      });
+    const [estudante, documento] = await Promise.all([
+      buscarUsuario(payload.estudanteId),
+      buscarDocumento(payload.documentoId),
+    ]);
+
+    if (!estudante || !documento) {
+      registrador.warn(
+        `[evento] documento_aprovado | estudante ou documento não encontrado | id=${payload.documentoId}`,
+      );
+      return;
     }
 
-    // TODO: disparar geração de certificado quando o módulo 2.5 for implementado.
-    // Exemplo: await gerarCertificado(payload.documentoId, payload.estudanteId);
+    // Gerar e armazenar certificado PDF
+    const { hash, caminhoArquivo } = await gerarEArmazenarCertificado(
+      {
+        documentoId: documento.id,
+        estudanteNome: estudante.nome,
+        estudanteEmail: estudante.email,
+        titulo: documento.titulo,
+        tipo: documento.tipo,
+        cargaHoraria: documento.carga_horaria,
+        dataAprovacao: new Date(),
+      },
+      URL_BASE,
+    );
+
+    // Persistir certificado no banco
+    await repositorioCert.criar({
+      documento_id: documento.id,
+      estudante_id: estudante.id,
+      hash,
+      caminho_arquivo: caminhoArquivo,
+    });
+
+    // Notificar estudante
+    await notificar({
+      destinatarioId: estudante.id,
+      destinatarioEmail: estudante.email,
+      destinatarioNome: estudante.nome,
+      assunto: 'Seu documento foi aprovado!',
+      mensagem:
+        `Parabéns, ${estudante.nome}!\n\n` +
+        `Seu documento "${documento.titulo}" foi aprovado e seu certificado está disponível.\n\n` +
+        `Verifique a autenticidade em: ${URL_BASE}/api/publica/verificar/${hash}`,
+    });
 
     registrador.info(
-      `[evento] documento_aprovado | id=${payload.documentoId} | estudante=${payload.estudanteId}`,
+      `[evento] documento_aprovado | id=${payload.documentoId} | estudante=${payload.estudanteId} | hash=${hash.slice(0, 12)}...`,
     );
   } catch (err) {
     registrador.error(
