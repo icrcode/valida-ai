@@ -4,6 +4,7 @@ import { exigirPerfil } from '../../middleware/autorizacao';
 import { buscarPorId as buscarDocumento } from '../documentos/repositorio';
 import * as repositorio from './repositorio';
 import { tratarErro, tratarErroComNaoEncontrado, verificarAcessoDocumento } from '../../utils/erros';
+import { barramento } from '../../eventos/barramento';
 
 const router = Router();
 
@@ -14,6 +15,14 @@ router.patch('/:id/aprovar', autenticar, exigirPerfil('coordenador', 'admin'), a
 
   try {
     const resultado = await repositorio.executarAcao(id, req.usuario!.sub, 'aprovar', observacoes);
+
+    barramento.emitir('documento_aprovado', {
+      documentoId: id,
+      estudanteId: resultado.documento.estudante_id as string,
+      coordenadorId: req.usuario!.sub,
+      titulo: resultado.documento.titulo as string,
+    });
+
     res.json(resultado);
   } catch (err: unknown) {
     tratarErroComNaoEncontrado(res, err);
@@ -31,6 +40,15 @@ router.patch('/:id/reprovar', autenticar, exigirPerfil('coordenador', 'admin'), 
 
   try {
     const resultado = await repositorio.executarAcao(id, req.usuario!.sub, 'reprovar', observacoes);
+
+    barramento.emitir('documento_reprovado', {
+      documentoId: id,
+      estudanteId: resultado.documento.estudante_id as string,
+      coordenadorId: req.usuario!.sub,
+      titulo: resultado.documento.titulo as string,
+      observacoes,
+    });
+
     res.json(resultado);
   } catch (err: unknown) {
     tratarErroComNaoEncontrado(res, err);
@@ -57,6 +75,15 @@ router.patch(
         'solicitar-revisao',
         observacoes,
       );
+
+      barramento.emitir('documento_revisao_solicitada', {
+        documentoId: id,
+        estudanteId: resultado.documento.estudante_id as string,
+        coordenadorId: req.usuario!.sub,
+        titulo: resultado.documento.titulo as string,
+        observacoes,
+      });
+
       res.json(resultado);
     } catch (err: unknown) {
       tratarErroComNaoEncontrado(res, err);
