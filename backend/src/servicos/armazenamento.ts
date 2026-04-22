@@ -13,15 +13,24 @@ const cliente = new Client({
 });
 
 const balde = configuracao.minio.balde;
+const baldeCertificados = configuracao.minio.baldeCertificados;
+
+async function garantirBaldeGenerico(nome: string): Promise<void> {
+  const existe = await cliente.bucketExists(nome);
+  if (existe) {
+    registrador.info(`Balde MinIO já existe: ${nome}`);
+  } else {
+    await cliente.makeBucket(nome, 'us-east-1');
+    registrador.info(`Balde MinIO criado: ${nome}`);
+  }
+}
 
 export async function garantirBalde(): Promise<void> {
-  const existe = await cliente.bucketExists(balde);
-  if (existe) {
-    registrador.info(`Balde MinIO já existe: ${balde}`);
-  } else {
-    await cliente.makeBucket(balde, 'us-east-1');
-    registrador.info(`Balde MinIO criado: ${balde}`);
-  }
+  await garantirBaldeGenerico(balde);
+}
+
+export async function garantirBaldeCertificados(): Promise<void> {
+  await garantirBaldeGenerico(baldeCertificados);
 }
 
 export async function fazerUpload(
@@ -44,4 +53,21 @@ export async function gerarUrlAssinada(
 
 export async function deletarArquivo(chaveArquivo: string): Promise<void> {
   await cliente.removeObject(balde, chaveArquivo);
+}
+
+export async function fazerUploadCertificado(
+  buffer: Buffer,
+  chaveArquivo: string,
+): Promise<string> {
+  await cliente.putObject(baldeCertificados, chaveArquivo, buffer, buffer.length, {
+    'Content-Type': 'application/pdf',
+  });
+  return chaveArquivo;
+}
+
+export async function gerarUrlAssinadaCertificado(
+  chaveArquivo: string,
+  expiracaoSegundos = 3600,
+): Promise<string> {
+  return cliente.presignedGetObject(baldeCertificados, chaveArquivo, expiracaoSegundos);
 }
