@@ -52,7 +52,7 @@ router.post('/login-dev', async (req, res) => {
       usuario: { id: usuario.id, nome: usuario.nome, email: usuario.email, perfil: usuario.perfil },
     });
   } catch (err: unknown) {
-    tratarErro(res, err);
+    tratarErro(res, err, 'auth/login-dev');
   }
 });
 
