@@ -15,9 +15,10 @@ export interface DadosCertificado {
 }
 
 export function gerarHash(documentoId: string): string {
+  const aleatorio = crypto.randomBytes(32).toString('hex');
   return crypto
     .createHash('sha256')
-    .update(`${documentoId}-${Date.now()}-${Math.random()}`)
+    .update(`${documentoId}-${aleatorio}`)
     .digest('hex');
 }
 

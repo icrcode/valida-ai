@@ -29,12 +29,16 @@ export function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/verificar/:hash" element={<Verificar />} />
 
-            {/* Rotas protegidas com layout */}
             <Route element={<PrivateRoute />}>
               <Route element={<Layout />}>
                 <Route index element={<Navigate to="/dashboard" replace />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/documentos" element={<Documentos />} />
+                <Route path="/documentos/novo" element={
+                  <PrivateRoute perfis={['estudante']}>
+                    <SubmeterDocumento />
+                  </PrivateRoute>
+                } />
                 <Route path="/documentos/:id" element={<DetalheDocumento />} />
                 <Route
                   path="/documentos/novo"
