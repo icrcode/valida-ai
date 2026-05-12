@@ -41,3 +41,11 @@ export async function buscarPorDocumento(documentoId: string): Promise<Certifica
   );
   return (res.rows[0] as Certificado) || null;
 }
+
+export async function buscarPorEstudante(estudanteId: string): Promise<Certificado[]> {
+  const res = await pool.query(
+    'SELECT * FROM certificados WHERE estudante_id = $1 ORDER BY criado_em DESC',
+    [estudanteId],
+  );
+  return res.rows as Certificado[];
+}

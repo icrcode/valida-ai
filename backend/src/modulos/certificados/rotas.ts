@@ -7,6 +7,22 @@ import { tratarErro } from '../../utils/erros';
 
 const router = Router();
 
+// GET /api/certificados — lista certificados do estudante autenticado
+router.get('/', autenticar, async (req, res) => {
+  try {
+    const certificados = await repositorio.buscarPorEstudante(req.usuario!.sub);
+    const comDocumentos = await Promise.all(
+      certificados.map(async (cert) => {
+        const documento = await repositorioDoc.buscarPorId(cert.documento_id);
+        return { ...cert, documento };
+      }),
+    );
+    res.json(comDocumentos);
+  } catch (err: unknown) {
+    tratarErro(res, err);
+  }
+});
+
 // GET /api/certificados/:id
 router.get('/:id', autenticar, async (req, res) => {
   const { id } = req.params as { id: string };

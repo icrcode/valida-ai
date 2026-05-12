@@ -29,6 +29,12 @@ const TIPO_LEGIVEL: Record<string, string> = {
 };
 
 export async function gerarPDF(dados: DadosCertificado, urlVerificacao: string): Promise<Buffer> {
+  const qrBuffer = await QRCode.toBuffer(urlVerificacao, {
+    width: 120,
+    margin: 2,
+    color: { dark: '#1a3c6e', light: '#ffffff' },
+  });
+
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({ size: 'A4', layout: 'landscape', margin: 60 });
     const chunks: Buffer[] = [];
@@ -129,16 +135,25 @@ export async function gerarPDF(dados: DadosCertificado, urlVerificacao: string):
       .lineWidth(1)
       .stroke('#cccccc');
 
-    // Rodapé com QR Code placeholder (texto da URL)
-    doc
-      .fontSize(9)
-      .fillColor('#888888')
-      .text('Verifique a autenticidade deste certificado em:', 60, altura - 80);
+    // Rodapé: QR Code e URL de verificação
+    const qrX = largura - 140;
+    const qrY = altura - 130;
+    doc.image(qrBuffer, qrX, qrY, { width: 90, height: 90 });
 
     doc
       .fontSize(9)
+      .fillColor('#888888')
+      .text('Verifique a autenticidade:', qrX - 10, qrY + 94, { width: 110, align: 'center' });
+
+    doc
+      .fontSize(8)
+      .fillColor('#888888')
+      .text('Scan o QR Code ou acesse:', 60, altura - 60, { width: largura - 200 });
+
+    doc
+      .fontSize(8)
       .fillColor('#4a90d9')
-      .text(urlVerificacao, 60, altura - 65, { width: largura - 200 });
+      .text(urlVerificacao, 60, altura - 48, { width: largura - 200 });
 
     doc.end();
   });
