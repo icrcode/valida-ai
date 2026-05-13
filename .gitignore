@@ -4,6 +4,12 @@ package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
+#Scripts
+dev.ps1
+build.ps1
+dev.sh
+build.sh
+
 # Environment variables
 .env
 .env.local

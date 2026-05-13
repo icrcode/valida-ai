@@ -43,7 +43,7 @@ function extrairDominio(email: string): string {
 // ---------------------------------------------------------------------------
 // POST /api/auth/login
 // Login por e-mail institucional com validação de domínio por instituição.
-// Não requer senha — o e-mail pré-cadastrado pela instituição é o identificador.
+// Relação: usuarios → cursos → instituicoes (para obter dominios_email)
 // ---------------------------------------------------------------------------
 router.post('/login', async (req, res) => {
   const { email } = req.body as { email?: string };
@@ -59,7 +59,6 @@ router.post('/login', async (req, res) => {
   const emailNormalizado = email.trim().toLowerCase();
 
   try {
-    // Busca o usuário e os dados da instituição (se vinculada)
     const resultado = await pool.query<UsuarioLogin>(
       `SELECT
          u.id,
@@ -68,11 +67,12 @@ router.post('/login', async (req, res) => {
          u.perfil,
          u.matricula,
          u.curso_id,
-         u.instituicao_id,
-         i.nome    AS instituicao_nome,
+         c.instituicao_id,
+         i.nome          AS instituicao_nome,
          i.dominios_email
        FROM usuarios u
-       LEFT JOIN instituicoes i ON i.id = u.instituicao_id AND i.ativo = true
+       LEFT JOIN cursos c       ON c.id = u.curso_id         AND c.ativo    = true
+       LEFT JOIN instituicoes i ON i.id = c.instituicao_id   AND i.ativa    = true
        WHERE LOWER(u.email) = $1
          AND u.ativo = true`,
       [emailNormalizado],
@@ -82,14 +82,15 @@ router.post('/login', async (req, res) => {
       registrador.warn('[auth/login] Usuário não encontrado', { email: emailNormalizado });
       res.status(401).json({
         erro: 'Acesso negado',
-        mensagem: 'E-mail não cadastrado ou usuário inativo. Contate o administrador da instituição.',
+        mensagem:
+          'E-mail não cadastrado ou usuário inativo. Contate o administrador da sua instituição.',
       });
       return;
     }
 
     const usuario = resultado.rows[0];
 
-    // Valida domínio do e-mail contra os domínios aceitos pela instituição
+    // Valida o domínio do e-mail contra os domínios aceitos pela instituição
     if (usuario.dominios_email && usuario.dominios_email.length > 0) {
       const dominio = extrairDominio(emailNormalizado);
       const dominioAceito = usuario.dominios_email
@@ -97,14 +98,15 @@ router.post('/login', async (req, res) => {
         .includes(dominio);
 
       if (!dominioAceito) {
-        registrador.warn('[auth/login] Domínio de e-mail não aceito pela instituição', {
+        registrador.warn('[auth/login] Domínio de e-mail não aceito', {
           email: emailNormalizado,
           dominio,
           dominiosAceitos: usuario.dominios_email,
+          instituicao: usuario.instituicao_nome,
         });
         res.status(403).json({
           erro: 'Domínio de e-mail não autorizado',
-          mensagem: `O domínio @${dominio} não é aceito pela instituição ${usuario.instituicao_nome ?? ''}. Use o e-mail institucional correto.`,
+          mensagem: `O domínio @${dominio} não é aceito pela instituição "${usuario.instituicao_nome ?? ''}". Use o e-mail institucional correto.`,
         });
         return;
       }

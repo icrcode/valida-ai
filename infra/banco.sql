@@ -52,6 +52,9 @@ CREATE TABLE instituicoes (
   endereco        text,
   cidade          varchar(100),
   estado          varchar(2),
+  -- Domínios de e-mail aceitos para login. Ex: ARRAY['catolicasc.org.br','catolicasc.edu.br']
+  -- Array vazio ({}) significa sem restrição de domínio.
+  dominios_email  text[]          NOT NULL DEFAULT '{}',
   ativa           boolean         NOT NULL DEFAULT true,
   criado_em       timestamptz     NOT NULL DEFAULT now(),
   atualizado_em   timestamptz     NOT NULL DEFAULT now()
