@@ -7,6 +7,7 @@ import { useToast } from '../contexts/ToastContext';
 import { BadgeStatus } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import { Spinner } from '../components/ui/Spinner';
 
 function formatBytes(bytes: number) {
   return bytes < 1024 * 1024
@@ -104,10 +105,7 @@ export function DetalheDocumento() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <svg className="h-8 w-8 animate-spin text-blue-600" viewBox="0 0 24 24" fill="none">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-        </svg>
+        <Spinner className="h-8 w-8 text-blue-600" />
       </div>
     );
   }
