@@ -2,6 +2,7 @@ import { useRef, useState, type FormEvent, type ChangeEvent } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { documentosService } from '../services/documentos';
+import { useToast } from '../contexts/ToastContext';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 
@@ -45,6 +46,7 @@ function Campo({
 export function SubmeterDocumento() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { addToast } = useToast();
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [campos, setCampos] = useState<Campos>({ titulo: '', tipo: '', carga_horaria: '' });
@@ -54,8 +56,11 @@ export function SubmeterDocumento() {
     mutationFn: (fd: FormData) => documentosService.submeter(fd),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['documentos'] });
+      queryClient.invalidateQueries({ queryKey: ['documentos-contagem'] });
+      addToast('Documento enviado com sucesso!', 'success');
       navigate('/documentos');
     },
+    onError: () => addToast('Erro ao enviar o documento. Verifique os dados.', 'error'),
   });
 
   function atualizar(campo: keyof Campos) {
@@ -90,9 +95,6 @@ export function SubmeterDocumento() {
     fd.append('arquivo', fileRef.current!.files![0]);
     mutation.mutate(fd);
   }
-
-  const errApi =
-    (mutation.error as { response?: { data?: { erro?: string } } } | null)?.response?.data?.erro;
 
   return (
     <div className="mx-auto max-w-lg">
@@ -138,12 +140,6 @@ export function SubmeterDocumento() {
               className="rounded-lg border border-gray-300 px-3 py-2 text-sm file:mr-3 file:rounded file:border-0 file:bg-blue-50 file:px-3 file:py-1 file:text-sm file:font-medium file:text-blue-700"
             />
           </Campo>
-
-          {mutation.isError && (
-            <p className="text-sm text-red-500">
-              {errApi ?? 'Erro ao submeter. Verifique os dados e tente novamente.'}
-            </p>
-          )}
 
           <div className="flex gap-3 pt-2">
             <Button type="button" variant="secondary" onClick={() => navigate(-1)}>

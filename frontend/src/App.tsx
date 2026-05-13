@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './contexts/AuthContext';
+import { ToastProvider } from './contexts/ToastContext';
 import { PrivateRoute } from './components/PrivateRoute';
 import { Layout } from './components/Layout';
 import { Login } from './pages/Login';
@@ -23,41 +24,43 @@ export function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <BrowserRouter>
-          <Routes>
-            {/* Rotas públicas */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/verificar/:hash" element={<Verificar />} />
+        <ToastProvider>
+          <BrowserRouter>
+            <Routes>
+              {/* Rotas públicas */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/verificar/:hash" element={<Verificar />} />
 
-            <Route element={<PrivateRoute />}>
-              <Route element={<Layout />}>
-                <Route index element={<Navigate to="/dashboard" replace />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/documentos" element={<Documentos />} />
-                <Route path="/documentos/novo" element={
-                  <PrivateRoute perfis={['estudante']}>
-                    <SubmeterDocumento />
-                  </PrivateRoute>
-                } />
-                <Route path="/documentos/:id" element={<DetalheDocumento />} />
-                <Route
-                  path="/documentos/novo"
-                  element={<PrivateRoute perfis={['estudante']} />}
-                >
-                  <Route index element={<SubmeterDocumento />} />
+              {/* Rotas autenticadas */}
+              <Route element={<PrivateRoute />}>
+                <Route element={<Layout />}>
+                  <Route index element={<Navigate to="/dashboard" replace />} />
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/documentos" element={<Documentos />} />
+                  <Route path="/documentos/:id" element={<DetalheDocumento />} />
+                  <Route
+                    path="/documentos/novo"
+                    element={
+                      <PrivateRoute perfis={['estudante']}>
+                        <SubmeterDocumento />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/certificados"
+                    element={
+                      <PrivateRoute perfis={['estudante']}>
+                        <MeusCertificados />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route path="/perfil" element={<Perfil />} />
+                  <Route path="*" element={<NaoEncontrado />} />
                 </Route>
-                <Route
-                  path="/certificados"
-                  element={<PrivateRoute perfis={['estudante']} />}
-                >
-                  <Route index element={<MeusCertificados />} />
-                </Route>
-                <Route path="/perfil" element={<Perfil />} />
-                <Route path="*" element={<NaoEncontrado />} />
               </Route>
-            </Route>
-          </Routes>
-        </BrowserRouter>
+            </Routes>
+          </BrowserRouter>
+        </ToastProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
