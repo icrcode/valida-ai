@@ -40,10 +40,11 @@ router.put('/perfil', autenticar, async (req, res) => {
   }
 });
 
-// GET /api/usuarios → listar usuários (admin)
-router.get('/', autenticar, exigirPerfil('admin'), async (_req, res) => {
+// GET /api/usuarios → listar usuários (admin, filtrável por instituição)
+router.get('/', autenticar, exigirPerfil('admin'), async (req, res) => {
+  const { instituicao_id } = req.query as { instituicao_id?: string };
   try {
-    const usuarios = await repositorio.listarTodos();
+    const usuarios = await repositorio.listarTodos(instituicao_id);
     res.json(usuarios);
   } catch (err: unknown) {
     tratarErro(res, err);

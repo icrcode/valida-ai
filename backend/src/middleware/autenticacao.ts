@@ -7,6 +7,10 @@ export interface PayloadJWT {
   email: string;
   nome: string;
   perfil: 'estudante' | 'coordenador' | 'admin';
+  matricula?: string | null;
+  curso_id?: string | null;
+  instituicao_id?: string | null;
+  instituicao_nome?: string | null;
 }
 
 declare global {
