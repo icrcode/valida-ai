@@ -34,4 +34,5 @@ export const configuracao = {
     segredo: process.env.JWT_SECRET || 'sua-chave-secreta-aqui',
     expiraEm: process.env.JWT_EXPIRES_IN || '7d',
   },
+
 };
