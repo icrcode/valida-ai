@@ -5,28 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
-
-const PERFIL_LABEL: Record<string, string> = {
-  estudante: 'Estudante',
-  coordenador: 'Coordenador',
-  admin: 'Administrador',
-};
-
-const PERFIL_COR: Record<string, string> = {
-  estudante: 'bg-blue-100 text-blue-800',
-  coordenador: 'bg-purple-100 text-purple-800',
-  admin: 'bg-red-100 text-red-800',
-};
-
-function iniciais(nome: string): string {
-  return nome
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase();
-}
+import { PERFIL_LABEL, PERFIL_COR, iniciais } from '../utils/perfil';
 
 function InfoRow({
   label,
