@@ -2,6 +2,16 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+function obrigatorio(nome: string): string {
+  const valor = process.env[nome];
+  if (!valor) {
+    throw new Error(
+      `Variavel de ambiente obrigatoria nao definida: ${nome}. Configure o arquivo .env.`,
+    );
+  }
+  return valor;
+}
+
 export const configuracao = {
   ambienteNode: process.env.NODE_ENV || 'development',
   porta: Number.parseInt(process.env.PORT || '3000', 10),
@@ -31,7 +41,7 @@ export const configuracao = {
   },
 
   jwt: {
-    segredo: process.env.JWT_SECRET || 'sua-chave-secreta-aqui',
+    segredo: obrigatorio('JWT_SECRET'),
     expiraEm: process.env.JWT_EXPIRES_IN || '7d',
   },
 };

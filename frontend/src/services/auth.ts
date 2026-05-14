@@ -7,6 +7,6 @@ interface LoginResponse {
 }
 
 export const authService = {
-  loginDev: (email: string): Promise<LoginResponse> =>
-    api.post<LoginResponse>('/api/auth/login-dev', { email }).then((r) => r.data),
+  login: (email: string): Promise<LoginResponse> =>
+    api.post<LoginResponse>('/api/auth/login', { email }).then((r) => r.data),
 };

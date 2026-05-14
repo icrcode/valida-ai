@@ -12,7 +12,11 @@ export interface Usuario {
   nome: string;
   email: string;
   perfil: Perfil;
-  curso_id?: string;
+  matricula?: string | null;
+  curso_id?: string | null;
+  instituicao_id?: string | null;
+  instituicao_nome?: string | null;
+  ativo?: boolean;
 }
 
 export interface Documento {
