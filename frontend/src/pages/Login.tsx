@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { authService } from '../services/auth';
 import { useAuth } from '../contexts/AuthContext';
 import { Spinner } from '../components/ui/Spinner';
@@ -130,8 +130,11 @@ export function Login() {
           </form>
         </div>
 
-        <p className="mt-5 text-center text-xs text-gray-400">
-          Use o e-mail cadastrado pela sua instituição
+        <p className="mt-5 text-center text-sm text-gray-500">
+          Novo por aqui?{' '}
+          <Link to="/cadastro" className="font-medium text-blue-600 hover:text-blue-700">
+            Criar conta de estudante
+          </Link>
         </p>
       </div>
     </div>
