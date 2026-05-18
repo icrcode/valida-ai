@@ -3,7 +3,13 @@ import jwt from 'jsonwebtoken';
 import { configuracao } from '../../configuracao';
 import { tratarErro } from '../../utils/erros';
 import registrador from '../../utils/registrador';
-import { buscarPorEmailParaLogin, type UsuarioParaLogin } from '../usuarios/repositorio';
+import {
+  buscarPorEmailParaLogin,
+  buscarPorEmail,
+  criarUsuario,
+  type UsuarioParaLogin,
+} from '../usuarios/repositorio';
+import { buscarCursoPorId } from '../cursos/repositorio';
 
 const router = Router();
 
@@ -98,6 +104,95 @@ router.post('/login', async (req, res) => {
     });
   } catch (err: unknown) {
     tratarErro(res, err, 'auth/login');
+  }
+});
+
+// POST /api/auth/cadastro
+// Auto-registro de estudantes com e-mail institucional.
+router.post('/cadastro', async (req, res) => {
+  const { nome, email, matricula, curso_id } = req.body as {
+    nome?: string;
+    email?: string;
+    matricula?: string;
+    curso_id?: string;
+  };
+
+  if (!nome || typeof nome !== 'string' || nome.trim().length < 2) {
+    res.status(400).json({ erro: 'Nome inválido', mensagem: 'Informe seu nome completo (mínimo 2 caracteres)' });
+    return;
+  }
+  if (!email || typeof email !== 'string' || !email.includes('@')) {
+    res.status(400).json({ erro: 'E-mail inválido', mensagem: 'Informe um e-mail válido' });
+    return;
+  }
+  if (!matricula || typeof matricula !== 'string' || matricula.trim().length < 2) {
+    res.status(400).json({ erro: 'Matrícula inválida', mensagem: 'Informe sua matrícula acadêmica' });
+    return;
+  }
+  if (!curso_id || typeof curso_id !== 'string') {
+    res.status(400).json({ erro: 'Curso inválido', mensagem: 'Selecione seu curso' });
+    return;
+  }
+
+  const emailNormalizado = email.trim().toLowerCase();
+  const nomeNormalizado = nome.trim();
+  const matriculaNormalizada = matricula.trim();
+
+  try {
+    const existente = await buscarPorEmail(emailNormalizado);
+    if (existente) {
+      res.status(409).json({ erro: 'E-mail já cadastrado', mensagem: 'Este e-mail já possui uma conta. Faça login.' });
+      return;
+    }
+
+    const curso = await buscarCursoPorId(curso_id);
+    if (!curso) {
+      res.status(400).json({ erro: 'Curso não encontrado', mensagem: 'O curso selecionado não existe ou está inativo' });
+      return;
+    }
+
+    if (curso.dominios_email && curso.dominios_email.length > 0) {
+      const dominio = extrairDominio(emailNormalizado);
+      const dominioAceito = curso.dominios_email.map((d) => d.toLowerCase().trim()).includes(dominio);
+      if (!dominioAceito) {
+        res.status(403).json({
+          erro: 'Domínio de e-mail não autorizado',
+          mensagem: `O domínio @${dominio} não é aceito pela instituição "${curso.instituicao_nome}". Use o e-mail institucional correto.`,
+        });
+        return;
+      }
+    }
+
+    const novoUsuario = await criarUsuario({
+      nome: nomeNormalizado,
+      email: emailNormalizado,
+      perfil: 'estudante',
+      matricula: matriculaNormalizada,
+      curso_id,
+    });
+
+    const token = gerarToken(novoUsuario);
+
+    registrador.info('[auth/cadastro] Novo estudante cadastrado', {
+      id: novoUsuario.id,
+      instituicao: curso.instituicao_nome,
+    });
+
+    res.status(201).json({
+      token,
+      usuario: {
+        id: novoUsuario.id,
+        nome: novoUsuario.nome,
+        email: novoUsuario.email,
+        perfil: novoUsuario.perfil,
+        matricula: novoUsuario.matricula,
+        curso_id: novoUsuario.curso_id,
+        instituicao_id: novoUsuario.instituicao_id,
+        instituicao_nome: novoUsuario.instituicao_nome,
+      },
+    });
+  } catch (err: unknown) {
+    tratarErro(res, err, 'auth/cadastro');
   }
 });
 
