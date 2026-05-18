@@ -11,6 +11,8 @@ import { DetalheDocumento } from './pages/DetalheDocumento';
 import { SubmeterDocumento } from './pages/SubmeterDocumento';
 import { MeusCertificados } from './pages/MeusCertificados';
 import { Perfil } from './pages/Perfil';
+import { Cadastro } from './pages/Cadastro';
+import { Usuarios } from './pages/Usuarios';
 import { Verificar } from './pages/Verificar';
 import { NaoEncontrado } from './pages/NaoEncontrado';
 
@@ -29,6 +31,7 @@ export function App() {
             <Routes>
               {/* Rotas públicas */}
               <Route path="/login" element={<Login />} />
+              <Route path="/cadastro" element={<Cadastro />} />
               <Route path="/verificar/:hash" element={<Verificar />} />
 
               {/* Rotas autenticadas */}
@@ -55,6 +58,14 @@ export function App() {
                     }
                   />
                   <Route path="/perfil" element={<Perfil />} />
+                  <Route
+                    path="/usuarios"
+                    element={
+                      <PrivateRoute perfis={['admin']}>
+                        <Usuarios />
+                      </PrivateRoute>
+                    }
+                  />
                   <Route path="*" element={<NaoEncontrado />} />
                 </Route>
               </Route>
