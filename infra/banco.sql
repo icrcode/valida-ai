@@ -103,6 +103,7 @@ CREATE TABLE usuarios (
   id              uuid            PRIMARY KEY DEFAULT gen_random_uuid(),
   nome            varchar(200)    NOT NULL,
   email           varchar(255)    NOT NULL UNIQUE,
+  senha_hash      text            NOT NULL DEFAULT '',
   matricula       varchar(50),
   perfil          perfil_usuario  NOT NULL,
   microsoft_id    varchar(255)    UNIQUE,
