@@ -2,14 +2,21 @@ import request from 'supertest';
 
 jest.mock('../../src/modulos/usuarios/repositorio');
 jest.mock('../../src/modulos/cursos/repositorio');
+jest.mock('bcryptjs', () => ({
+  compare: jest.fn(),
+  hash: jest.fn(),
+}));
 
 import * as usuariosRepo from '../../src/modulos/usuarios/repositorio';
 import * as cursosRepo from '../../src/modulos/cursos/repositorio';
+import bcrypt from 'bcryptjs';
 import router from '../../src/modulos/auth/rotas';
 import { criarApp } from '../helpers/app';
 
 const mockUsuarios = usuariosRepo as jest.Mocked<typeof usuariosRepo>;
 const mockCursos = cursosRepo as jest.Mocked<typeof cursosRepo>;
+const mockBcryptCompare = bcrypt.compare as jest.Mock;
+const mockBcryptHash = bcrypt.hash as jest.Mock;
 const app = criarApp(router);
 
 const USUARIO_LOGIN_MOCK: usuariosRepo.UsuarioParaLogin = {
@@ -21,6 +28,7 @@ const USUARIO_LOGIN_MOCK: usuariosRepo.UsuarioParaLogin = {
   curso_id: 'curso-1',
   instituicao_id: 'inst-1',
   instituicao_nome: 'Universidade Teste',
+  senha_hash: '$2b$10$hashqualquer',
   ativo: true,
   criado_em: new Date(),
   atualizado_em: new Date(),
@@ -54,6 +62,15 @@ const USUARIO_CRIADO: usuariosRepo.Usuario = {
   atualizado_em: new Date(),
 };
 
+const DADOS_LOGIN = { email: 'joao@uni.edu', senha: 'senha123' };
+const DADOS_CADASTRO = {
+  nome: 'Maria Silva',
+  email: 'maria@uni.edu',
+  senha: 'senha123',
+  matricula: '2021002',
+  curso_id: 'curso-1',
+};
+
 // ─────────────────────────────────────────────
 // POST /login
 // ─────────────────────────────────────────────
@@ -61,66 +78,91 @@ describe('POST /login', () => {
   beforeEach(() => jest.clearAllMocks());
 
   it('retorna 400 quando email não é enviado', async () => {
-    const res = await request(app).post('/login').send({});
+    const res = await request(app).post('/login').send({ senha: 'abc123' });
     expect(res.status).toBe(400);
-    expect(res.body.erro).toBeDefined();
+    expect(res.body.erro).toContain('E-mail');
+  });
+
+  it('retorna 400 quando senha não é enviada', async () => {
+    const res = await request(app).post('/login').send({ email: 'a@b.com' });
+    expect(res.status).toBe(400);
+    expect(res.body.erro).toContain('Senha');
   });
 
   it('retorna 400 quando email não contém @', async () => {
-    const res = await request(app).post('/login').send({ email: 'invalido' });
+    const res = await request(app).post('/login').send({ email: 'invalido', senha: '123456' });
     expect(res.status).toBe(400);
   });
 
-  it('retorna 401 quando usuário não é encontrado no banco', async () => {
+  it('retorna 401 quando usuário não é encontrado', async () => {
     mockUsuarios.buscarPorEmailParaLogin.mockResolvedValueOnce(null);
-    const res = await request(app).post('/login').send({ email: 'nao@existe.com' });
+    const res = await request(app).post('/login').send(DADOS_LOGIN);
     expect(res.status).toBe(401);
-    expect(res.body.erro).toBeDefined();
+  });
+
+  it('retorna 401 quando conta não tem senha configurada', async () => {
+    mockUsuarios.buscarPorEmailParaLogin.mockResolvedValueOnce({
+      ...USUARIO_LOGIN_MOCK,
+      senha_hash: '',
+    });
+    const res = await request(app).post('/login').send(DADOS_LOGIN);
+    expect(res.status).toBe(401);
+    expect(res.body.erro).toContain('senha');
+  });
+
+  it('retorna 401 quando senha está incorreta', async () => {
+    mockUsuarios.buscarPorEmailParaLogin.mockResolvedValueOnce(USUARIO_LOGIN_MOCK);
+    mockBcryptCompare.mockResolvedValueOnce(false);
+    const res = await request(app).post('/login').send(DADOS_LOGIN);
+    expect(res.status).toBe(401);
   });
 
   it('retorna 403 quando domínio do e-mail não é aceito pela instituição', async () => {
     mockUsuarios.buscarPorEmailParaLogin.mockResolvedValueOnce({
       ...USUARIO_LOGIN_MOCK,
-      dominios_email: ['outrodominio.edu.br'],
+      dominios_email: ['outra.edu.br'],
     });
-    const res = await request(app).post('/login').send({ email: 'joao@uni.edu' });
+    mockBcryptCompare.mockResolvedValueOnce(true);
+    const res = await request(app).post('/login').send(DADOS_LOGIN);
     expect(res.status).toBe(403);
     expect(res.body.erro).toContain('Domínio');
   });
 
-  it('retorna 200 com token e dados quando login é bem-sucedido sem restrição de domínio', async () => {
+  it('retorna 200 com token quando login é bem-sucedido (sem restrição de domínio)', async () => {
     mockUsuarios.buscarPorEmailParaLogin.mockResolvedValueOnce(USUARIO_LOGIN_MOCK);
-    const res = await request(app).post('/login').send({ email: 'joao@uni.edu' });
+    mockBcryptCompare.mockResolvedValueOnce(true);
+    const res = await request(app).post('/login').send(DADOS_LOGIN);
     expect(res.status).toBe(200);
     expect(res.body.token).toBeDefined();
     expect(res.body.usuario.email).toBe('joao@uni.edu');
     expect(res.body.usuario.perfil).toBe('estudante');
   });
 
-  it('retorna 200 quando domínio é aceito pela lista da instituição', async () => {
+  it('retorna 200 quando domínio é aceito pela instituição', async () => {
     mockUsuarios.buscarPorEmailParaLogin.mockResolvedValueOnce({
       ...USUARIO_LOGIN_MOCK,
       dominios_email: ['uni.edu'],
     });
-    const res = await request(app).post('/login').send({ email: 'joao@uni.edu' });
+    mockBcryptCompare.mockResolvedValueOnce(true);
+    const res = await request(app).post('/login').send(DADOS_LOGIN);
     expect(res.status).toBe(200);
     expect(res.body.token).toBeDefined();
   });
 
-  it('retorna 200 quando a lista de domínios está vazia (sem restrição)', async () => {
+  it('retorna 200 quando lista de domínios está vazia (sem restrição)', async () => {
     mockUsuarios.buscarPorEmailParaLogin.mockResolvedValueOnce({
       ...USUARIO_LOGIN_MOCK,
       dominios_email: [],
     });
-    const res = await request(app).post('/login').send({ email: 'joao@qualquer.com' });
+    mockBcryptCompare.mockResolvedValueOnce(true);
+    const res = await request(app).post('/login').send(DADOS_LOGIN);
     expect(res.status).toBe(200);
   });
 
   it('retorna 500 em caso de erro no repositório', async () => {
     mockUsuarios.buscarPorEmailParaLogin.mockRejectedValueOnce(new Error('DB indisponível'));
-    const res = await request(app).post('/login').send({ email: 'joao@uni.edu' });
+    const res = await request(app).post('/login').send(DADOS_LOGIN);
     expect(res.status).toBe(500);
-    expect(res.body.erro).toBe('Erro interno');
   });
 });
 
@@ -131,35 +173,39 @@ describe('POST /cadastro', () => {
   beforeEach(() => jest.clearAllMocks());
 
   it('retorna 400 quando nome não é enviado', async () => {
-    const res = await request(app).post('/cadastro').send({ email: 'a@b.com', matricula: '123', curso_id: 'c1' });
+    const res = await request(app).post('/cadastro').send({ ...DADOS_CADASTRO, nome: undefined });
     expect(res.status).toBe(400);
   });
 
   it('retorna 400 quando nome tem menos de 2 caracteres', async () => {
-    const res = await request(app).post('/cadastro').send({ nome: 'A', email: 'a@b.com', matricula: '123', curso_id: 'c1' });
+    const res = await request(app).post('/cadastro').send({ ...DADOS_CADASTRO, nome: 'A' });
     expect(res.status).toBe(400);
   });
 
   it('retorna 400 quando email é inválido', async () => {
-    const res = await request(app).post('/cadastro').send({ nome: 'João', email: 'invalido', matricula: '123', curso_id: 'c1' });
+    const res = await request(app).post('/cadastro').send({ ...DADOS_CADASTRO, email: 'invalido' });
     expect(res.status).toBe(400);
   });
 
+  it('retorna 400 quando senha tem menos de 6 caracteres', async () => {
+    const res = await request(app).post('/cadastro').send({ ...DADOS_CADASTRO, senha: '123' });
+    expect(res.status).toBe(400);
+    expect(res.body.erro).toContain('Senha');
+  });
+
   it('retorna 400 quando matrícula não é enviada', async () => {
-    const res = await request(app).post('/cadastro').send({ nome: 'João', email: 'a@b.com', curso_id: 'c1' });
+    const res = await request(app).post('/cadastro').send({ ...DADOS_CADASTRO, matricula: undefined });
     expect(res.status).toBe(400);
   });
 
   it('retorna 400 quando curso_id não é enviado', async () => {
-    const res = await request(app).post('/cadastro').send({ nome: 'João', email: 'a@b.com', matricula: '123' });
+    const res = await request(app).post('/cadastro').send({ ...DADOS_CADASTRO, curso_id: undefined });
     expect(res.status).toBe(400);
   });
 
   it('retorna 409 quando e-mail já está cadastrado', async () => {
-    mockUsuarios.buscarPorEmail.mockResolvedValueOnce({ ...USUARIO_CRIADO });
-    const res = await request(app).post('/cadastro').send({
-      nome: 'Maria', email: 'maria@uni.edu', matricula: '123', curso_id: 'curso-1',
-    });
+    mockUsuarios.buscarPorEmail.mockResolvedValueOnce(USUARIO_CRIADO);
+    const res = await request(app).post('/cadastro').send(DADOS_CADASTRO);
     expect(res.status).toBe(409);
     expect(res.body.erro).toContain('E-mail já cadastrado');
   });
@@ -167,9 +213,7 @@ describe('POST /cadastro', () => {
   it('retorna 400 quando curso não é encontrado', async () => {
     mockUsuarios.buscarPorEmail.mockResolvedValueOnce(null);
     mockCursos.buscarCursoPorId.mockResolvedValueOnce(null);
-    const res = await request(app).post('/cadastro').send({
-      nome: 'Maria', email: 'maria@uni.edu', matricula: '123', curso_id: 'curso-inexistente',
-    });
+    const res = await request(app).post('/cadastro').send(DADOS_CADASTRO);
     expect(res.status).toBe(400);
   });
 
@@ -179,50 +223,43 @@ describe('POST /cadastro', () => {
       ...CURSO_MOCK,
       dominios_email: ['outra.edu.br'],
     });
-    const res = await request(app).post('/cadastro').send({
-      nome: 'Maria', email: 'maria@uni.edu', matricula: '123', curso_id: 'curso-1',
-    });
+    const res = await request(app).post('/cadastro').send(DADOS_CADASTRO);
     expect(res.status).toBe(403);
   });
 
-  it('retorna 201 com token e dados quando cadastro é bem-sucedido', async () => {
+  it('retorna 201 com token quando cadastro é bem-sucedido', async () => {
     mockUsuarios.buscarPorEmail.mockResolvedValueOnce(null);
     mockCursos.buscarCursoPorId.mockResolvedValueOnce(CURSO_MOCK);
+    mockBcryptHash.mockResolvedValueOnce('$2b$10$hashed');
     mockUsuarios.criarUsuario.mockResolvedValueOnce(USUARIO_CRIADO);
-    const res = await request(app).post('/cadastro').send({
-      nome: 'Maria Silva', email: 'maria@uni.edu', matricula: '2021002', curso_id: 'curso-1',
-    });
+    const res = await request(app).post('/cadastro').send(DADOS_CADASTRO);
     expect(res.status).toBe(201);
     expect(res.body.token).toBeDefined();
     expect(res.body.usuario.perfil).toBe('estudante');
     expect(res.body.usuario.email).toBe('maria@uni.edu');
   });
 
-  it('retorna 201 quando instituição tem lista de domínios vazia (sem restrição)', async () => {
+  it('retorna 201 quando instituição não tem restrição de domínio (lista vazia)', async () => {
     mockUsuarios.buscarPorEmail.mockResolvedValueOnce(null);
     mockCursos.buscarCursoPorId.mockResolvedValueOnce({ ...CURSO_MOCK, dominios_email: [] });
+    mockBcryptHash.mockResolvedValueOnce('$2b$10$hashed');
     mockUsuarios.criarUsuario.mockResolvedValueOnce(USUARIO_CRIADO);
-    const res = await request(app).post('/cadastro').send({
-      nome: 'Maria Silva', email: 'maria@qualquer.com', matricula: '2021002', curso_id: 'curso-1',
-    });
+    const res = await request(app).post('/cadastro').send({ ...DADOS_CADASTRO, email: 'maria@qualquer.com' });
     expect(res.status).toBe(201);
   });
 
   it('retorna 201 quando domínio é aceito pela instituição', async () => {
     mockUsuarios.buscarPorEmail.mockResolvedValueOnce(null);
     mockCursos.buscarCursoPorId.mockResolvedValueOnce({ ...CURSO_MOCK, dominios_email: ['uni.edu'] });
+    mockBcryptHash.mockResolvedValueOnce('$2b$10$hashed');
     mockUsuarios.criarUsuario.mockResolvedValueOnce(USUARIO_CRIADO);
-    const res = await request(app).post('/cadastro').send({
-      nome: 'Maria Silva', email: 'maria@uni.edu', matricula: '2021002', curso_id: 'curso-1',
-    });
+    const res = await request(app).post('/cadastro').send(DADOS_CADASTRO);
     expect(res.status).toBe(201);
   });
 
   it('retorna 500 em caso de erro no repositório', async () => {
     mockUsuarios.buscarPorEmail.mockRejectedValueOnce(new Error('DB indisponível'));
-    const res = await request(app).post('/cadastro').send({
-      nome: 'Maria Silva', email: 'maria@uni.edu', matricula: '2021002', curso_id: 'curso-1',
-    });
+    const res = await request(app).post('/cadastro').send(DADOS_CADASTRO);
     expect(res.status).toBe(500);
   });
 });

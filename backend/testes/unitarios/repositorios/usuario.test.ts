@@ -165,6 +165,7 @@ describe('criarUsuario', () => {
     const resultado = await criarUsuario({
       nome: 'João Silva',
       email: 'novo@uni.edu',
+      senha_hash: '$2b$10$hash',
       perfil: 'estudante',
       matricula: '2021001',
       curso_id: 'curso-1',
@@ -173,6 +174,7 @@ describe('criarUsuario', () => {
     expect(resultado.id).toBe('usr-novo');
     expect(mockQuery.mock.calls[0][0]).toContain('INSERT INTO usuarios');
     expect(mockQuery.mock.calls[0][1]).toContain('novo@uni.edu');
+    expect(mockQuery.mock.calls[0][1]).toContain('$2b$10$hash');
   });
 
   it('passa null para matricula e curso_id quando não fornecidos', async () => {
@@ -180,11 +182,11 @@ describe('criarUsuario', () => {
       .mockResolvedValueOnce({ rows: [{ id: 'usr-admin' }] })
       .mockResolvedValueOnce({ rows: [USUARIO_ROW] });
 
-    await criarUsuario({ nome: 'Admin', email: 'admin@uni.edu', perfil: 'admin' });
+    await criarUsuario({ nome: 'Admin', email: 'admin@uni.edu', senha_hash: '$2b$10$hash', perfil: 'admin' });
 
     const params = mockQuery.mock.calls[0][1] as unknown[];
-    expect(params[3]).toBeNull(); // matricula
-    expect(params[4]).toBeNull(); // curso_id
+    expect(params[4]).toBeNull(); // matricula (índice 4, após nome/email/senha_hash/perfil)
+    expect(params[5]).toBeNull(); // curso_id
   });
 });
 

@@ -7,6 +7,7 @@ jest.mock('../../src/middleware/autenticacao', () =>
 jest.mock('../../src/middleware/autorizacao', () =>
   require('../helpers/mocks').moduloAutorizacao
 );
+jest.mock('bcryptjs', () => ({ hash: jest.fn().mockResolvedValue('$2b$10$hashed') }));
 
 import * as repositorio from '../../src/modulos/usuarios/repositorio';
 import router from '../../src/modulos/usuarios/rotas';
@@ -115,15 +116,21 @@ describe('POST /', () => {
     expect(res.body.erro).toContain('E-mail inválido');
   });
 
+  it('retorna 400 quando senha está ausente ou é muito curta', async () => {
+    const res = await request(app).post('/').send({ nome: 'João', email: 'a@b.com', senha: '123', perfil: 'estudante' });
+    expect(res.status).toBe(400);
+    expect(res.body.erro).toContain('Senha inválida');
+  });
+
   it('retorna 400 quando perfil é inválido', async () => {
-    const res = await request(app).post('/').send({ nome: 'João', email: 'a@b.com', perfil: 'superadmin' });
+    const res = await request(app).post('/').send({ nome: 'João', email: 'a@b.com', senha: 'senha123', perfil: 'superadmin' });
     expect(res.status).toBe(400);
     expect(res.body.erro).toContain('Perfil inválido');
   });
 
   it('retorna 409 quando e-mail já está cadastrado', async () => {
     mockRepo.buscarPorEmail.mockResolvedValueOnce(USUARIO_MOCK);
-    const res = await request(app).post('/').send({ nome: 'João', email: 'joao@email.com', perfil: 'estudante' });
+    const res = await request(app).post('/').send({ nome: 'João', email: 'joao@email.com', senha: 'senha123', perfil: 'estudante' });
     expect(res.status).toBe(409);
   });
 
@@ -131,7 +138,7 @@ describe('POST /', () => {
     mockRepo.buscarPorEmail.mockResolvedValueOnce(null);
     mockRepo.criarUsuario.mockResolvedValueOnce(USUARIO_MOCK);
     const res = await request(app).post('/').send({
-      nome: 'João', email: 'novo@email.com', perfil: 'estudante', matricula: '2021001', curso_id: 'curso-1',
+      nome: 'João', email: 'novo@email.com', senha: 'senha123', perfil: 'estudante', matricula: '2021001', curso_id: 'curso-1',
     });
     expect(res.status).toBe(201);
     expect(res.body.email).toBe('joao@email.com');
@@ -139,7 +146,7 @@ describe('POST /', () => {
 
   it('retorna 500 em caso de erro no repositório', async () => {
     mockRepo.buscarPorEmail.mockRejectedValueOnce(new Error('DB error'));
-    const res = await request(app).post('/').send({ nome: 'João', email: 'a@b.com', perfil: 'estudante' });
+    const res = await request(app).post('/').send({ nome: 'João', email: 'a@b.com', senha: 'senha123', perfil: 'estudante' });
     expect(res.status).toBe(500);
   });
 });
