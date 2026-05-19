@@ -16,6 +16,7 @@ export interface Usuario {
 
 export interface UsuarioParaLogin extends Usuario {
   dominios_email: string[] | null;
+  senha_hash: string;
 }
 
 // Relação: usuarios → cursos → instituicoes
@@ -46,6 +47,7 @@ export async function buscarPorEmailParaLogin(email: string): Promise<UsuarioPar
   const res = await pool.query<UsuarioParaLogin>(
     `SELECT
        u.id, u.nome, u.email, u.matricula, u.perfil, u.curso_id,
+       u.senha_hash,
        u.ativo, u.criado_em, u.atualizado_em,
        c.instituicao_id,
        i.nome          AS instituicao_nome,
@@ -90,6 +92,7 @@ export async function buscarPorEmail(email: string): Promise<Usuario | null> {
 export interface CriarUsuarioInput {
   nome: string;
   email: string;
+  senha_hash: string;
   perfil: 'estudante' | 'coordenador' | 'admin';
   matricula?: string | null;
   curso_id?: string | null;
@@ -97,10 +100,10 @@ export interface CriarUsuarioInput {
 
 export async function criarUsuario(dados: CriarUsuarioInput): Promise<Usuario> {
   const res = await pool.query<{ id: string }>(
-    `INSERT INTO usuarios (nome, email, perfil, matricula, curso_id)
-     VALUES ($1, $2, $3, $4, $5)
+    `INSERT INTO usuarios (nome, email, senha_hash, perfil, matricula, curso_id)
+     VALUES ($1, $2, $3, $4, $5, $6)
      RETURNING id`,
-    [dados.nome, dados.email, dados.perfil, dados.matricula ?? null, dados.curso_id ?? null],
+    [dados.nome, dados.email, dados.senha_hash, dados.perfil, dados.matricula ?? null, dados.curso_id ?? null],
   );
   const usuario = await buscarPorId(res.rows[0].id);
   if (!usuario) throw new Error('Falha ao recuperar usuário após criação');

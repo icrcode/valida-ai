@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import bcrypt from 'bcryptjs';
 import { autenticar } from '../../middleware/autenticacao';
 import { exigirPerfil } from '../../middleware/autorizacao';
 import * as repositorio from './repositorio';
@@ -53,9 +54,10 @@ router.get('/', autenticar, exigirPerfil('admin'), async (req, res) => {
 
 // POST /api/usuarios → criar usuário (admin)
 router.post('/', autenticar, exigirPerfil('admin'), async (req, res) => {
-  const { nome, email, perfil, matricula, curso_id } = req.body as {
+  const { nome, email, senha, perfil, matricula, curso_id } = req.body as {
     nome?: string;
     email?: string;
+    senha?: string;
     perfil?: string;
     matricula?: string;
     curso_id?: string;
@@ -67,6 +69,10 @@ router.post('/', autenticar, exigirPerfil('admin'), async (req, res) => {
   }
   if (!email || typeof email !== 'string' || !email.includes('@')) {
     res.status(400).json({ erro: 'E-mail inválido' });
+    return;
+  }
+  if (!senha || typeof senha !== 'string' || senha.length < 6) {
+    res.status(400).json({ erro: 'Senha inválida (mínimo 6 caracteres)' });
     return;
   }
   if (!perfil || !['estudante', 'coordenador', 'admin'].includes(perfil)) {
@@ -81,9 +87,11 @@ router.post('/', autenticar, exigirPerfil('admin'), async (req, res) => {
       return;
     }
 
+    const senha_hash = await bcrypt.hash(senha, 10);
     const usuario = await repositorio.criarUsuario({
       nome: nome.trim(),
       email: email.trim().toLowerCase(),
+      senha_hash,
       perfil: perfil as 'estudante' | 'coordenador' | 'admin',
       matricula: matricula?.trim() || null,
       curso_id: curso_id || null,

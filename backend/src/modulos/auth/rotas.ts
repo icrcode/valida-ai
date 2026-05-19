@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 import { configuracao } from '../../configuracao';
 import { tratarErro } from '../../utils/erros';
 import registrador from '../../utils/registrador';
@@ -13,7 +14,9 @@ import { buscarCursoPorId } from '../cursos/repositorio';
 
 const router = Router();
 
-function gerarToken(usuario: Omit<UsuarioParaLogin, 'dominios_email' | 'ativo' | 'criado_em' | 'atualizado_em'>): string {
+function gerarToken(
+  usuario: Omit<UsuarioParaLogin, 'dominios_email' | 'ativo' | 'criado_em' | 'atualizado_em' | 'senha_hash'>,
+): string {
   return jwt.sign(
     {
       sub: usuario.id,
@@ -35,15 +38,16 @@ function extrairDominio(email: string): string {
 }
 
 // POST /api/auth/login
-// Login por e-mail institucional com validação de domínio por instituição.
+// Login por e-mail + senha com validação de domínio por instituição.
 router.post('/login', async (req, res) => {
-  const { email } = req.body as { email?: string };
+  const { email, senha } = req.body as { email?: string; senha?: string };
 
   if (!email || typeof email !== 'string' || !email.includes('@')) {
-    res.status(400).json({
-      erro: 'E-mail inválido',
-      mensagem: 'Informe um e-mail institucional válido',
-    });
+    res.status(400).json({ erro: 'E-mail inválido', mensagem: 'Informe um e-mail válido' });
+    return;
+  }
+  if (!senha || typeof senha !== 'string') {
+    res.status(400).json({ erro: 'Senha obrigatória', mensagem: 'Informe sua senha' });
     return;
   }
 
@@ -55,9 +59,24 @@ router.post('/login', async (req, res) => {
     if (!usuario) {
       registrador.warn('[auth/login] Usuário não encontrado', { email: emailNormalizado });
       res.status(401).json({
-        erro: 'Acesso negado',
-        mensagem: 'E-mail não cadastrado ou usuário inativo. Contate o administrador da sua instituição.',
+        erro: 'Credenciais inválidas',
+        mensagem: 'E-mail ou senha incorretos.',
       });
+      return;
+    }
+
+    if (!usuario.senha_hash || usuario.senha_hash === '') {
+      res.status(401).json({
+        erro: 'Conta sem senha',
+        mensagem: 'Esta conta ainda não possui senha configurada. Contate o administrador.',
+      });
+      return;
+    }
+
+    const senhaValida = await bcrypt.compare(senha, usuario.senha_hash);
+    if (!senhaValida) {
+      registrador.warn('[auth/login] Senha incorreta', { email: emailNormalizado });
+      res.status(401).json({ erro: 'Credenciais inválidas', mensagem: 'E-mail ou senha incorretos.' });
       return;
     }
 
@@ -108,11 +127,12 @@ router.post('/login', async (req, res) => {
 });
 
 // POST /api/auth/cadastro
-// Auto-registro de estudantes com e-mail institucional.
+// Auto-registro de estudantes com e-mail institucional + senha.
 router.post('/cadastro', async (req, res) => {
-  const { nome, email, matricula, curso_id } = req.body as {
+  const { nome, email, senha, matricula, curso_id } = req.body as {
     nome?: string;
     email?: string;
+    senha?: string;
     matricula?: string;
     curso_id?: string;
   };
@@ -123,6 +143,10 @@ router.post('/cadastro', async (req, res) => {
   }
   if (!email || typeof email !== 'string' || !email.includes('@')) {
     res.status(400).json({ erro: 'E-mail inválido', mensagem: 'Informe um e-mail válido' });
+    return;
+  }
+  if (!senha || typeof senha !== 'string' || senha.length < 6) {
+    res.status(400).json({ erro: 'Senha inválida', mensagem: 'A senha deve ter no mínimo 6 caracteres' });
     return;
   }
   if (!matricula || typeof matricula !== 'string' || matricula.trim().length < 2) {
@@ -163,9 +187,12 @@ router.post('/cadastro', async (req, res) => {
       }
     }
 
+    const senha_hash = await bcrypt.hash(senha, 10);
+
     const novoUsuario = await criarUsuario({
       nome: nomeNormalizado,
       email: emailNormalizado,
+      senha_hash,
       perfil: 'estudante',
       matricula: matriculaNormalizada,
       curso_id,
