@@ -3,7 +3,6 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { ToastContainer } from './ToastContainer';
 import { PERFIL_LABEL, PERFIL_COR, iniciais } from '../utils/perfil';
-}
 
 const linkCls = ({ isActive }: { isActive: boolean }) =>
   `px-3 py-2 rounded-lg text-sm font-medium transition-colors ${

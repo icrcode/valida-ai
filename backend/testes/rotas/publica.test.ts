@@ -33,6 +33,8 @@ const USUARIO_MOCK = {
   matricula: '2021001',
   perfil: 'estudante' as const,
   curso_id: 'curso-1',
+  instituicao_id: 'inst-1',
+  instituicao_nome: 'Universidade Teste',
   ativo: true,
   criado_em: new Date(),
   atualizado_em: new Date(),

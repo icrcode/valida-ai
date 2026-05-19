@@ -16,6 +16,7 @@ export interface Usuario {
 
 export interface UsuarioParaLogin extends Usuario {
   dominios_email: string[] | null;
+  senha_hash: string;
 }
 
 // Relação: usuarios → cursos → instituicoes
@@ -46,6 +47,7 @@ export async function buscarPorEmailParaLogin(email: string): Promise<UsuarioPar
   const res = await pool.query<UsuarioParaLogin>(
     `SELECT
        u.id, u.nome, u.email, u.matricula, u.perfil, u.curso_id,
+       u.senha_hash,
        u.ativo, u.criado_em, u.atualizado_em,
        c.instituicao_id,
        i.nome          AS instituicao_nome,
@@ -75,6 +77,87 @@ export async function atualizarNome(id: string, nome: string): Promise<Usuario |
   await pool.query(
     `UPDATE usuarios SET nome = $1, atualizado_em = NOW() WHERE id = $2`,
     [nome, id],
+  );
+  return buscarPorId(id);
+}
+
+export async function buscarPorEmail(email: string): Promise<Usuario | null> {
+  const res = await pool.query<Usuario>(
+    `${SELECT_USUARIO} WHERE LOWER(u.email) = LOWER($1)`,
+    [email],
+  );
+  return res.rows[0] ?? null;
+}
+
+export interface CriarUsuarioInput {
+  nome: string;
+  email: string;
+  senha_hash: string;
+  perfil: 'estudante' | 'coordenador' | 'admin';
+  matricula?: string | null;
+  curso_id?: string | null;
+}
+
+export async function criarUsuario(dados: CriarUsuarioInput): Promise<Usuario> {
+  const res = await pool.query<{ id: string }>(
+    `INSERT INTO usuarios (nome, email, senha_hash, perfil, matricula, curso_id)
+     VALUES ($1, $2, $3, $4, $5, $6)
+     RETURNING id`,
+    [dados.nome, dados.email, dados.senha_hash, dados.perfil, dados.matricula ?? null, dados.curso_id ?? null],
+  );
+  const usuario = await buscarPorId(res.rows[0].id);
+  if (!usuario) throw new Error('Falha ao recuperar usuário após criação');
+  return usuario;
+}
+
+export interface AtualizarUsuarioInput {
+  nome?: string;
+  matricula?: string | null;
+  curso_id?: string | null;
+  perfil?: 'estudante' | 'coordenador' | 'admin';
+}
+
+export async function atualizarUsuario(
+  id: string,
+  dados: AtualizarUsuarioInput,
+): Promise<Usuario | null> {
+  const campos: string[] = [];
+  const valores: unknown[] = [];
+  let idx = 1;
+
+  if (dados.nome !== undefined) {
+    campos.push(`nome = $${idx++}`);
+    valores.push(dados.nome);
+  }
+  if (dados.matricula !== undefined) {
+    campos.push(`matricula = $${idx++}`);
+    valores.push(dados.matricula);
+  }
+  if (dados.curso_id !== undefined) {
+    campos.push(`curso_id = $${idx++}`);
+    valores.push(dados.curso_id);
+  }
+  if (dados.perfil !== undefined) {
+    campos.push(`perfil = $${idx++}`);
+    valores.push(dados.perfil);
+  }
+
+  if (campos.length === 0) return buscarPorId(id);
+
+  campos.push(`atualizado_em = NOW()`);
+  valores.push(id);
+
+  await pool.query(
+    `UPDATE usuarios SET ${campos.join(', ')} WHERE id = $${idx}`,
+    valores,
+  );
+  return buscarPorId(id);
+}
+
+export async function alterarAtivo(id: string, ativo: boolean): Promise<Usuario | null> {
+  await pool.query(
+    `UPDATE usuarios SET ativo = $1, atualizado_em = NOW() WHERE id = $2`,
+    [ativo, id],
   );
   return buscarPorId(id);
 }
