@@ -13,6 +13,7 @@ import { MeusCertificados } from './pages/MeusCertificados';
 import { Perfil } from './pages/Perfil';
 import { Cadastro } from './pages/Cadastro';
 import { Usuarios } from './pages/Usuarios';
+import { Instituicoes } from './pages/Instituicoes';
 import { Verificar } from './pages/Verificar';
 import { NaoEncontrado } from './pages/NaoEncontrado';
 
@@ -63,6 +64,14 @@ export function App() {
                     element={
                       <PrivateRoute perfis={['admin']}>
                         <Usuarios />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/instituicoes"
+                    element={
+                      <PrivateRoute perfis={['admin']}>
+                        <Instituicoes />
                       </PrivateRoute>
                     }
                   />
