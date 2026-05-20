@@ -10,6 +10,7 @@ import rotasDocumentos from './modulos/documentos/rotas';
 import rotasValidacao from './modulos/validacao/rotas';
 import rotasCertificados from './modulos/certificados/rotas';
 import rotasCursos from './modulos/cursos/rotas';
+import rotasInstituicoes from './modulos/instituicoes/rotas';
 import { garantirBalde, garantirBaldeCertificados } from './servicos/armazenamento';
 import { registrarHandlers } from './eventos/registrar';
 
@@ -57,6 +58,7 @@ aplicativo.use('/api/documentos', rotasDocumentos);
 aplicativo.use('/api/documentos', rotasValidacao);
 aplicativo.use('/api/certificados', rotasCertificados);
 aplicativo.use('/api/cursos', rotasCursos);
+aplicativo.use('/api/instituicoes', rotasInstituicoes);
 
 // Manipulador de 404
 aplicativo.use((_req, res) => {
