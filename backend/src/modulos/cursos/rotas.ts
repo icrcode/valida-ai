@@ -46,24 +46,18 @@ router.get('/:id', autenticar, async (req, res) => {
   }
 });
 
-// POST /api/cursos — criar curso (admin)
+// POST /api/cursos — criar curso (admin); código gerado automaticamente
 router.post('/', autenticar, exigirPerfil('admin'), async (req, res) => {
-  const { nome, codigo, instituicao_id, carga_horaria_complementar, turno, modalidade } =
-    req.body as {
-      nome?: string;
-      codigo?: string;
-      instituicao_id?: string;
-      carga_horaria_complementar?: number;
-      turno?: string;
-      modalidade?: string;
-    };
+  const { nome, instituicao_id, carga_horaria_complementar, turno, modalidade } = req.body as {
+    nome?: string;
+    instituicao_id?: string;
+    carga_horaria_complementar?: number;
+    turno?: string;
+    modalidade?: string;
+  };
 
   if (!nome || typeof nome !== 'string' || nome.trim().length < 2) {
     res.status(400).json({ erro: 'Nome inválido (mínimo 2 caracteres)' });
-    return;
-  }
-  if (!codigo || typeof codigo !== 'string' || codigo.trim().length < 2) {
-    res.status(400).json({ erro: 'Código inválido (mínimo 2 caracteres)' });
     return;
   }
   if (!instituicao_id || typeof instituicao_id !== 'string') {
@@ -93,15 +87,8 @@ router.post('/', autenticar, exigirPerfil('admin'), async (req, res) => {
       return;
     }
 
-    const existente = await repositorio.buscarCursoPorCodigo(codigo.trim());
-    if (existente) {
-      res.status(409).json({ erro: 'Já existe um curso com esse código' });
-      return;
-    }
-
     const curso = await repositorio.criarCurso({
       nome: nome.trim(),
-      codigo: codigo.trim(),
       instituicao_id,
       carga_horaria_complementar: carga_horaria_complementar ?? 200,
       turno: turno || null,

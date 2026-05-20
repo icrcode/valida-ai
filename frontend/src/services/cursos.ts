@@ -21,7 +21,6 @@ export interface CursoComContagem extends Curso {
 
 export interface CriarCursoInput {
   nome: string;
-  codigo: string;
   instituicao_id: string;
   carga_horaria_complementar?: number;
   turno?: string;

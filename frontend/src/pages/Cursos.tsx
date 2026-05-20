@@ -22,7 +22,6 @@ const MODALIDADES = [
 // ─── Tipos ────────────────────────────────────────────────────
 interface FormState {
   nome: string;
-  codigo: string;
   instituicao_id: string;
   carga_horaria_complementar: string;
   turno: string;
@@ -31,7 +30,6 @@ interface FormState {
 
 const FORM_VAZIO: FormState = {
   nome: '',
-  codigo: '',
   instituicao_id: '',
   carga_horaria_complementar: '200',
   turno: '',
@@ -76,12 +74,10 @@ function FormCurso({
   form,
   onChange,
   instituicoes,
-  isEdit,
 }: {
   form: FormState;
   onChange: (f: FormState) => void;
   instituicoes: Instituicao[];
-  isEdit?: boolean;
 }) {
   return (
     <div className="flex flex-col gap-4">
@@ -118,25 +114,6 @@ function FormCurso({
           placeholder="Ex: Ciência da Computação"
           className={inputCls}
         />
-      </div>
-
-      {/* Código */}
-      <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium text-gray-700">
-          Código <span className="text-red-500">*</span>
-          {isEdit && <span className="ml-2 text-xs text-gray-400">(não editável)</span>}
-        </label>
-        <input
-          type="text"
-          value={form.codigo}
-          onChange={(e) => onChange({ ...form, codigo: e.target.value.toUpperCase() })}
-          placeholder="Ex: CC001"
-          disabled={isEdit}
-          className={`${inputCls} ${isEdit ? 'bg-gray-50 text-gray-400 cursor-not-allowed' : ''}`}
-        />
-        {!isEdit && (
-          <p className="text-xs text-gray-400">Código único — não pode ser alterado após criação.</p>
-        )}
       </div>
 
       {/* Carga horária */}
@@ -267,7 +244,6 @@ export function Cursos() {
   function abrirEditar(curso: CursoComContagem) {
     setForm({
       nome: curso.nome,
-      codigo: curso.codigo,
       instituicao_id: curso.instituicao_id,
       carga_horaria_complementar: String(curso.carga_horaria_complementar),
       turno: curso.turno ?? '',
@@ -278,7 +254,6 @@ export function Cursos() {
 
   function validarForm(): string | null {
     if (!form.nome.trim()) return 'Nome é obrigatório';
-    if (!form.codigo.trim()) return 'Código é obrigatório';
     if (!form.instituicao_id) return 'Selecione uma instituição';
     const carga = Number(form.carga_horaria_complementar);
     if (!carga || carga < 1) return 'Carga horária deve ser um número positivo';
@@ -290,7 +265,6 @@ export function Cursos() {
     if (erro) { addToast(erro, 'error'); return; }
     mutCriar.mutate({
       nome: form.nome.trim(),
-      codigo: form.codigo.trim(),
       instituicao_id: form.instituicao_id,
       carga_horaria_complementar: Number(form.carga_horaria_complementar),
       turno: form.turno || undefined,
@@ -481,7 +455,7 @@ export function Cursos() {
       {/* Modal — Editar */}
       {editando && (
         <Modal titulo={`Editar — ${editando.nome}`} onClose={() => setEditando(null)}>
-          <FormCurso form={form} onChange={setForm} instituicoes={instituicoes} isEdit />
+          <FormCurso form={form} onChange={setForm} instituicoes={instituicoes} />
           <div className="mt-6 flex justify-end gap-3 border-t border-gray-100 pt-4">
             <Button variant="secondary" onClick={() => setEditando(null)}>
               Cancelar

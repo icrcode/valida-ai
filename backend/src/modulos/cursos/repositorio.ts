@@ -25,7 +25,6 @@ export interface CursoComDominios extends Curso {
 
 export interface CriarCursoInput {
   nome: string;
-  codigo: string;
   instituicao_id: string;
   carga_horaria_complementar?: number;
   turno?: string | null;
@@ -97,22 +96,32 @@ export async function buscarCursoPorId(id: string): Promise<CursoComDominios | n
   return res.rows[0] ?? null;
 }
 
-export async function buscarCursoPorCodigo(codigo: string): Promise<Curso | null> {
-  const res = await pool.query<Curso>(
-    `${SELECT_CURSO} WHERE UPPER(c.codigo) = UPPER($1)`,
-    [codigo],
+async function gerarCodigo(instituicao_id: string): Promise<string> {
+  const instRes = await pool.query<{ sigla: string }>(
+    `SELECT sigla FROM instituicoes WHERE id = $1`,
+    [instituicao_id],
   );
-  return res.rows[0] ?? null;
+  const sigla = (instRes.rows[0]?.sigla ?? 'CUR').toUpperCase();
+
+  // Tenta SIGLA001, SIGLA002 ... até encontrar um livre
+  for (let n = 1; n <= 9999; n++) {
+    const codigo = `${sigla}${String(n).padStart(3, '0')}`;
+    const existe = await pool.query(`SELECT id FROM cursos WHERE codigo = $1`, [codigo]);
+    if (existe.rows.length === 0) return codigo;
+  }
+  throw new Error('Não foi possível gerar um código único para o curso');
 }
 
 export async function criarCurso(dados: CriarCursoInput): Promise<CursoComDominios> {
+  const codigo = await gerarCodigo(dados.instituicao_id);
+
   const res = await pool.query<{ id: string }>(
     `INSERT INTO cursos (nome, codigo, instituicao_id, carga_horaria_complementar, turno, modalidade)
      VALUES ($1, $2, $3, $4, $5, $6)
      RETURNING id`,
     [
       dados.nome,
-      dados.codigo.toUpperCase(),
+      codigo,
       dados.instituicao_id,
       dados.carga_horaria_complementar ?? 200,
       dados.turno ?? null,
