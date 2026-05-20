@@ -81,6 +81,15 @@ export function Layout() {
           Instituições
         </NavLink>
       )}
+      {usuario?.perfil === 'admin' && (
+        <NavLink
+          to="/cursos"
+          className={linkCls}
+          onClick={mobile ? () => setMenuAberto(false) : undefined}
+        >
+          Cursos
+        </NavLink>
+      )}
     </>
   );
 
