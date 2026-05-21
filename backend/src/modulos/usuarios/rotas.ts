@@ -21,12 +21,14 @@ router.get('/perfil', autenticar, async (req, res) => {
   }
 });
 
-// PUT /api/usuarios/perfil → atualizar dados pessoais (nome, email, matrícula, senha)
+// PUT /api/usuarios/perfil → atualizar dados pessoais (nome, email, matrícula, cpf, endereço, senha)
 router.put('/perfil', autenticar, async (req, res) => {
-  const { nome, email, matricula, senha_atual, nova_senha } = req.body as {
+  const { nome, email, matricula, cpf, endereco, senha_atual, nova_senha } = req.body as {
     nome?: string;
     email?: string;
     matricula?: string | null;
+    cpf?: string | null;
+    endereco?: string | null;
     senha_atual?: string;
     nova_senha?: string;
   };
@@ -38,6 +40,13 @@ router.put('/perfil', autenticar, async (req, res) => {
   if (email !== undefined && (typeof email !== 'string' || !email.includes('@'))) {
     res.status(400).json({ erro: 'E-mail inválido' });
     return;
+  }
+  if (cpf !== undefined && cpf !== null) {
+    const cpfDigitos = String(cpf).replace(/\D/g, '');
+    if (cpfDigitos.length !== 11) {
+      res.status(400).json({ erro: 'CPF inválido (deve conter 11 dígitos)' });
+      return;
+    }
   }
   if (nova_senha !== undefined && (typeof nova_senha !== 'string' || nova_senha.length < 6)) {
     res.status(400).json({ erro: 'Nova senha deve ter no mínimo 6 caracteres' });
@@ -53,6 +62,8 @@ router.put('/perfil', autenticar, async (req, res) => {
 
     if (nome !== undefined) atualização.nome = nome.trim();
     if (matricula !== undefined) atualização.matricula = matricula?.trim() || null;
+    if (cpf !== undefined) atualização.cpf = cpf ? String(cpf).replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') : null;
+    if (endereco !== undefined) atualização.endereco = endereco?.trim() || null;
 
     if (email !== undefined) {
       const emailNorm = email.trim().toLowerCase();
@@ -154,10 +165,12 @@ router.post('/', autenticar, exigirPerfil('admin'), async (req, res) => {
 // PUT /api/usuarios/:id → atualizar usuário (admin)
 router.put('/:id', autenticar, exigirPerfil('admin'), async (req, res) => {
   const { id } = req.params as { id: string };
-  const { nome, email, matricula, curso_id, perfil } = req.body as {
+  const { nome, email, matricula, cpf, endereco, curso_id, perfil } = req.body as {
     nome?: string;
     email?: string;
     matricula?: string | null;
+    cpf?: string | null;
+    endereco?: string | null;
     curso_id?: string | null;
     perfil?: string;
   };
@@ -169,6 +182,13 @@ router.put('/:id', autenticar, exigirPerfil('admin'), async (req, res) => {
   if (email !== undefined && (typeof email !== 'string' || !email.includes('@'))) {
     res.status(400).json({ erro: 'E-mail inválido' });
     return;
+  }
+  if (cpf !== undefined && cpf !== null) {
+    const cpfDigitos = String(cpf).replace(/\D/g, '');
+    if (cpfDigitos.length !== 11) {
+      res.status(400).json({ erro: 'CPF inválido (deve conter 11 dígitos)' });
+      return;
+    }
   }
   if (perfil !== undefined && !['estudante', 'coordenador', 'admin'].includes(perfil)) {
     res.status(400).json({ erro: 'Perfil inválido. Use: estudante, coordenador ou admin' });
@@ -189,6 +209,8 @@ router.put('/:id', autenticar, exigirPerfil('admin'), async (req, res) => {
       nome: nome?.trim(),
       email: email?.trim().toLowerCase(),
       matricula: matricula ?? undefined,
+      cpf: cpf !== undefined ? (cpf ? String(cpf).replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') : null) : undefined,
+      endereco: endereco !== undefined ? (endereco?.trim() || null) : undefined,
       curso_id: curso_id ?? undefined,
       perfil: perfil as 'estudante' | 'coordenador' | 'admin' | undefined,
     });

@@ -14,6 +14,8 @@ export interface AtualizarUsuarioInput {
   nome?: string;
   email?: string;
   matricula?: string | null;
+  cpf?: string | null;
+  endereco?: string | null;
   curso_id?: string | null;
   perfil?: Perfil;
 }
@@ -22,6 +24,8 @@ export interface AtualizarPerfilInput {
   nome?: string;
   email?: string;
   matricula?: string | null;
+  cpf?: string | null;
+  endereco?: string | null;
   senha_atual?: string;
   nova_senha?: string;
 }

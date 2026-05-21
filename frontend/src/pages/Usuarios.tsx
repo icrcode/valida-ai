@@ -35,13 +35,23 @@ interface FormEditar {
   email: string;
   perfil: Perfil;
   matricula: string;
+  cpf: string;
+  endereco: string;
   curso_id: string;
 }
 
 const CRIAR_VAZIO: FormCriar = { nome: '', email: '', senha: '', perfil: 'estudante', matricula: '', curso_id: '' };
-const EDITAR_VAZIO: FormEditar = { nome: '', email: '', perfil: 'estudante', matricula: '', curso_id: '' };
+const EDITAR_VAZIO: FormEditar = { nome: '', email: '', perfil: 'estudante', matricula: '', cpf: '', endereco: '', curso_id: '' };
 
 const inputCls = 'rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-gray-400';
+
+function formatarCpf(valor: string) {
+  const d = valor.replace(/\D/g, '').slice(0, 11);
+  if (d.length <= 3) return d;
+  if (d.length <= 6) return `${d.slice(0, 3)}.${d.slice(3)}`;
+  if (d.length <= 9) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6)}`;
+  return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
+}
 
 // ─── Modal ────────────────────────────────────────────────────
 function Modal({ titulo, onClose, children }: { titulo: string; onClose: () => void; children: React.ReactNode }) {
@@ -134,6 +144,37 @@ function CamposUsuario({
             placeholder="Número de matrícula" className={inputCls} />
         </div>
       )}
+
+      {(form.perfil === 'estudante' || form.perfil === 'coordenador') && (
+        <>
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-gray-700">
+              CPF <span className="text-xs text-gray-400">(opcional)</span>
+            </label>
+            <input
+              type="text"
+              value={(form as FormEditar).cpf ?? ''}
+              onChange={(e) => onChange({ ...form, cpf: formatarCpf(e.target.value) } as FormEditar)}
+              placeholder="000.000.000-00"
+              maxLength={14}
+              className={inputCls}
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-gray-700">
+              Endereço <span className="text-xs text-gray-400">(opcional)</span>
+            </label>
+            <input
+              type="text"
+              value={(form as FormEditar).endereco ?? ''}
+              onChange={(e) => onChange({ ...form, endereco: e.target.value } as FormEditar)}
+              placeholder="Rua, número, bairro, cidade — UF"
+              className={inputCls}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -212,6 +253,8 @@ export function Usuarios() {
       email: u.email,
       perfil: u.perfil,
       matricula: u.matricula ?? '',
+      cpf: u.cpf ?? '',
+      endereco: u.endereco ?? '',
       curso_id: u.curso_id ?? '',
     });
     setUsuarioEditando(u);
@@ -243,6 +286,7 @@ export function Usuarios() {
       addToast('E-mail inválido', 'error');
       return;
     }
+    const temCpfEndereco = formEditar.perfil === 'estudante' || formEditar.perfil === 'coordenador';
     mutAtualizar.mutate({
       id: usuarioEditando.id,
       dados: {
@@ -250,6 +294,8 @@ export function Usuarios() {
         email: formEditar.email.trim().toLowerCase(),
         perfil: formEditar.perfil,
         matricula: formEditar.matricula.trim() || null,
+        cpf: temCpfEndereco ? (formEditar.cpf.trim() || null) : null,
+        endereco: temCpfEndereco ? (formEditar.endereco.trim() || null) : null,
         curso_id: formEditar.curso_id || null,
       },
     });
@@ -307,6 +353,8 @@ export function Usuarios() {
                   </div>
                   <p className="truncate text-xs text-gray-500">{u.email}</p>
                   {u.matricula && <p className="text-xs text-gray-400">Matrícula: {u.matricula}</p>}
+                  {u.cpf && <p className="text-xs text-gray-400">CPF: {u.cpf}</p>}
+                  {u.endereco && <p className="text-xs text-gray-400 truncate max-w-xs">{u.endereco}</p>}
                   {u.instituicao_nome && <p className="text-xs text-gray-400">{u.instituicao_nome}</p>}
                 </div>
                 <div className="flex flex-shrink-0 items-center gap-2">

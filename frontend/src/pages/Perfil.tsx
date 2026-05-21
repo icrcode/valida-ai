@@ -22,6 +22,8 @@ export function Perfil() {
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [matricula, setMatricula] = useState('');
+  const [cpf, setCpf] = useState('');
+  const [endereco, setEndereco] = useState('');
   const [errosDados, setErrosDados] = useState<Record<string, string>>({});
 
   // ─── Senha ───────────────────────────────────────────────────
@@ -45,8 +47,12 @@ export function Perfil() {
       setNome(perfil.nome ?? '');
       setEmail(perfil.email ?? '');
       setMatricula(perfil.matricula ?? '');
+      setCpf(perfil.cpf ?? '');
+      setEndereco(perfil.endereco ?? '');
     }
   }, [perfil?.id]);
+
+  const temCpfEndereco = perfil?.perfil === 'estudante' || perfil?.perfil === 'coordenador';
 
   const mutDados = useMutation({
     mutationFn: () =>
@@ -54,6 +60,8 @@ export function Perfil() {
         nome: nome.trim(),
         email: email.trim().toLowerCase(),
         matricula: perfil?.perfil === 'estudante' ? (matricula.trim() || null) : undefined,
+        cpf: temCpfEndereco ? (cpf.trim() || null) : undefined,
+        endereco: temCpfEndereco ? (endereco.trim() || null) : undefined,
       }),
     onSuccess: (atualizado) => {
       login(token, atualizado);
@@ -102,6 +110,14 @@ export function Perfil() {
   }
 
   const eEstudante = perfil?.perfil === 'estudante';
+
+  function formatarCpf(valor: string) {
+    const d = valor.replace(/\D/g, '').slice(0, 11);
+    if (d.length <= 3) return d;
+    if (d.length <= 6) return `${d.slice(0, 3)}.${d.slice(3)}`;
+    if (d.length <= 9) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6)}`;
+    return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
+  }
 
   return (
     <div className="mx-auto max-w-lg space-y-4">
@@ -167,6 +183,35 @@ export function Perfil() {
                 value={matricula}
                 onChange={(e) => setMatricula(e.target.value)}
                 placeholder="Número de matrícula"
+                className={inputCls(false)}
+              />
+            </div>
+          )}
+
+          {/* CPF — estudante e coordenador */}
+          {temCpfEndereco && (
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700">CPF</label>
+              <input
+                type="text"
+                value={cpf}
+                onChange={(e) => setCpf(formatarCpf(e.target.value))}
+                placeholder="000.000.000-00"
+                maxLength={14}
+                className={inputCls(false)}
+              />
+            </div>
+          )}
+
+          {/* Endereço — estudante e coordenador */}
+          {temCpfEndereco && (
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700">Endereço</label>
+              <input
+                type="text"
+                value={endereco}
+                onChange={(e) => setEndereco(e.target.value)}
+                placeholder="Rua, número, bairro, cidade — UF"
                 className={inputCls(false)}
               />
             </div>

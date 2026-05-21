@@ -13,6 +13,8 @@ export interface Usuario {
   email: string;
   perfil: Perfil;
   matricula?: string | null;
+  cpf?: string | null;
+  endereco?: string | null;
   curso_id?: string | null;
   instituicao_id?: string | null;
   instituicao_nome?: string | null;
