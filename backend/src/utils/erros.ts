@@ -23,9 +23,10 @@ export function tratarErroComNaoEncontrado(res: Response, err: unknown, contexto
 
 export function verificarAcessoDocumento(
   res: Response,
-  documento: { estudante_id: string } | null | undefined,
+  documento: { estudante_id: string; curso_id: string } | null | undefined,
   perfil: string,
   usuarioId: string,
+  cursoId?: string | null,
 ): boolean {
   if (!documento) {
     res.status(404).json({ erro: 'Documento não encontrado' });
@@ -33,6 +34,10 @@ export function verificarAcessoDocumento(
   }
   if (perfil === 'estudante' && documento.estudante_id !== usuarioId) {
     res.status(403).json({ erro: 'Sem permissão para este documento' });
+    return false;
+  }
+  if (perfil === 'coordenador' && documento.curso_id !== cursoId) {
+    res.status(403).json({ erro: 'Sem permissão: documento pertence a outro curso' });
     return false;
   }
   return true;
