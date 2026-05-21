@@ -4,6 +4,7 @@ import type { Perfil, Usuario } from '../types';
 export interface CriarUsuarioInput {
   nome: string;
   email: string;
+  senha: string;
   perfil: Perfil;
   matricula?: string;
   curso_id?: string;
