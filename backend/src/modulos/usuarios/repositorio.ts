@@ -112,9 +112,17 @@ export async function criarUsuario(dados: CriarUsuarioInput): Promise<Usuario> {
 
 export interface AtualizarUsuarioInput {
   nome?: string;
+  email?: string;
   matricula?: string | null;
   curso_id?: string | null;
   perfil?: 'estudante' | 'coordenador' | 'admin';
+}
+
+export interface AtualizarPerfilInput {
+  nome?: string;
+  email?: string;
+  matricula?: string | null;
+  senha_hash?: string;
 }
 
 export async function atualizarUsuario(
@@ -125,22 +133,36 @@ export async function atualizarUsuario(
   const valores: unknown[] = [];
   let idx = 1;
 
-  if (dados.nome !== undefined) {
-    campos.push(`nome = $${idx++}`);
-    valores.push(dados.nome);
-  }
-  if (dados.matricula !== undefined) {
-    campos.push(`matricula = $${idx++}`);
-    valores.push(dados.matricula);
-  }
-  if (dados.curso_id !== undefined) {
-    campos.push(`curso_id = $${idx++}`);
-    valores.push(dados.curso_id);
-  }
-  if (dados.perfil !== undefined) {
-    campos.push(`perfil = $${idx++}`);
-    valores.push(dados.perfil);
-  }
+  if (dados.nome !== undefined)      { campos.push(`nome = $${idx++}`);       valores.push(dados.nome); }
+  if (dados.email !== undefined)     { campos.push(`email = $${idx++}`);      valores.push(dados.email); }
+  if (dados.matricula !== undefined) { campos.push(`matricula = $${idx++}`);  valores.push(dados.matricula); }
+  if (dados.curso_id !== undefined)  { campos.push(`curso_id = $${idx++}`);   valores.push(dados.curso_id); }
+  if (dados.perfil !== undefined)    { campos.push(`perfil = $${idx++}`);     valores.push(dados.perfil); }
+
+  if (campos.length === 0) return buscarPorId(id);
+
+  campos.push(`atualizado_em = NOW()`);
+  valores.push(id);
+
+  await pool.query(
+    `UPDATE usuarios SET ${campos.join(', ')} WHERE id = $${idx}`,
+    valores,
+  );
+  return buscarPorId(id);
+}
+
+export async function atualizarPerfil(
+  id: string,
+  dados: AtualizarPerfilInput,
+): Promise<Usuario | null> {
+  const campos: string[] = [];
+  const valores: unknown[] = [];
+  let idx = 1;
+
+  if (dados.nome !== undefined)       { campos.push(`nome = $${idx++}`);       valores.push(dados.nome); }
+  if (dados.email !== undefined)      { campos.push(`email = $${idx++}`);      valores.push(dados.email); }
+  if (dados.matricula !== undefined)  { campos.push(`matricula = $${idx++}`);  valores.push(dados.matricula); }
+  if (dados.senha_hash !== undefined) { campos.push(`senha_hash = $${idx++}`); valores.push(dados.senha_hash); }
 
   if (campos.length === 0) return buscarPorId(id);
 

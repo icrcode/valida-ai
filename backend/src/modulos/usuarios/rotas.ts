@@ -21,16 +21,64 @@ router.get('/perfil', autenticar, async (req, res) => {
   }
 });
 
-// PUT /api/usuarios/perfil → atualizar nome
+// PUT /api/usuarios/perfil → atualizar dados pessoais (nome, email, matrícula, senha)
 router.put('/perfil', autenticar, async (req, res) => {
-  const { nome } = req.body as { nome?: string };
-  if (!nome || typeof nome !== 'string' || nome.trim().length < 2) {
+  const { nome, email, matricula, senha_atual, nova_senha } = req.body as {
+    nome?: string;
+    email?: string;
+    matricula?: string | null;
+    senha_atual?: string;
+    nova_senha?: string;
+  };
+
+  if (nome !== undefined && (typeof nome !== 'string' || nome.trim().length < 2)) {
     res.status(400).json({ erro: 'Nome inválido (mínimo 2 caracteres)' });
+    return;
+  }
+  if (email !== undefined && (typeof email !== 'string' || !email.includes('@'))) {
+    res.status(400).json({ erro: 'E-mail inválido' });
+    return;
+  }
+  if (nova_senha !== undefined && (typeof nova_senha !== 'string' || nova_senha.length < 6)) {
+    res.status(400).json({ erro: 'Nova senha deve ter no mínimo 6 caracteres' });
+    return;
+  }
+  if (nova_senha && !senha_atual) {
+    res.status(400).json({ erro: 'Informe a senha atual para alterá-la' });
     return;
   }
 
   try {
-    const usuario = await repositorio.atualizarNome(req.usuario!.sub, nome.trim());
+    const atualização: Parameters<typeof repositorio.atualizarPerfil>[1] = {};
+
+    if (nome !== undefined) atualização.nome = nome.trim();
+    if (matricula !== undefined) atualização.matricula = matricula?.trim() || null;
+
+    if (email !== undefined) {
+      const emailNorm = email.trim().toLowerCase();
+      const existente = await repositorio.buscarPorEmail(emailNorm);
+      if (existente && existente.id !== req.usuario!.sub) {
+        res.status(409).json({ erro: 'Este e-mail já está em uso por outro usuário' });
+        return;
+      }
+      atualização.email = emailNorm;
+    }
+
+    if (nova_senha && senha_atual) {
+      const usuarioAtual = await repositorio.buscarPorEmailParaLogin(req.usuario!.email);
+      if (!usuarioAtual) {
+        res.status(404).json({ erro: 'Usuário não encontrado' });
+        return;
+      }
+      const senhaCorreta = await bcrypt.compare(senha_atual, usuarioAtual.senha_hash);
+      if (!senhaCorreta) {
+        res.status(401).json({ erro: 'Senha atual incorreta' });
+        return;
+      }
+      atualização.senha_hash = await bcrypt.hash(nova_senha, 10);
+    }
+
+    const usuario = await repositorio.atualizarPerfil(req.usuario!.sub, atualização);
     if (!usuario) {
       res.status(404).json({ erro: 'Usuário não encontrado' });
       return;
@@ -106,8 +154,9 @@ router.post('/', autenticar, exigirPerfil('admin'), async (req, res) => {
 // PUT /api/usuarios/:id → atualizar usuário (admin)
 router.put('/:id', autenticar, exigirPerfil('admin'), async (req, res) => {
   const { id } = req.params as { id: string };
-  const { nome, matricula, curso_id, perfil } = req.body as {
+  const { nome, email, matricula, curso_id, perfil } = req.body as {
     nome?: string;
+    email?: string;
     matricula?: string | null;
     curso_id?: string | null;
     perfil?: string;
@@ -117,14 +166,28 @@ router.put('/:id', autenticar, exigirPerfil('admin'), async (req, res) => {
     res.status(400).json({ erro: 'Nome inválido (mínimo 2 caracteres)' });
     return;
   }
+  if (email !== undefined && (typeof email !== 'string' || !email.includes('@'))) {
+    res.status(400).json({ erro: 'E-mail inválido' });
+    return;
+  }
   if (perfil !== undefined && !['estudante', 'coordenador', 'admin'].includes(perfil)) {
     res.status(400).json({ erro: 'Perfil inválido. Use: estudante, coordenador ou admin' });
     return;
   }
 
   try {
+    if (email !== undefined) {
+      const emailNorm = email.trim().toLowerCase();
+      const existente = await repositorio.buscarPorEmail(emailNorm);
+      if (existente && existente.id !== id) {
+        res.status(409).json({ erro: 'Este e-mail já está em uso por outro usuário' });
+        return;
+      }
+    }
+
     const usuario = await repositorio.atualizarUsuario(id, {
       nome: nome?.trim(),
+      email: email?.trim().toLowerCase(),
       matricula: matricula ?? undefined,
       curso_id: curso_id ?? undefined,
       perfil: perfil as 'estudante' | 'coordenador' | 'admin' | undefined,
