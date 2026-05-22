@@ -1,15 +1,21 @@
 import { useToast, type ToastTipo } from '../contexts/ToastContext';
 
 const ESTILOS: Record<ToastTipo, string> = {
-  success: 'bg-green-600 text-white',
-  error: 'bg-red-600 text-white',
-  info: 'bg-blue-600 text-white',
+  success: 'border-[#618C7C]/40',
+  error:   'border-red-500/40',
+  info:    'border-blue-500/40',
+};
+
+const ICONE_ESTILOS: Record<ToastTipo, string> = {
+  success: 'bg-[#618C7C] text-white',
+  error:   'bg-red-500 text-white',
+  info:    'bg-blue-500 text-white',
 };
 
 const ICONES: Record<ToastTipo, string> = {
   success: '✓',
-  error: '✕',
-  info: 'i',
+  error:   '✕',
+  info:    'i',
 };
 
 export function ToastContainer() {
@@ -23,16 +29,17 @@ export function ToastContainer() {
         <div
           key={toast.id}
           role="alert"
-          className={`flex items-start gap-3 rounded-xl px-4 py-3 shadow-lg animate-in ${ESTILOS[toast.tipo]}`}
+          style={{ background: 'rgba(1, 17, 64, 0.92)', backdropFilter: 'blur(12px)' }}
+          className={`flex items-start gap-3 rounded-xl border px-4 py-3 shadow-2xl animate-slide-in ${ESTILOS[toast.tipo]}`}
         >
-          <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-white/20 text-xs font-bold">
+          <span className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold ${ICONE_ESTILOS[toast.tipo]}`}>
             {ICONES[toast.tipo]}
           </span>
-          <p className="flex-1 text-sm font-medium leading-snug">{toast.mensagem}</p>
+          <p className="flex-1 text-sm font-medium leading-snug text-white/90">{toast.mensagem}</p>
           <button
             onClick={() => removeToast(toast.id)}
             aria-label="Fechar"
-            className="flex-shrink-0 opacity-70 hover:opacity-100 text-lg leading-none"
+            className="flex-shrink-0 text-lg leading-none text-white/40 hover:text-white/90 transition-colors"
           >
             ×
           </button>
