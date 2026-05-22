@@ -5,6 +5,7 @@ import { authService } from '../services/auth';
 import { cursosService, type Curso } from '../services/cursos';
 import { useAuth } from '../contexts/AuthContext';
 import { Spinner } from '../components/ui/Spinner';
+import { mensagemErroSegura } from '../utils/seguranca';
 
 function groupBy<T>(arr: T[], key: (item: T) => string): Record<string, T[]> {
   return arr.reduce<Record<string, T[]>>((acc, item) => {

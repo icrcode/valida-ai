@@ -1,18 +1,18 @@
 import { useState, type FormEvent } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../services/auth';
 import { useAuth } from '../contexts/AuthContext';
 import { Spinner } from '../components/ui/Spinner';
+import { mensagemErroSegura } from '../utils/seguranca';
 
 export function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
 
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [mostrarSenha, setMostrarSenha] = useState(false);
-  const [erro, setErro] = useState(searchParams.get('erro') ?? '');
+  const [erro, setErro] = useState('');
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: FormEvent) {
@@ -26,14 +26,7 @@ export function Login() {
       login(token, usuario);
       navigate('/dashboard');
     } catch (err: unknown) {
-      const apiErr = err as {
-        response?: { data?: { mensagem?: string; erro?: string; detalhe?: string } };
-        message?: string;
-      };
-      const data = apiErr?.response?.data;
-      const texto = data?.mensagem ?? data?.erro ?? apiErr?.message ?? 'Falha ao conectar com o servidor';
-      const detalhe = data?.detalhe;
-      setErro(detalhe ? `${texto}: ${detalhe}` : texto);
+      setErro(mensagemErroSegura(err, 'Falha ao conectar com o servidor'));
     } finally {
       setLoading(false);
     }

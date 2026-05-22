@@ -8,6 +8,7 @@ import {
 import { useToast } from '../contexts/ToastContext';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import { sanitizarUrl } from '../utils/seguranca';
 
 // ─── Tipos internos ───────────────────────────────────────────
 interface FormState {
@@ -475,9 +476,9 @@ export function Instituicoes() {
                         {inst.telefone}
                       </span>
                     )}
-                    {inst.site && (
+                    {sanitizarUrl(inst.site) && (
                       <a
-                        href={inst.site}
+                        href={sanitizarUrl(inst.site)!}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center gap-1 text-xs text-blue-600 hover:underline"
