@@ -19,8 +19,6 @@ export function Layout() {
   const navigate = useNavigate();
   const [menuAberto, setMenuAberto] = useState(false);
 
-  const headerBg = tema === 'light' ? 'rgba(255,255,255,0.88)' : 'rgba(1,17,64,0.85)';
-  const mobileBg = tema === 'light' ? 'rgba(255,255,255,0.98)' : 'rgba(1,17,64,0.97)';
 
   const eEstudante = usuario?.perfil === 'estudante';
   const eCoordenador = usuario?.perfil === 'coordenador' || usuario?.perfil === 'admin';
@@ -70,10 +68,7 @@ export function Layout() {
   return (
     <div className="min-h-screen bg-[#010A26]">
       {/* Header */}
-      <header
-        className="sticky top-0 z-10 border-b border-white/8"
-        style={{ background: headerBg, backdropFilter: 'blur(16px)' }}
-      >
+      <header className="nav-header-bg sticky top-0 z-10 border-b border-white/8">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           {/* Logo */}
           <NavLink to="/dashboard" className="flex items-center gap-2.5 text-base font-bold text-white group">
@@ -149,10 +144,7 @@ export function Layout() {
 
         {/* Menu mobile */}
         {menuAberto && (
-          <nav
-            className="border-t border-white/8 px-4 py-3 md:hidden animate-fade-up"
-            style={{ background: mobileBg }}
-          >
+          <nav className="nav-mobile-bg border-t border-white/8 px-4 py-3 md:hidden animate-fade-up">
             <div className="flex flex-col gap-1">{navLinks(true)}</div>
             <div className="mt-3 border-t border-white/8 pt-3 flex items-center gap-3">
               <div

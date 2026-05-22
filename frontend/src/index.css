@@ -144,3 +144,19 @@ html.light .placeholder\:text-white\/35::placeholder { color: rgba(15,23,42,0.35
 
 /* Options de select */
 html.light select option { background-color: #f1f5f9; color: #0f172a; }
+
+/* Header e nav mobile — controlados por CSS para mudar no mesmo frame */
+.nav-header-bg {
+  background: rgba(1, 17, 64, 0.85);
+  backdrop-filter: blur(16px);
+}
+html.light .nav-header-bg {
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.nav-mobile-bg {
+  background: rgba(1, 17, 64, 0.97);
+}
+html.light .nav-mobile-bg {
+  background: rgba(255, 255, 255, 0.98);
+}

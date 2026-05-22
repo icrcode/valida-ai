@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useMemo, useCallback } from 'react';
 
 type Tema = 'dark' | 'light';
 
@@ -9,23 +9,33 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue>({ tema: 'dark', alternar: () => {} });
 
+function aplicarTema(t: Tema) {
+  document.documentElement.classList.toggle('light', t === 'light');
+  localStorage.setItem('tema', t);
+  const meta = document.querySelector<HTMLMetaElement>('meta[name="color-scheme"]');
+  if (meta) meta.content = t;
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [tema, setTema] = useState<Tema>(() => {
     const salvo = (localStorage.getItem('tema') as Tema) ?? 'dark';
-    // Aplica a classe antes da primeira renderização para evitar flash
-    document.documentElement.classList.toggle('light', salvo === 'light');
+    // Aplica antes da primeira renderização — sem flash
+    aplicarTema(salvo);
     return salvo;
   });
 
-  useEffect(() => {
-    document.documentElement.classList.toggle('light', tema === 'light');
-    localStorage.setItem('tema', tema);
-    const meta = document.querySelector<HTMLMetaElement>('meta[name="color-scheme"]');
-    if (meta) meta.content = tema === 'light' ? 'light' : 'dark';
-  }, [tema]);
+  const alternar = useCallback(() => {
+    // Altera o DOM de forma SÍNCRONA — tudo muda no mesmo frame do browser
+    const novoTema: Tema = document.documentElement.classList.contains('light') ? 'dark' : 'light';
+    aplicarTema(novoTema);
+    // Atualiza o estado React apenas para re-renderizar o ícone
+    setTema(novoTema);
+  }, []);
+
+  const value = useMemo(() => ({ tema, alternar }), [tema, alternar]);
 
   return (
-    <ThemeContext.Provider value={{ tema, alternar: () => setTema((t) => (t === 'dark' ? 'light' : 'dark')) }}>
+    <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   );
