@@ -9,6 +9,7 @@ import { useToast } from '../contexts/ToastContext';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { sanitizarUrl } from '../utils/seguranca';
+import { AddIcon } from '../components/icons';
 
 // ─── Tipos internos ───────────────────────────────────────────
 interface FormState {
@@ -384,7 +385,9 @@ export function Instituicoes() {
             Gerencie as instituições cadastradas na plataforma
           </p>
         </div>
-        <Button onClick={abrirCriar}>+ Nova instituição</Button>
+        <Button onClick={abrirCriar} className="flex items-center gap-1.5">
+          <AddIcon className="h-4 w-4" aria-hidden /> Nova instituição
+        </Button>
       </div>
 
       {/* Busca */}

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { documentosService } from '../services/documentos';
 import { Card } from '../components/ui/Card';
+import { UploadIcon, SchoolIcon, PendingActionsIcon } from '../components/icons';
 import type { StatusDocumento } from '../types';
 
 interface CardStatus {
@@ -15,17 +16,17 @@ interface CardStatus {
 }
 
 const CARDS_ESTUDANTE: CardStatus[] = [
-  { label: 'Pendentes',  status: 'pendente',           cor: 'bg-amber-500/8',    corTexto: 'text-amber-300',  corBorda: 'border-amber-500/20',    dotCor: 'bg-amber-400' },
-  { label: 'Aprovados',  status: 'aprovado',           cor: 'bg-[#618C7C]/10',   corTexto: 'text-[#7AAA9A]',  corBorda: 'border-[#618C7C]/25',    dotCor: 'bg-[#618C7C]' },
-  { label: 'Reprovados', status: 'reprovado',          cor: 'bg-red-500/8',      corTexto: 'text-red-400',    corBorda: 'border-red-500/20',      dotCor: 'bg-red-400' },
-  { label: 'Revisão',    status: 'revisao_solicitada', cor: 'bg-blue-500/8',     corTexto: 'text-blue-300',   corBorda: 'border-blue-500/20',     dotCor: 'bg-blue-400' },
+  { label: 'Pendentes',  status: 'pendente',           cor: 'bg-amber-500/8',   corTexto: 'text-amber-300',  corBorda: 'border-amber-500/20',  dotCor: 'bg-amber-400'   },
+  { label: 'Aprovados',  status: 'aprovado',           cor: 'bg-[#618C7C]/10',  corTexto: 'text-[#7AAA9A]',  corBorda: 'border-[#618C7C]/25',  dotCor: 'bg-[#618C7C]'   },
+  { label: 'Reprovados', status: 'reprovado',          cor: 'bg-red-500/8',     corTexto: 'text-red-400',    corBorda: 'border-red-500/20',    dotCor: 'bg-red-400'     },
+  { label: 'Revisão',    status: 'revisao_solicitada', cor: 'bg-blue-500/8',    corTexto: 'text-blue-300',   corBorda: 'border-blue-500/20',   dotCor: 'bg-blue-400'    },
 ];
 
 const CARDS_COORDENADOR: CardStatus[] = [
-  { label: 'Pendentes',  status: 'pendente',           cor: 'bg-amber-500/8',    corTexto: 'text-amber-300',  corBorda: 'border-amber-500/20',    dotCor: 'bg-amber-400' },
-  { label: 'Em Revisão', status: 'revisao_solicitada', cor: 'bg-blue-500/8',     corTexto: 'text-blue-300',   corBorda: 'border-blue-500/20',     dotCor: 'bg-blue-400' },
-  { label: 'Aprovados',  status: 'aprovado',           cor: 'bg-[#618C7C]/10',   corTexto: 'text-[#7AAA9A]',  corBorda: 'border-[#618C7C]/25',    dotCor: 'bg-[#618C7C]' },
-  { label: 'Reprovados', status: 'reprovado',          cor: 'bg-red-500/8',      corTexto: 'text-red-400',    corBorda: 'border-red-500/20',      dotCor: 'bg-red-400' },
+  { label: 'Pendentes',  status: 'pendente',           cor: 'bg-amber-500/8',   corTexto: 'text-amber-300',  corBorda: 'border-amber-500/20',  dotCor: 'bg-amber-400'   },
+  { label: 'Em Revisão', status: 'revisao_solicitada', cor: 'bg-blue-500/8',    corTexto: 'text-blue-300',   corBorda: 'border-blue-500/20',   dotCor: 'bg-blue-400'    },
+  { label: 'Aprovados',  status: 'aprovado',           cor: 'bg-[#618C7C]/10',  corTexto: 'text-[#7AAA9A]',  corBorda: 'border-[#618C7C]/25',  dotCor: 'bg-[#618C7C]'   },
+  { label: 'Reprovados', status: 'reprovado',          cor: 'bg-red-500/8',     corTexto: 'text-red-400',    corBorda: 'border-red-500/20',    dotCor: 'bg-red-400'     },
 ];
 
 function useContagem(status: StatusDocumento | '') {
@@ -36,7 +37,7 @@ function useContagem(status: StatusDocumento | '') {
   });
 }
 
-function CardContagem({ item, delay }: { item: CardStatus; delay: string }) {
+function CardContagem({ item, delay }: Readonly<{ item: CardStatus; delay: string }>) {
   const { data, isLoading } = useContagem(item.status);
 
   return (
@@ -70,7 +71,7 @@ export function Dashboard() {
     <div className="flex flex-col gap-6">
       <div className="animate-fade-up">
         <h2 className="text-xl font-semibold text-white">
-          Olá, {usuario?.nome?.split(' ')[0]} 👋
+          Olá, {usuario?.nome?.split(' ')[0]}
         </h2>
         <p className="mt-1 text-sm text-white/45">
           {eCoordenador ? 'Visão geral dos documentos do seu curso' : 'Acompanhe o status dos seus documentos'}
@@ -114,8 +115,8 @@ export function Dashboard() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 animate-fade-up delay-300">
           <Link to="/documentos/novo"
             className="flex items-center gap-4 rounded-xl border border-[#618C7C]/20 bg-[#618C7C]/8 p-5 transition-all hover:border-[#618C7C]/35 hover:bg-[#618C7C]/12 hover:shadow-[0_0_20px_rgba(97,140,124,0.1)]">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#618C7C] text-white text-xl font-bold flex-shrink-0 shadow-lg">
-              +
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#618C7C] text-white flex-shrink-0 shadow-lg">
+              <UploadIcon className="h-5 w-5" aria-hidden />
             </div>
             <div>
               <p className="text-sm font-semibold text-[#7AAA9A]">Submeter Documento</p>
@@ -125,8 +126,8 @@ export function Dashboard() {
 
           <Link to="/certificados"
             className="flex items-center gap-4 rounded-xl border border-white/8 bg-white/3 p-5 transition-all hover:border-white/15 hover:bg-white/6">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#011640] text-xl border border-white/10 flex-shrink-0">
-              🎓
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#011640] border border-white/10 flex-shrink-0">
+              <SchoolIcon className="h-5 w-5 text-white/60" aria-hidden />
             </div>
             <div>
               <p className="text-sm font-semibold text-white/80">Meus Certificados</p>
@@ -139,8 +140,8 @@ export function Dashboard() {
       {eCoordenador && (
         <Link to="/documentos?status=pendente"
           className="animate-fade-up delay-300 flex items-center gap-4 rounded-xl border border-amber-500/20 bg-amber-500/8 p-5 transition-all hover:border-amber-500/30 hover:bg-amber-500/12">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/20 border border-amber-500/30 text-xl flex-shrink-0">
-            📋
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/20 border border-amber-500/30 flex-shrink-0">
+            <PendingActionsIcon className="h-5 w-5 text-amber-300" aria-hidden />
           </div>
           <div>
             <p className="text-sm font-semibold text-amber-300">Fila de Análise</p>

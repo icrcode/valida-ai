@@ -5,6 +5,7 @@ import { instituicoesService, type Instituicao } from '../services/instituicoes'
 import { useToast } from '../contexts/ToastContext';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import { AddIcon } from '../components/icons';
 
 // ─── Constantes ───────────────────────────────────────────────
 const TURNOS = [
@@ -309,7 +310,9 @@ export function Cursos() {
             Gerencie os cursos vinculados às instituições
           </p>
         </div>
-        <Button onClick={abrirCriar}>+ Novo curso</Button>
+        <Button onClick={abrirCriar} className="flex items-center gap-1.5">
+          <AddIcon className="h-4 w-4" aria-hidden /> Novo curso
+        </Button>
       </div>
 
       {/* Filtros */}

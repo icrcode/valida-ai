@@ -7,6 +7,7 @@ import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { PERFIL_LABEL, PERFIL_COR, iniciais } from '../utils/perfil';
 import type { Perfil, Usuario } from '../types';
+import { AddIcon } from '../components/icons';
 
 const PERFIS: Perfil[] = ['estudante', 'coordenador', 'admin'];
 
@@ -318,7 +319,9 @@ export function Usuarios() {
           <h2 className="text-xl font-semibold text-white">Usuários</h2>
           <p className="mt-0.5 text-sm text-white/45">Gerencie os usuários da plataforma</p>
         </div>
-        <Button onClick={abrirCriar}>+ Novo usuário</Button>
+        <Button onClick={abrirCriar} className="flex items-center gap-1.5">
+          <AddIcon className="h-4 w-4" aria-hidden /> Novo usuário
+        </Button>
       </div>
 
       <div className="mb-4">

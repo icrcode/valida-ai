@@ -1,4 +1,5 @@
 import { useToast, type ToastTipo } from '../contexts/ToastContext';
+import { CheckIcon, CloseIcon, InfoIcon } from './icons';
 
 const ESTILOS: Record<ToastTipo, string> = {
   success: 'border-[#618C7C]/40',
@@ -12,10 +13,10 @@ const ICONE_ESTILOS: Record<ToastTipo, string> = {
   info:    'bg-blue-500 text-white',
 };
 
-const ICONES: Record<ToastTipo, string> = {
-  success: '✓',
-  error:   '✕',
-  info:    'i',
+const ICONE_COMPONENTE: Record<ToastTipo, React.ReactNode> = {
+  success: <CheckIcon className="h-3 w-3" />,
+  error:   <CloseIcon className="h-3 w-3" />,
+  info:    <InfoIcon  className="h-3 w-3" />,
 };
 
 export function ToastContainer() {
@@ -32,16 +33,17 @@ export function ToastContainer() {
           style={{ background: 'rgba(1, 17, 64, 0.92)', backdropFilter: 'blur(12px)' }}
           className={`flex items-start gap-3 rounded-xl border px-4 py-3 shadow-2xl animate-slide-in ${ESTILOS[toast.tipo]}`}
         >
-          <span className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold ${ICONE_ESTILOS[toast.tipo]}`}>
-            {ICONES[toast.tipo]}
+          <span className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full ${ICONE_ESTILOS[toast.tipo]}`}
+            aria-hidden="true">
+            {ICONE_COMPONENTE[toast.tipo]}
           </span>
           <p className="flex-1 text-sm font-medium leading-snug text-white/90">{toast.mensagem}</p>
           <button
             onClick={() => removeToast(toast.id)}
-            aria-label="Fechar"
-            className="flex-shrink-0 text-lg leading-none text-white/40 hover:text-white/90 transition-colors"
+            aria-label="Fechar notificação"
+            className="flex-shrink-0 text-white/40 hover:text-white/90 transition-colors"
           >
-            ×
+            <CloseIcon className="h-4 w-4" />
           </button>
         </div>
       ))}

@@ -7,6 +7,7 @@ import type { FiltrosDocumento, StatusDocumento } from '../types';
 import { BadgeStatus } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import { UploadIcon } from '../components/icons';
 
 const STATUS_OPCOES: { label: string; value: StatusDocumento | '' }[] = [
   { label: 'Todos',             value: '' },
@@ -45,7 +46,8 @@ export function Documentos() {
         {usuario?.perfil === 'estudante' && (
           <Link to="/documentos/novo"
             className="inline-flex items-center gap-1.5 rounded-lg bg-[#618C7C] px-4 py-2 text-sm font-medium text-white transition-all hover:bg-[#7AAA9A] hover:shadow-[0_0_20px_rgba(97,140,124,0.25)]">
-            + Submeter Documento
+            <UploadIcon className="h-4 w-4" aria-hidden />
+            Submeter Documento
           </Link>
         )}
       </div>

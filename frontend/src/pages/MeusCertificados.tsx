@@ -3,6 +3,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { certificadosService } from '../services/certificados';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
+import { EmojiEventsIcon } from '../components/icons';
 
 const TIPO_LEGIVEL: Record<string, string> = {
   estagio: 'Estágio',
@@ -40,8 +41,8 @@ export function MeusCertificados() {
 
       {data?.length === 0 && (
         <Card className="py-14 text-center animate-fade-up">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-white/5 text-2xl">
-            🎓
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-white/5">
+            <EmojiEventsIcon className="h-7 w-7 text-white/40" aria-hidden />
           </div>
           <p className="text-white/60">Você ainda não possui certificados emitidos.</p>
           <p className="mt-1 text-sm text-white/35">
@@ -55,8 +56,8 @@ export function MeusCertificados() {
           {data.map((cert, i) => (
             <Card key={cert.id} className={`flex flex-col gap-4 animate-fade-up delay-${i < 4 ? i * 75 : 300}`}>
               <div className="flex items-start justify-between">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#618C7C]/30 bg-[#618C7C]/15 text-xl flex-shrink-0">
-                  🎓
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#618C7C]/30 bg-[#618C7C]/15 flex-shrink-0">
+                  <EmojiEventsIcon className="h-5 w-5 text-[#618C7C]" aria-hidden />
                 </div>
                 <span className="inline-block rounded-full bg-[#618C7C]/20 px-2.5 py-0.5 text-xs font-medium text-[#7AAA9A] border border-[#618C7C]/30">
                   Emitido
