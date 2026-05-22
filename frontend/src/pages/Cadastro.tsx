@@ -65,12 +65,7 @@ export function Cadastro() {
       login(token, usuario);
       navigate('/dashboard');
     } catch (err: unknown) {
-      const apiErr = err as {
-        response?: { data?: { mensagem?: string; erro?: string } };
-        message?: string;
-      };
-      const data = apiErr?.response?.data;
-      setErro(data?.mensagem ?? data?.erro ?? apiErr?.message ?? 'Falha ao criar conta. Tente novamente.');
+      setErro(mensagemErroSegura(err, 'Falha ao criar conta. Tente novamente.'));
     } finally {
       setLoading(false);
     }
