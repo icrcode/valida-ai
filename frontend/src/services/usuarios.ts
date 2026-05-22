@@ -4,6 +4,7 @@ import type { Perfil, Usuario } from '../types';
 export interface CriarUsuarioInput {
   nome: string;
   email: string;
+  senha: string;
   perfil: Perfil;
   matricula?: string;
   curso_id?: string;
@@ -11,14 +12,31 @@ export interface CriarUsuarioInput {
 
 export interface AtualizarUsuarioInput {
   nome?: string;
+  email?: string;
   matricula?: string | null;
+  cpf?: string | null;
+  endereco?: string | null;
   curso_id?: string | null;
   perfil?: Perfil;
+}
+
+export interface AtualizarPerfilInput {
+  nome?: string;
+  email?: string;
+  matricula?: string | null;
+  cpf?: string | null;
+  endereco?: string | null;
+  senha_atual?: string;
+  nova_senha?: string;
 }
 
 export const usuariosService = {
   getPerfil: (): Promise<Usuario> => api.get<Usuario>('/api/usuarios/perfil').then((r) => r.data),
 
+  atualizarPerfil: (dados: AtualizarPerfilInput): Promise<Usuario> =>
+    api.put<Usuario>('/api/usuarios/perfil', dados).then((r) => r.data),
+
+  // mantido para compatibilidade com código existente
   atualizarNome: (nome: string): Promise<Usuario> =>
     api.put<Usuario>('/api/usuarios/perfil', { nome }).then((r) => r.data),
 

@@ -105,6 +105,8 @@ CREATE TABLE usuarios (
   email           varchar(255)    NOT NULL UNIQUE,
   senha_hash      text            NOT NULL DEFAULT '',
   matricula       varchar(50),
+  cpf             varchar(14),
+  endereco        text,
   perfil          perfil_usuario  NOT NULL,
   microsoft_id    varchar(255)    UNIQUE,
   curso_id        uuid            REFERENCES cursos(id) ON DELETE SET NULL,

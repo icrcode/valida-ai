@@ -66,6 +66,7 @@ export async function listar(
   filtros: FiltrosDocumento,
   usuarioId: string,
   perfil: string,
+  cursoId?: string | null,
 ): Promise<{ dados: Documento[]; total: number }> {
   const pagina = filtros.page || 1;
   const limite = Math.min(filtros.limite || 10, 100);
@@ -74,13 +75,28 @@ export async function listar(
   const params: unknown[] = [];
   const condicoes: string[] = [];
 
-  // Estudantes só enxergam os próprios documentos
   if (perfil === 'estudante') {
+    // Estudante só vê os próprios documentos
     params.push(usuarioId);
     condicoes.push(`estudante_id = $${params.length}`);
-  } else if (filtros.estudante_id) {
-    params.push(filtros.estudante_id);
-    condicoes.push(`estudante_id = $${params.length}`);
+  } else if (perfil === 'coordenador') {
+    // Coordenador só vê documentos do seu curso
+    if (!cursoId) {
+      return { dados: [], total: 0 };
+    }
+    params.push(cursoId);
+    condicoes.push(`curso_id = $${params.length}`);
+    // Admin pode passar estudante_id como filtro adicional; coordenador não
+    if (filtros.estudante_id) {
+      params.push(filtros.estudante_id);
+      condicoes.push(`estudante_id = $${params.length}`);
+    }
+  } else {
+    // Admin: sem restrição, mas pode filtrar por estudante_id
+    if (filtros.estudante_id) {
+      params.push(filtros.estudante_id);
+      condicoes.push(`estudante_id = $${params.length}`);
+    }
   }
 
   if (filtros.status) {
