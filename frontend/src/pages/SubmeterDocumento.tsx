@@ -20,25 +20,17 @@ interface CampoErros {
 }
 
 function inputCls(comErro: boolean) {
-  return `w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-    comErro ? 'border-red-500 bg-red-50' : 'border-gray-300'
+  return `w-full rounded-lg border bg-[#011640] px-3 py-2 text-sm text-white placeholder:text-white/30 transition-all focus:outline-none focus:ring-2 focus:ring-[#618C7C] focus:border-[#618C7C]/50 ${
+    comErro ? 'border-red-500/50' : 'border-white/10 hover:border-white/20'
   }`;
 }
 
-function Campo({
-  label,
-  erro,
-  children,
-}: {
-  label: string;
-  erro?: string;
-  children: React.ReactNode;
-}) {
+function Campo({ label, erro, children }: Readonly<{ label: string; erro?: string; children: React.ReactNode }>) {
   return (
-    <div className="flex flex-col gap-1">
-      <label className="text-sm font-medium text-gray-700">{label}</label>
+    <div className="flex flex-col gap-1.5">
+      <label className="text-sm font-medium text-white/65">{label}</label>
       {children}
-      {erro && <p className="text-xs text-red-500">{erro}</p>}
+      {erro && <p className="text-xs text-red-400">{erro}</p>}
     </div>
   );
 }
@@ -87,7 +79,6 @@ export function SubmeterDocumento() {
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!validar()) return;
-
     const fd = new FormData();
     fd.append('titulo', campos.titulo.trim());
     fd.append('tipo', campos.tipo.trim());
@@ -97,56 +88,37 @@ export function SubmeterDocumento() {
   }
 
   return (
-    <div className="mx-auto max-w-lg">
-      <h2 className="mb-4 text-xl font-semibold text-gray-900">Submeter Documento</h2>
+    <div className="mx-auto max-w-lg animate-fade-up">
+      <h2 className="mb-5 text-xl font-semibold text-white">Submeter Documento</h2>
       <Card>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <Campo label="Título" erro={erros.titulo}>
-            <input
-              type="text"
-              value={campos.titulo}
-              onChange={atualizar('titulo')}
-              placeholder="Nome do documento"
-              className={inputCls(!!erros.titulo)}
-            />
+            <input type="text" value={campos.titulo} onChange={atualizar('titulo')}
+              placeholder="Nome do documento" className={inputCls(!!erros.titulo)} />
           </Campo>
 
           <Campo label="Tipo" erro={erros.tipo}>
-            <input
-              type="text"
-              value={campos.tipo}
-              onChange={atualizar('tipo')}
-              placeholder="ex: extensao, pesquisa, monitoria"
-              className={inputCls(!!erros.tipo)}
-            />
+            <input type="text" value={campos.tipo} onChange={atualizar('tipo')}
+              placeholder="ex: extensao, pesquisa, monitoria" className={inputCls(!!erros.tipo)} />
           </Campo>
 
           <Campo label="Carga Horária (horas)" erro={erros.carga_horaria}>
-            <input
-              type="number"
-              min={1}
-              value={campos.carga_horaria}
-              onChange={atualizar('carga_horaria')}
-              className={inputCls(!!erros.carga_horaria)}
-            />
+            <input type="number" min={1} value={campos.carga_horaria} onChange={atualizar('carga_horaria')}
+              className={inputCls(!!erros.carga_horaria)} />
           </Campo>
 
           <Campo label="Arquivo PDF" erro={erros.arquivo}>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="application/pdf"
+            <input ref={fileRef} type="file" accept="application/pdf"
               onChange={() => setErros((er) => ({ ...er, arquivo: undefined }))}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm file:mr-3 file:rounded file:border-0 file:bg-blue-50 file:px-3 file:py-1 file:text-sm file:font-medium file:text-blue-700"
-            />
+              className="w-full rounded-lg border border-white/10 bg-[#011640] px-3 py-2 text-sm text-white/70 transition-all hover:border-white/20 file:mr-3 file:rounded-md file:border-0 file:bg-[#618C7C]/20 file:px-3 file:py-1 file:text-xs file:font-medium file:text-[#7AAA9A] cursor-pointer" />
           </Campo>
 
-          <div className="flex gap-3 pt-2">
+          <div className="flex gap-3 pt-2 border-t border-white/8">
             <Button type="button" variant="secondary" onClick={() => navigate(-1)}>
               Cancelar
             </Button>
             <Button type="submit" loading={mutation.isPending}>
-              Submeter
+              Submeter documento
             </Button>
           </div>
         </form>

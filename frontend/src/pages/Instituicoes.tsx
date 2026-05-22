@@ -49,12 +49,12 @@ const ESTADOS_BR = [
 function Modal({ titulo, onClose, children }: { titulo: string; onClose: () => void; children: React.ReactNode }) {
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 px-4 py-8">
-      <div className="w-full max-w-xl rounded-2xl bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
-          <h2 className="text-base font-semibold text-gray-900">{titulo}</h2>
+      <div className="w-full max-w-xl rounded-2xl bg-[#011140] shadow-xl">
+        <div className="flex items-center justify-between border-b border-white/8 px-6 py-4">
+          <h2 className="text-base font-semibold text-white">{titulo}</h2>
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            className="rounded-lg p-1.5 text-white/45 hover:bg-white/6 hover:text-white/70"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -79,9 +79,9 @@ function Campo({
 }) {
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-sm font-medium text-gray-700">
+      <label className="text-sm font-medium text-white/70">
         {label}
-        {obrigatorio && <span className="ml-0.5 text-red-500">*</span>}
+        {obrigatorio && <span className="ml-0.5 text-red-400">*</span>}
       </label>
       {children}
     </div>
@@ -89,7 +89,7 @@ function Campo({
 }
 
 const inputCls =
-  'rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-gray-400';
+  'rounded-lg border border-white/10 bg-[#011640] px-3 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#618C7C] hover:border-white/20 transition-all';
 
 // ─── Formulário de instituição ────────────────────────────────
 function FormInstituicao({
@@ -190,13 +190,13 @@ function FormInstituicao({
             {form.dominios_email.map((d) => (
               <span
                 key={d}
-                className="flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700"
+                className="flex items-center gap-1.5 rounded-full bg-[#618C7C]/20 px-3 py-1 text-xs font-medium text-[#7AAA9A] border border-[#618C7C]/30"
               >
                 @{d}
                 <button
                   type="button"
                   onClick={() => removerDominio(d)}
-                  className="text-blue-400 hover:text-blue-600"
+                  className="text-[#618C7C] hover:text-[#7AAA9A]"
                 >
                   ×
                 </button>
@@ -204,14 +204,14 @@ function FormInstituicao({
             ))}
           </div>
         )}
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-white/35">
           Deixe vazio para aceitar qualquer domínio. Pressione Enter ou clique em Adicionar.
         </p>
       </Campo>
 
       {/* Separador — campos opcionais */}
-      <div className="border-t border-gray-100 pt-2">
-        <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-400">
+      <div className="border-t border-white/8 pt-2">
+        <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-white/35">
           Informações adicionais (opcional)
         </p>
         <div className="grid grid-cols-2 gap-3">
@@ -375,12 +375,12 @@ export function Instituicoes() {
   });
 
   return (
-    <div>
+    <div className="animate-fade-up">
       {/* Cabeçalho */}
       <div className="mb-6 flex items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">Instituições</h2>
-          <p className="mt-0.5 text-sm text-gray-500">
+          <h2 className="text-xl font-semibold text-white">Instituições</h2>
+          <p className="mt-0.5 text-sm text-white/45">
             Gerencie as instituições cadastradas na plataforma
           </p>
         </div>
@@ -394,7 +394,7 @@ export function Instituicoes() {
           value={busca}
           onChange={(e) => setBusca(e.target.value)}
           placeholder="Buscar por nome, sigla ou cidade..."
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-gray-400"
+          className="w-full rounded-lg border border-white/10 bg-[#011640] px-3 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#618C7C] hover:border-white/20 transition-all"
         />
       </div>
 
@@ -402,11 +402,11 @@ export function Instituicoes() {
       <div className="flex flex-col gap-3">
         {isLoading ? (
           <Card>
-            <p className="py-8 text-center text-sm text-gray-400">Carregando instituições...</p>
+            <p className="py-8 text-center text-sm text-white/45">Carregando instituições...</p>
           </Card>
         ) : filtradas.length === 0 ? (
           <Card>
-            <p className="py-8 text-center text-sm text-gray-400">
+            <p className="py-8 text-center text-sm text-white/45">
               {busca ? 'Nenhuma instituição encontrada.' : 'Nenhuma instituição cadastrada ainda.'}
             </p>
           </Card>
@@ -417,12 +417,12 @@ export function Instituicoes() {
                 {/* Info principal */}
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded bg-blue-100 px-2 py-0.5 text-xs font-bold text-blue-700">
+                    <span className="rounded bg-[#618C7C]/20 px-2 py-0.5 text-xs font-bold text-[#7AAA9A] border border-[#618C7C]/30">
                       {inst.sigla}
                     </span>
-                    <h3 className="text-sm font-semibold text-gray-900">{inst.nome}</h3>
+                    <h3 className="text-sm font-semibold text-white">{inst.nome}</h3>
                     {!inst.ativa && (
-                      <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-600">
+                      <span className="rounded-full bg-red-500/20 px-2 py-0.5 text-xs font-medium text-red-300 border border-red-500/30">
                         Inativa
                       </span>
                     )}
@@ -430,7 +430,7 @@ export function Instituicoes() {
 
                   {/* Localização */}
                   {(inst.endereco || inst.cidade || inst.estado) && (
-                    <p className="mt-1 flex items-center gap-1 text-xs text-gray-500">
+                    <p className="mt-1 flex items-center gap-1 text-xs text-white/45">
                       <svg className="h-3.5 w-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -445,14 +445,14 @@ export function Instituicoes() {
                       {inst.dominios_email.map((d) => (
                         <span
                           key={d}
-                          className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs text-gray-600"
+                          className="rounded-full bg-white/3 px-2.5 py-0.5 text-xs text-white/65"
                         >
                           @{d}
                         </span>
                       ))}
                     </div>
                   ) : (
-                    <p className="mt-1 text-xs text-gray-400">Qualquer domínio aceito</p>
+                    <p className="mt-1 text-xs text-white/35">Qualquer domínio aceito</p>
                   )}
 
                   {/* Contatos extras */}
@@ -460,7 +460,7 @@ export function Instituicoes() {
                     {inst.email_contato && (
                       <a
                         href={`mailto:${inst.email_contato}`}
-                        className="flex items-center gap-1 text-xs text-blue-600 hover:underline"
+                        className="flex items-center gap-1 text-xs text-[#618C7C] hover:underline"
                       >
                         <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -469,7 +469,7 @@ export function Instituicoes() {
                       </a>
                     )}
                     {inst.telefone && (
-                      <span className="flex items-center gap-1 text-xs text-gray-500">
+                      <span className="flex items-center gap-1 text-xs text-white/45">
                         <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                         </svg>
@@ -481,7 +481,7 @@ export function Instituicoes() {
                         href={sanitizarUrl(inst.site)!}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-xs text-blue-600 hover:underline"
+                        className="flex items-center gap-1 text-xs text-[#618C7C] hover:underline"
                       >
                         <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -516,7 +516,7 @@ export function Instituicoes() {
       {modalCriar && (
         <Modal titulo="Nova instituição" onClose={() => setModalCriar(false)}>
           <FormInstituicao form={form} onChange={setForm} />
-          <div className="mt-6 flex justify-end gap-3 border-t border-gray-100 pt-4">
+          <div className="mt-6 flex justify-end gap-3 border-t border-white/8 pt-4">
             <Button variant="secondary" onClick={() => setModalCriar(false)}>
               Cancelar
             </Button>
@@ -531,7 +531,7 @@ export function Instituicoes() {
       {editando && (
         <Modal titulo={`Editar — ${editando.nome}`} onClose={() => setEditando(null)}>
           <FormInstituicao form={form} onChange={setForm} />
-          <div className="mt-6 flex justify-end gap-3 border-t border-gray-100 pt-4">
+          <div className="mt-6 flex justify-end gap-3 border-t border-white/8 pt-4">
             <Button variant="secondary" onClick={() => setEditando(null)}>
               Cancelar
             </Button>

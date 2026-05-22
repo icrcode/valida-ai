@@ -43,7 +43,7 @@ interface FormEditar {
 const CRIAR_VAZIO: FormCriar = { nome: '', email: '', senha: '', perfil: 'estudante', matricula: '', curso_id: '' };
 const EDITAR_VAZIO: FormEditar = { nome: '', email: '', perfil: 'estudante', matricula: '', cpf: '', endereco: '', curso_id: '' };
 
-const inputCls = 'rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-gray-400';
+const inputCls = 'rounded-lg border border-white/10 bg-[#011640] px-3 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#618C7C] hover:border-white/20 transition-all';
 
 function formatarCpf(valor: string) {
   const d = valor.replace(/\D/g, '').slice(0, 11);
@@ -57,10 +57,10 @@ function formatarCpf(valor: string) {
 function Modal({ titulo, onClose, children }: { titulo: string; onClose: () => void; children: React.ReactNode }) {
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 px-4 py-8">
-      <div className="w-full max-w-md rounded-2xl bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
-          <h2 className="text-base font-semibold text-gray-900">{titulo}</h2>
-          <button onClick={onClose} className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100">
+      <div className="w-full max-w-md rounded-2xl bg-[#011140] shadow-xl">
+        <div className="flex items-center justify-between border-b border-white/8 px-6 py-4">
+          <h2 className="text-base font-semibold text-white">{titulo}</h2>
+          <button onClick={onClose} className="rounded-lg p-1.5 text-white/45 hover:bg-white/6">
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -89,20 +89,20 @@ function CamposUsuario({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium text-gray-700">Nome completo</label>
+        <label className="text-sm font-medium text-white/70">Nome completo</label>
         <input type="text" value={form.nome} onChange={(e) => onChange({ ...form, nome: e.target.value })}
           placeholder="Nome completo" className={inputCls} />
       </div>
 
       <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium text-gray-700">E-mail</label>
+        <label className="text-sm font-medium text-white/70">E-mail</label>
         <input type="email" value={form.email} onChange={(e) => onChange({ ...form, email: e.target.value })}
           placeholder="email@instituicao.edu.br" className={inputCls} />
       </div>
 
       {!modoEdicao && (
         <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-gray-700">Senha inicial</label>
+          <label className="text-sm font-medium text-white/70">Senha inicial</label>
           <input type="password" value={(form as FormCriar).senha}
             onChange={(e) => onChange({ ...form, senha: e.target.value } as FormCriar)}
             placeholder="Mínimo 6 caracteres" autoComplete="new-password" className={inputCls} />
@@ -110,7 +110,7 @@ function CamposUsuario({
       )}
 
       <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium text-gray-700">Perfil</label>
+        <label className="text-sm font-medium text-white/70">Perfil</label>
         <select value={form.perfil} onChange={(e) => onChange({ ...form, perfil: e.target.value as Perfil })}
           className={inputCls}>
           {PERFIS.map((p) => <option key={p} value={p}>{PERFIL_LABEL[p] ?? p}</option>)}
@@ -118,8 +118,8 @@ function CamposUsuario({
       </div>
 
       <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium text-gray-700">
-          Curso <span className="text-xs text-gray-400">(opcional)</span>
+        <label className="text-sm font-medium text-white/70">
+          Curso <span className="text-xs text-white/35">(opcional)</span>
         </label>
         <select value={form.curso_id} onChange={(e) => onChange({ ...form, curso_id: e.target.value })}
           className={inputCls}>
@@ -136,8 +136,8 @@ function CamposUsuario({
 
       {(form.perfil === 'estudante') && (
         <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-gray-700">
-            Matrícula <span className="text-xs text-gray-400">(opcional)</span>
+          <label className="text-sm font-medium text-white/70">
+            Matrícula <span className="text-xs text-white/35">(opcional)</span>
           </label>
           <input type="text" value={form.matricula}
             onChange={(e) => onChange({ ...form, matricula: e.target.value })}
@@ -148,8 +148,8 @@ function CamposUsuario({
       {(form.perfil === 'estudante' || form.perfil === 'coordenador') && (
         <>
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-gray-700">
-              CPF <span className="text-xs text-gray-400">(opcional)</span>
+            <label className="text-sm font-medium text-white/70">
+              CPF <span className="text-xs text-white/35">(opcional)</span>
             </label>
             <input
               type="text"
@@ -162,8 +162,8 @@ function CamposUsuario({
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-gray-700">
-              Endereço <span className="text-xs text-gray-400">(opcional)</span>
+            <label className="text-sm font-medium text-white/70">
+              Endereço <span className="text-xs text-white/35">(opcional)</span>
             </label>
             <input
               type="text"
@@ -312,11 +312,11 @@ export function Usuarios() {
   });
 
   return (
-    <div>
+    <div className="animate-fade-up">
       <div className="mb-6 flex items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">Usuários</h2>
-          <p className="mt-0.5 text-sm text-gray-500">Gerencie os usuários da plataforma</p>
+          <h2 className="text-xl font-semibold text-white">Usuários</h2>
+          <p className="mt-0.5 text-sm text-white/45">Gerencie os usuários da plataforma</p>
         </div>
         <Button onClick={abrirCriar}>+ Novo usuário</Button>
       </div>
@@ -324,38 +324,38 @@ export function Usuarios() {
       <div className="mb-4">
         <input type="text" value={busca} onChange={(e) => setBusca(e.target.value)}
           placeholder="Buscar por nome, e-mail ou matrícula..."
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-gray-400" />
+          className="w-full rounded-lg border border-white/10 bg-[#011640] px-3 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#618C7C] hover:border-white/20 transition-all" />
       </div>
 
       <Card>
         {isLoading ? (
-          <div className="py-12 text-center text-sm text-gray-400">Carregando usuários...</div>
+          <div className="py-12 text-center text-sm text-white/45">Carregando usuários...</div>
         ) : usuariosFiltrados.length === 0 ? (
-          <div className="py-12 text-center text-sm text-gray-400">
+          <div className="py-12 text-center text-sm text-white/45">
             {busca ? 'Nenhum usuário encontrado.' : 'Nenhum usuário cadastrado.'}
           </div>
         ) : (
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-white/8">
             {usuariosFiltrados.map((u) => (
               <div key={u.id} className={`flex items-center gap-3 py-3 ${!u.ativo ? 'opacity-50' : ''}`}>
-                <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
+                <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#618C7C] text-xs font-bold text-white">
                   {iniciais(u.nome)}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="truncate text-sm font-medium text-gray-900">{u.nome}</span>
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${PERFIL_COR[u.perfil] ?? 'bg-gray-100 text-gray-700'}`}>
+                    <span className="truncate text-sm font-medium text-white">{u.nome}</span>
+                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${PERFIL_COR[u.perfil] ?? 'bg-white/6 text-white/70'}`}>
                       {PERFIL_LABEL[u.perfil] ?? u.perfil}
                     </span>
                     {!u.ativo && (
-                      <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-600">Inativo</span>
+                      <span className="rounded-full bg-red-500/20 px-2 py-0.5 text-xs font-medium text-red-300 border border-red-500/30">Inativo</span>
                     )}
                   </div>
-                  <p className="truncate text-xs text-gray-500">{u.email}</p>
-                  {u.matricula && <p className="text-xs text-gray-400">Matrícula: {u.matricula}</p>}
-                  {u.cpf && <p className="text-xs text-gray-400">CPF: {u.cpf}</p>}
-                  {u.endereco && <p className="text-xs text-gray-400 truncate max-w-xs">{u.endereco}</p>}
-                  {u.instituicao_nome && <p className="text-xs text-gray-400">{u.instituicao_nome}</p>}
+                  <p className="truncate text-xs text-white/45">{u.email}</p>
+                  {u.matricula && <p className="text-xs text-white/35">Matrícula: {u.matricula}</p>}
+                  {u.cpf && <p className="text-xs text-white/35">CPF: {u.cpf}</p>}
+                  {u.endereco && <p className="text-xs text-white/35 truncate max-w-xs">{u.endereco}</p>}
+                  {u.instituicao_nome && <p className="text-xs text-white/35">{u.instituicao_nome}</p>}
                 </div>
                 <div className="flex flex-shrink-0 items-center gap-2">
                   <Button variant="secondary" className="px-2.5 py-1.5 text-xs" onClick={() => abrirEditar(u)}>
@@ -381,7 +381,7 @@ export function Usuarios() {
         <Modal titulo="Novo usuário" onClose={() => setModalCriar(false)}>
           <CamposUsuario form={formCriar} onChange={(f) => setFormCriar(f as FormCriar)}
             cursos={cursos} modoEdicao={false} />
-          <div className="mt-6 flex justify-end gap-3 border-t border-gray-100 pt-4">
+          <div className="mt-6 flex justify-end gap-3 border-t border-white/8 pt-4">
             <Button variant="secondary" onClick={() => setModalCriar(false)}>Cancelar</Button>
             <Button loading={mutCriar.isPending} onClick={handleCriar}>Criar usuário</Button>
           </div>
@@ -393,7 +393,7 @@ export function Usuarios() {
         <Modal titulo={`Editar — ${usuarioEditando.nome}`} onClose={() => setUsuarioEditando(null)}>
           <CamposUsuario form={formEditar} onChange={(f) => setFormEditar(f as FormEditar)}
             cursos={cursos} modoEdicao={true} />
-          <div className="mt-6 flex justify-end gap-3 border-t border-gray-100 pt-4">
+          <div className="mt-6 flex justify-end gap-3 border-t border-white/8 pt-4">
             <Button variant="secondary" onClick={() => setUsuarioEditando(null)}>Cancelar</Button>
             <Button loading={mutAtualizar.isPending} onClick={handleAtualizar}>Salvar</Button>
           </div>
