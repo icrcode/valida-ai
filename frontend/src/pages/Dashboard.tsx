@@ -11,20 +11,21 @@ interface CardStatus {
   cor: string;
   corTexto: string;
   corBorda: string;
+  dotCor: string;
 }
 
 const CARDS_ESTUDANTE: CardStatus[] = [
-  { label: 'Pendentes', status: 'pendente', cor: 'bg-yellow-50', corTexto: 'text-yellow-700', corBorda: 'border-yellow-200' },
-  { label: 'Aprovados', status: 'aprovado', cor: 'bg-green-50', corTexto: 'text-green-700', corBorda: 'border-green-200' },
-  { label: 'Reprovados', status: 'reprovado', cor: 'bg-red-50', corTexto: 'text-red-700', corBorda: 'border-red-200' },
-  { label: 'Revisão', status: 'revisao_solicitada', cor: 'bg-blue-50', corTexto: 'text-blue-700', corBorda: 'border-blue-200' },
+  { label: 'Pendentes',  status: 'pendente',           cor: 'bg-amber-500/8',    corTexto: 'text-amber-300',  corBorda: 'border-amber-500/20',    dotCor: 'bg-amber-400' },
+  { label: 'Aprovados',  status: 'aprovado',           cor: 'bg-[#618C7C]/10',   corTexto: 'text-[#7AAA9A]',  corBorda: 'border-[#618C7C]/25',    dotCor: 'bg-[#618C7C]' },
+  { label: 'Reprovados', status: 'reprovado',          cor: 'bg-red-500/8',      corTexto: 'text-red-400',    corBorda: 'border-red-500/20',      dotCor: 'bg-red-400' },
+  { label: 'Revisão',    status: 'revisao_solicitada', cor: 'bg-blue-500/8',     corTexto: 'text-blue-300',   corBorda: 'border-blue-500/20',     dotCor: 'bg-blue-400' },
 ];
 
 const CARDS_COORDENADOR: CardStatus[] = [
-  { label: 'Pendentes', status: 'pendente', cor: 'bg-yellow-50', corTexto: 'text-yellow-700', corBorda: 'border-yellow-200' },
-  { label: 'Em Revisão', status: 'revisao_solicitada', cor: 'bg-blue-50', corTexto: 'text-blue-700', corBorda: 'border-blue-200' },
-  { label: 'Aprovados', status: 'aprovado', cor: 'bg-green-50', corTexto: 'text-green-700', corBorda: 'border-green-200' },
-  { label: 'Reprovados', status: 'reprovado', cor: 'bg-red-50', corTexto: 'text-red-700', corBorda: 'border-red-200' },
+  { label: 'Pendentes',  status: 'pendente',           cor: 'bg-amber-500/8',    corTexto: 'text-amber-300',  corBorda: 'border-amber-500/20',    dotCor: 'bg-amber-400' },
+  { label: 'Em Revisão', status: 'revisao_solicitada', cor: 'bg-blue-500/8',     corTexto: 'text-blue-300',   corBorda: 'border-blue-500/20',     dotCor: 'bg-blue-400' },
+  { label: 'Aprovados',  status: 'aprovado',           cor: 'bg-[#618C7C]/10',   corTexto: 'text-[#7AAA9A]',  corBorda: 'border-[#618C7C]/25',    dotCor: 'bg-[#618C7C]' },
+  { label: 'Reprovados', status: 'reprovado',          cor: 'bg-red-500/8',      corTexto: 'text-red-400',    corBorda: 'border-red-500/20',      dotCor: 'bg-red-400' },
 ];
 
 function useContagem(status: StatusDocumento | '') {
@@ -35,19 +36,20 @@ function useContagem(status: StatusDocumento | '') {
   });
 }
 
-function CardContagem({ item }: { item: CardStatus }) {
+function CardContagem({ item, delay }: { item: CardStatus; delay: string }) {
   const { data, isLoading } = useContagem(item.status);
 
   return (
     <Link
       to={item.status ? `/documentos?status=${item.status}` : '/documentos'}
-      className={`rounded-xl border p-5 shadow-sm transition-shadow hover:shadow-md ${item.cor} ${item.corBorda}`}
+      className={`animate-fade-up ${delay} rounded-xl border p-5 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg ${item.cor} ${item.corBorda}`}
     >
-      <p className={`text-sm font-medium ${item.corTexto}`}>{item.label}</p>
-      <p className={`mt-2 text-3xl font-bold ${item.corTexto}`}>
-        {isLoading ? '—' : (data?.total ?? 0)}
+      <div className={`mb-2 h-2 w-2 rounded-full ${item.dotCor}`} />
+      <p className={`text-sm font-medium ${item.corTexto} opacity-80`}>{item.label}</p>
+      <p className={`mt-1.5 text-3xl font-bold tracking-tight ${item.corTexto}`}>
+        {isLoading ? <span className="animate-pulse">—</span> : (data?.total ?? 0)}
       </p>
-      <p className={`mt-1 text-xs ${item.corTexto} opacity-70`}>documentos</p>
+      <p className={`mt-0.5 text-xs ${item.corTexto} opacity-50`}>documentos</p>
     </Link>
   );
 }
@@ -56,6 +58,7 @@ export function Dashboard() {
   const { usuario } = useAuth();
   const eCoordenador = usuario?.perfil === 'coordenador' || usuario?.perfil === 'admin';
   const cards = eCoordenador ? CARDS_COORDENADOR : CARDS_ESTUDANTE;
+  const delays = ['', 'delay-75', 'delay-150', 'delay-225'];
 
   const { data: recentes } = useQuery({
     queryKey: ['documentos-recentes'],
@@ -65,50 +68,40 @@ export function Dashboard() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h2 className="text-xl font-semibold text-gray-900">
+      <div className="animate-fade-up">
+        <h2 className="text-xl font-semibold text-white">
           Olá, {usuario?.nome?.split(' ')[0]} 👋
         </h2>
-        <p className="mt-1 text-sm text-gray-500">
-          {eCoordenador
-            ? 'Visão geral dos documentos do seu curso'
-            : 'Acompanhe o status dos seus documentos'}
+        <p className="mt-1 text-sm text-white/45">
+          {eCoordenador ? 'Visão geral dos documentos do seu curso' : 'Acompanhe o status dos seus documentos'}
         </p>
       </div>
 
-      {/* Cards de contagem */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        {cards.map((card) => (
-          <CardContagem key={card.status} item={card} />
-        ))}
+        {cards.map((card, i) => <CardContagem key={card.status} item={card} delay={delays[i]} />)}
       </div>
 
-      {/* Documentos recentes */}
-      <Card>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-semibold text-gray-900">Documentos Recentes</h3>
-          <Link to="/documentos" className="text-sm text-blue-600 hover:underline">
-            Ver todos
+      <Card className="animate-fade-up delay-300">
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="text-base font-semibold text-white">Documentos Recentes</h3>
+          <Link to="/documentos" className="text-sm text-[#618C7C] hover:text-[#7AAA9A] transition-colors">
+            Ver todos →
           </Link>
         </div>
 
         {!recentes || recentes.dados.length === 0 ? (
-          <p className="text-sm text-gray-500">Nenhum documento encontrado.</p>
+          <p className="py-4 text-center text-sm text-white/35">Nenhum documento encontrado.</p>
         ) : (
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-white/6">
             {recentes.dados.map((doc) => (
               <div key={doc.id} className="flex items-center justify-between py-3">
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-gray-900">{doc.titulo}</p>
-                  <p className="text-xs text-gray-500">
-                    {doc.tipo} · {doc.carga_horaria}h ·{' '}
-                    {new Date(doc.criado_em).toLocaleDateString('pt-BR')}
+                  <p className="truncate text-sm font-medium text-white">{doc.titulo}</p>
+                  <p className="text-xs text-white/40">
+                    {doc.tipo} · {doc.carga_horaria}h · {new Date(doc.criado_em).toLocaleDateString('pt-BR')}
                   </p>
                 </div>
-                <Link
-                  to={`/documentos/${doc.id}`}
-                  className="ml-4 flex-shrink-0 text-sm text-blue-600 hover:underline"
-                >
+                <Link to={`/documentos/${doc.id}`} className="ml-4 flex-shrink-0 text-sm text-[#618C7C] hover:text-[#7AAA9A] transition-colors">
                   Ver
                 </Link>
               </div>
@@ -117,48 +110,41 @@ export function Dashboard() {
         )}
       </Card>
 
-      {/* Atalhos */}
       {!eCoordenador && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Link
-            to="/documentos/novo"
-            className="flex items-center gap-3 rounded-xl border border-dashed border-blue-300 bg-blue-50 p-5 hover:bg-blue-100 transition-colors"
-          >
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white text-xl font-bold">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 animate-fade-up delay-300">
+          <Link to="/documentos/novo"
+            className="flex items-center gap-4 rounded-xl border border-[#618C7C]/20 bg-[#618C7C]/8 p-5 transition-all hover:border-[#618C7C]/35 hover:bg-[#618C7C]/12 hover:shadow-[0_0_20px_rgba(97,140,124,0.1)]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#618C7C] text-white text-xl font-bold flex-shrink-0 shadow-lg">
               +
             </div>
             <div>
-              <p className="text-sm font-semibold text-blue-700">Submeter Documento</p>
-              <p className="text-xs text-blue-500">Enviar PDF para validação</p>
+              <p className="text-sm font-semibold text-[#7AAA9A]">Submeter Documento</p>
+              <p className="text-xs text-white/40">Enviar PDF para validação</p>
             </div>
           </Link>
 
-          <Link
-            to="/certificados"
-            className="flex items-center gap-3 rounded-xl border border-dashed border-green-300 bg-green-50 p-5 hover:bg-green-100 transition-colors"
-          >
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-600 text-white text-xl">
+          <Link to="/certificados"
+            className="flex items-center gap-4 rounded-xl border border-white/8 bg-white/3 p-5 transition-all hover:border-white/15 hover:bg-white/6">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#011640] text-xl border border-white/10 flex-shrink-0">
               🎓
             </div>
             <div>
-              <p className="text-sm font-semibold text-green-700">Meus Certificados</p>
-              <p className="text-xs text-green-500">Ver certificados emitidos</p>
+              <p className="text-sm font-semibold text-white/80">Meus Certificados</p>
+              <p className="text-xs text-white/40">Ver certificados emitidos</p>
             </div>
           </Link>
         </div>
       )}
 
       {eCoordenador && (
-        <Link
-          to="/documentos?status=pendente"
-          className="flex items-center gap-3 rounded-xl border border-dashed border-yellow-300 bg-yellow-50 p-5 hover:bg-yellow-100 transition-colors"
-        >
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-yellow-500 text-white text-xl">
+        <Link to="/documentos?status=pendente"
+          className="animate-fade-up delay-300 flex items-center gap-4 rounded-xl border border-amber-500/20 bg-amber-500/8 p-5 transition-all hover:border-amber-500/30 hover:bg-amber-500/12">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/20 border border-amber-500/30 text-xl flex-shrink-0">
             📋
           </div>
           <div>
-            <p className="text-sm font-semibold text-yellow-700">Fila de Análise</p>
-            <p className="text-xs text-yellow-600">Ver documentos aguardando validação</p>
+            <p className="text-sm font-semibold text-amber-300">Fila de Análise</p>
+            <p className="text-xs text-white/40">Ver documentos aguardando validação</p>
           </div>
         </Link>
       )}
