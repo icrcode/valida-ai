@@ -7,6 +7,47 @@ import { tratarErro } from '../../utils/erros';
 
 const router = Router();
 
+const PERFIS_VALIDOS = ['estudante', 'coordenador', 'admin'] as const;
+
+// ─── Helpers de validação ──────────────────────────────────────
+
+function validarNome(nome: string | undefined, obrigatorio: boolean): string | null {
+  if (obrigatorio) {
+    if (!nome || typeof nome !== 'string' || nome.trim().length < 2)
+      return 'Nome inválido (mínimo 2 caracteres)';
+  } else if (nome !== undefined && (typeof nome !== 'string' || nome.trim().length < 2)) {
+    return 'Nome inválido (mínimo 2 caracteres)';
+  }
+  return null;
+}
+
+function validarEmail(email: string | undefined, obrigatorio: boolean): string | null {
+  if (obrigatorio) {
+    if (!email || typeof email !== 'string' || !email.includes('@'))
+      return 'E-mail inválido';
+  } else if (email !== undefined && (typeof email !== 'string' || !email.includes('@'))) {
+    return 'E-mail inválido';
+  }
+  return null;
+}
+
+function validarCpf(cpf: string | null | undefined): string | null {
+  if (cpf !== undefined && cpf !== null && String(cpf).replace(/\D/g, '').length !== 11)
+    return 'CPF inválido (deve conter 11 dígitos)';
+  return null;
+}
+
+function formatarCpf(cpf: string): string {
+  return cpf.replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+}
+
+function normalizarCpf(cpf: string | null | undefined): string | null | undefined {
+  if (cpf === undefined) return undefined;
+  return cpf ? formatarCpf(String(cpf)) : null;
+}
+
+// ─── Rotas ────────────────────────────────────────────────────
+
 // GET /api/usuarios/perfil → dados do usuário logado
 router.get('/perfil', autenticar, async (req, res) => {
   try {
@@ -33,21 +74,15 @@ router.put('/perfil', autenticar, async (req, res) => {
     nova_senha?: string;
   };
 
-  if (nome !== undefined && (typeof nome !== 'string' || nome.trim().length < 2)) {
-    res.status(400).json({ erro: 'Nome inválido (mínimo 2 caracteres)' });
-    return;
-  }
-  if (email !== undefined && (typeof email !== 'string' || !email.includes('@'))) {
-    res.status(400).json({ erro: 'E-mail inválido' });
-    return;
-  }
-  if (cpf !== undefined && cpf !== null) {
-    const cpfDigitos = String(cpf).replace(/\D/g, '');
-    if (cpfDigitos.length !== 11) {
-      res.status(400).json({ erro: 'CPF inválido (deve conter 11 dígitos)' });
-      return;
-    }
-  }
+  const erroNome = validarNome(nome, false);
+  if (erroNome) { res.status(400).json({ erro: erroNome }); return; }
+
+  const erroEmail = validarEmail(email, false);
+  if (erroEmail) { res.status(400).json({ erro: erroEmail }); return; }
+
+  const erroCpf = validarCpf(cpf);
+  if (erroCpf) { res.status(400).json({ erro: erroCpf }); return; }
+
   if (nova_senha !== undefined && (typeof nova_senha !== 'string' || nova_senha.length < 6)) {
     res.status(400).json({ erro: 'Nova senha deve ter no mínimo 6 caracteres' });
     return;
@@ -62,7 +97,7 @@ router.put('/perfil', autenticar, async (req, res) => {
 
     if (nome !== undefined) atualização.nome = nome.trim();
     if (matricula !== undefined) atualização.matricula = matricula?.trim() || null;
-    if (cpf !== undefined) atualização.cpf = cpf ? String(cpf).replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') : null;
+    if (cpf !== undefined) atualização.cpf = normalizarCpf(cpf);
     if (endereco !== undefined) atualização.endereco = endereco?.trim() || null;
 
     if (email !== undefined) {
@@ -122,25 +157,23 @@ router.post('/', autenticar, exigirPerfil('admin'), async (req, res) => {
     curso_id?: string;
   };
 
-  if (!nome || typeof nome !== 'string' || nome.trim().length < 2) {
-    res.status(400).json({ erro: 'Nome inválido (mínimo 2 caracteres)' });
-    return;
-  }
-  if (!email || typeof email !== 'string' || !email.includes('@')) {
-    res.status(400).json({ erro: 'E-mail inválido' });
-    return;
-  }
+  const erroNome = validarNome(nome, true);
+  if (erroNome) { res.status(400).json({ erro: erroNome }); return; }
+
+  const erroEmail = validarEmail(email, true);
+  if (erroEmail) { res.status(400).json({ erro: erroEmail }); return; }
+
   if (!senha || typeof senha !== 'string' || senha.length < 6) {
     res.status(400).json({ erro: 'Senha inválida (mínimo 6 caracteres)' });
     return;
   }
-  if (!perfil || !['estudante', 'coordenador', 'admin'].includes(perfil)) {
+  if (!perfil || !PERFIS_VALIDOS.includes(perfil as typeof PERFIS_VALIDOS[number])) {
     res.status(400).json({ erro: 'Perfil inválido. Use: estudante, coordenador ou admin' });
     return;
   }
 
   try {
-    const existente = await repositorio.buscarPorEmail(email.trim().toLowerCase());
+    const existente = await repositorio.buscarPorEmail(email!.trim().toLowerCase());
     if (existente) {
       res.status(409).json({ erro: 'E-mail já cadastrado para outro usuário' });
       return;
@@ -148,10 +181,10 @@ router.post('/', autenticar, exigirPerfil('admin'), async (req, res) => {
 
     const senha_hash = await bcrypt.hash(senha, 10);
     const usuario = await repositorio.criarUsuario({
-      nome: nome.trim(),
-      email: email.trim().toLowerCase(),
+      nome: nome!.trim(),
+      email: email!.trim().toLowerCase(),
       senha_hash,
-      perfil: perfil as 'estudante' | 'coordenador' | 'admin',
+      perfil: perfil as typeof PERFIS_VALIDOS[number],
       matricula: matricula?.trim() || null,
       curso_id: curso_id || null,
     });
@@ -175,22 +208,16 @@ router.put('/:id', autenticar, exigirPerfil('admin'), async (req, res) => {
     perfil?: string;
   };
 
-  if (nome !== undefined && (typeof nome !== 'string' || nome.trim().length < 2)) {
-    res.status(400).json({ erro: 'Nome inválido (mínimo 2 caracteres)' });
-    return;
-  }
-  if (email !== undefined && (typeof email !== 'string' || !email.includes('@'))) {
-    res.status(400).json({ erro: 'E-mail inválido' });
-    return;
-  }
-  if (cpf !== undefined && cpf !== null) {
-    const cpfDigitos = String(cpf).replace(/\D/g, '');
-    if (cpfDigitos.length !== 11) {
-      res.status(400).json({ erro: 'CPF inválido (deve conter 11 dígitos)' });
-      return;
-    }
-  }
-  if (perfil !== undefined && !['estudante', 'coordenador', 'admin'].includes(perfil)) {
+  const erroNome = validarNome(nome, false);
+  if (erroNome) { res.status(400).json({ erro: erroNome }); return; }
+
+  const erroEmail = validarEmail(email, false);
+  if (erroEmail) { res.status(400).json({ erro: erroEmail }); return; }
+
+  const erroCpf = validarCpf(cpf);
+  if (erroCpf) { res.status(400).json({ erro: erroCpf }); return; }
+
+  if (perfil !== undefined && !PERFIS_VALIDOS.includes(perfil as typeof PERFIS_VALIDOS[number])) {
     res.status(400).json({ erro: 'Perfil inválido. Use: estudante, coordenador ou admin' });
     return;
   }
@@ -209,10 +236,10 @@ router.put('/:id', autenticar, exigirPerfil('admin'), async (req, res) => {
       nome: nome?.trim(),
       email: email?.trim().toLowerCase(),
       matricula: matricula ?? undefined,
-      cpf: cpf !== undefined ? (cpf ? String(cpf).replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') : null) : undefined,
+      cpf: normalizarCpf(cpf),
       endereco: endereco !== undefined ? (endereco?.trim() || null) : undefined,
       curso_id: curso_id ?? undefined,
-      perfil: perfil as 'estudante' | 'coordenador' | 'admin' | undefined,
+      perfil: perfil as typeof PERFIS_VALIDOS[number] | undefined,
     });
 
     if (!usuario) {

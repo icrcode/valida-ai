@@ -10,6 +10,36 @@ const router = Router();
 const TURNOS = ['matutino', 'vespertino', 'noturno', 'integral'];
 const MODALIDADES = ['presencial', 'ead', 'hibrido'];
 
+type CamposCurso = {
+  nome?: string;
+  carga_horaria_complementar?: number;
+  turno?: string | null;
+  modalidade?: string | null;
+};
+
+function validarCamposCurso(body: CamposCurso, nomeObrigatorio: boolean): string | null {
+  const { nome, carga_horaria_complementar, turno, modalidade } = body;
+
+  if (nomeObrigatorio) {
+    if (!nome || typeof nome !== 'string' || nome.trim().length < 2)
+      return 'Nome inválido (mínimo 2 caracteres)';
+  } else if (nome !== undefined && (typeof nome !== 'string' || nome.trim().length < 2)) {
+    return 'Nome inválido (mínimo 2 caracteres)';
+  }
+
+  if (carga_horaria_complementar !== undefined &&
+    (typeof carga_horaria_complementar !== 'number' || carga_horaria_complementar < 1))
+    return 'Carga horária deve ser um número positivo';
+
+  if (turno && !TURNOS.includes(turno))
+    return `Turno inválido. Use: ${TURNOS.join(', ')}`;
+
+  if (modalidade && !MODALIDADES.includes(modalidade))
+    return `Modalidade inválida. Use: ${MODALIDADES.join(', ')}`;
+
+  return null;
+}
+
 // GET /api/cursos — lista cursos ativos (público, usado no cadastro de estudantes)
 router.get('/', async (_req, res) => {
   try {
@@ -56,27 +86,11 @@ router.post('/', autenticar, exigirPerfil('admin'), async (req, res) => {
     modalidade?: string;
   };
 
-  if (!nome || typeof nome !== 'string' || nome.trim().length < 2) {
-    res.status(400).json({ erro: 'Nome inválido (mínimo 2 caracteres)' });
-    return;
-  }
+  const erroBody = validarCamposCurso({ nome, carga_horaria_complementar, turno, modalidade }, true);
+  if (erroBody) { res.status(400).json({ erro: erroBody }); return; }
+
   if (!instituicao_id || typeof instituicao_id !== 'string') {
     res.status(400).json({ erro: 'Instituição obrigatória' });
-    return;
-  }
-  if (
-    carga_horaria_complementar !== undefined &&
-    (typeof carga_horaria_complementar !== 'number' || carga_horaria_complementar < 1)
-  ) {
-    res.status(400).json({ erro: 'Carga horária deve ser um número positivo' });
-    return;
-  }
-  if (turno && !TURNOS.includes(turno)) {
-    res.status(400).json({ erro: `Turno inválido. Use: ${TURNOS.join(', ')}` });
-    return;
-  }
-  if (modalidade && !MODALIDADES.includes(modalidade)) {
-    res.status(400).json({ erro: `Modalidade inválida. Use: ${MODALIDADES.join(', ')}` });
     return;
   }
 
@@ -88,7 +102,7 @@ router.post('/', autenticar, exigirPerfil('admin'), async (req, res) => {
     }
 
     const curso = await repositorio.criarCurso({
-      nome: nome.trim(),
+      nome: nome!.trim(),
       instituicao_id,
       carga_horaria_complementar: carga_horaria_complementar ?? 200,
       turno: turno || null,
@@ -112,25 +126,8 @@ router.put('/:id', autenticar, exigirPerfil('admin'), async (req, res) => {
     modalidade?: string | null;
   };
 
-  if (nome !== undefined && (typeof nome !== 'string' || nome.trim().length < 2)) {
-    res.status(400).json({ erro: 'Nome inválido (mínimo 2 caracteres)' });
-    return;
-  }
-  if (
-    carga_horaria_complementar !== undefined &&
-    (typeof carga_horaria_complementar !== 'number' || carga_horaria_complementar < 1)
-  ) {
-    res.status(400).json({ erro: 'Carga horária deve ser um número positivo' });
-    return;
-  }
-  if (turno && !TURNOS.includes(turno)) {
-    res.status(400).json({ erro: `Turno inválido. Use: ${TURNOS.join(', ')}` });
-    return;
-  }
-  if (modalidade && !MODALIDADES.includes(modalidade)) {
-    res.status(400).json({ erro: `Modalidade inválida. Use: ${MODALIDADES.join(', ')}` });
-    return;
-  }
+  const erroBody = validarCamposCurso({ nome, carga_horaria_complementar, turno, modalidade }, false);
+  if (erroBody) { res.status(400).json({ erro: erroBody }); return; }
 
   try {
     if (instituicao_id) {
