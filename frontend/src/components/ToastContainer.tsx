@@ -1,4 +1,5 @@
 import { useToast, type ToastTipo } from '../contexts/ToastContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { CheckIcon, CloseIcon, InfoIcon } from './icons';
 
 const ESTILOS: Record<ToastTipo, string> = {
@@ -8,9 +9,9 @@ const ESTILOS: Record<ToastTipo, string> = {
 };
 
 const ICONE_ESTILOS: Record<ToastTipo, string> = {
-  success: 'bg-[#618C7C] text-white',
-  error:   'bg-red-500 text-white',
-  info:    'bg-blue-500 text-white',
+  success: 'bg-[#618C7C] text-[#ffffff]',
+  error:   'bg-red-500 text-[#ffffff]',
+  info:    'bg-blue-500 text-[#ffffff]',
 };
 
 const ICONE_COMPONENTE: Record<ToastTipo, React.ReactNode> = {
@@ -21,8 +22,13 @@ const ICONE_COMPONENTE: Record<ToastTipo, React.ReactNode> = {
 
 export function ToastContainer() {
   const { toasts, removeToast } = useToast();
+  const { tema } = useTheme();
 
   if (toasts.length === 0) return null;
+
+  const bgToast = tema === 'light'
+    ? 'rgba(255, 255, 255, 0.95)'
+    : 'rgba(1, 17, 64, 0.92)';
 
   return (
     <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full px-4">
@@ -30,7 +36,7 @@ export function ToastContainer() {
         <div
           key={toast.id}
           role="alert"
-          style={{ background: 'rgba(1, 17, 64, 0.92)', backdropFilter: 'blur(12px)' }}
+          style={{ background: bgToast, backdropFilter: 'blur(12px)' }}
           className={`flex items-start gap-3 rounded-xl border px-4 py-3 shadow-2xl animate-slide-in ${ESTILOS[toast.tipo]}`}
         >
           <span className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full ${ICONE_ESTILOS[toast.tipo]}`}

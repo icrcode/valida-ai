@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { ToastContainer } from './ToastContainer';
 import { PERFIL_LABEL, PERFIL_COR, iniciais } from '../utils/perfil';
+import { SunIcon, MoonIcon } from './icons';
 
 const linkCls = ({ isActive }: { isActive: boolean }) =>
   `px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
@@ -13,8 +15,12 @@ const linkCls = ({ isActive }: { isActive: boolean }) =>
 
 export function Layout() {
   const { usuario, logout } = useAuth();
+  const { tema, alternar } = useTheme();
   const navigate = useNavigate();
   const [menuAberto, setMenuAberto] = useState(false);
+
+  const headerBg = tema === 'light' ? 'rgba(255,255,255,0.88)' : 'rgba(1,17,64,0.85)';
+  const mobileBg = tema === 'light' ? 'rgba(255,255,255,0.98)' : 'rgba(1,17,64,0.97)';
 
   const eEstudante = usuario?.perfil === 'estudante';
   const eCoordenador = usuario?.perfil === 'coordenador' || usuario?.perfil === 'admin';
@@ -66,7 +72,7 @@ export function Layout() {
       {/* Header */}
       <header
         className="sticky top-0 z-10 border-b border-white/8"
-        style={{ background: 'rgba(1, 17, 64, 0.85)', backdropFilter: 'blur(16px)' }}
+        style={{ background: headerBg, backdropFilter: 'blur(16px)' }}
       >
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           {/* Logo */}
@@ -82,13 +88,28 @@ export function Layout() {
           {/* Nav desktop */}
           <nav className="hidden items-center gap-1 md:flex">{navLinks()}</nav>
 
-          {/* Usuário + logout */}
+          {/* Ações do header */}
           <div className="flex items-center gap-1.5">
+            {/* Botão tema */}
+            <button
+              onClick={alternar}
+              aria-label={tema === 'dark' ? 'Mudar para modo claro' : 'Mudar para modo escuro'}
+              title={tema === 'dark' ? 'Modo claro' : 'Modo escuro'}
+              className="rounded-lg p-2 text-white/50 hover:bg-white/5 hover:text-white transition-all"
+            >
+              {tema === 'dark'
+                ? <SunIcon className="h-4 w-4" aria-hidden />
+                : <MoonIcon className="h-4 w-4" aria-hidden />}
+            </button>
+
             <NavLink
               to="/perfil"
               className="hidden items-center gap-2.5 rounded-lg px-2.5 py-1.5 transition-all hover:bg-white/5 sm:flex"
             >
-              <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-[#618C7C] text-xs font-bold text-white ring-2 ring-[#618C7C]/30">
+              <div
+                className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-[#618C7C] text-xs font-bold ring-2 ring-[#618C7C]/30"
+                style={{ color: 'white' }}
+              >
                 {usuario?.nome ? iniciais(usuario.nome) : '?'}
               </div>
               <div className="hidden flex-col leading-tight lg:flex">
@@ -130,11 +151,14 @@ export function Layout() {
         {menuAberto && (
           <nav
             className="border-t border-white/8 px-4 py-3 md:hidden animate-fade-up"
-            style={{ background: 'rgba(1, 17, 64, 0.97)' }}
+            style={{ background: mobileBg }}
           >
             <div className="flex flex-col gap-1">{navLinks(true)}</div>
             <div className="mt-3 border-t border-white/8 pt-3 flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#618C7C] text-xs font-bold text-white flex-shrink-0">
+              <div
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-[#618C7C] text-xs font-bold flex-shrink-0"
+                style={{ color: 'white' }}
+              >
                 {usuario?.nome ? iniciais(usuario.nome) : '?'}
               </div>
               <div className="min-w-0">
