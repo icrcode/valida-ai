@@ -5,9 +5,9 @@ export const PERFIL_LABEL: Record<string, string> = {
 };
 
 export const PERFIL_COR: Record<string, string> = {
-  estudante: 'bg-blue-100 text-blue-700',
-  coordenador: 'bg-purple-100 text-purple-700',
-  admin: 'bg-red-100 text-red-700',
+  estudante: 'bg-[#618C7C]/20 text-[#7AAA9A] border border-[#618C7C]/30',
+  coordenador: 'bg-purple-500/20 text-purple-300 border border-purple-500/30',
+  admin: 'bg-amber-500/20 text-amber-300 border border-amber-500/30',
 };
 
 export function iniciais(nome: string): string {

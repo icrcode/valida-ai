@@ -9,4 +9,4 @@ ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS senha_hash TEXT NOT NULL DEFAULT '
 -- Hash gerado via pgcrypto (bf = Blowfish/bcrypt, 10 rounds)
 UPDATE usuarios
 SET senha_hash = crypt('senha123', gen_salt('bf', 10))
-WHERE senha_hash = '';
+WHERE senha_hash IS NULL OR senha_hash = '';

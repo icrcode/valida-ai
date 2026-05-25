@@ -3,6 +3,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/queryClient';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ToastProvider } from './contexts/ToastContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { PrivateRoute } from './components/PrivateRoute';
 import { Layout } from './components/Layout';
 import { Login } from './pages/Login';
@@ -21,9 +22,9 @@ import { NaoEncontrado } from './pages/NaoEncontrado';
 
 function TelaCarregamento() {
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white">
-      <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600" />
-      <p className="mt-4 text-sm text-gray-500">Carregando...</p>
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#010A26]">
+      <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#618C7C]/20 border-t-[#618C7C]" />
+      <p className="mt-4 text-sm text-white/40">Carregando...</p>
     </div>
   );
 }
@@ -100,11 +101,13 @@ function AppRoutes() {
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <ToastProvider>
-          <AppRoutes />
-        </ToastProvider>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <ToastProvider>
+            <AppRoutes />
+          </ToastProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

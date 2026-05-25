@@ -1,18 +1,18 @@
 import { useState, type FormEvent } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../services/auth';
 import { useAuth } from '../contexts/AuthContext';
 import { Spinner } from '../components/ui/Spinner';
+import { mensagemErroSegura } from '../utils/seguranca';
 
 export function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
 
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [mostrarSenha, setMostrarSenha] = useState(false);
-  const [erro, setErro] = useState(searchParams.get('erro') ?? '');
+  const [erro, setErro] = useState('');
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: FormEvent) {
@@ -26,47 +26,45 @@ export function Login() {
       login(token, usuario);
       navigate('/dashboard');
     } catch (err: unknown) {
-      const apiErr = err as {
-        response?: { data?: { mensagem?: string; erro?: string; detalhe?: string } };
-        message?: string;
-      };
-      const data = apiErr?.response?.data;
-      const texto = data?.mensagem ?? data?.erro ?? apiErr?.message ?? 'Falha ao conectar com o servidor';
-      const detalhe = data?.detalhe;
-      setErro(detalhe ? `${texto}: ${detalhe}` : texto);
+      setErro(mensagemErroSegura(err, 'Falha ao conectar com o servidor'));
     } finally {
       setLoading(false);
     }
   }
 
   const inputCls = (hasError: boolean) =>
-    `rounded-lg border px-3 py-2.5 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 ${
-      hasError ? 'border-red-400 bg-red-50' : 'border-gray-300 bg-white hover:border-gray-400'
+    `w-full rounded-lg border bg-[#011640] px-3 py-2.5 text-sm text-white placeholder:text-white/30 transition-all focus:outline-none focus:ring-2 focus:ring-[#618C7C] focus:border-[#618C7C]/50 ${
+      hasError ? 'border-red-500/50' : 'border-white/10 hover:border-white/20'
     }`;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 px-4">
-      <div className="w-full max-w-sm">
+    <div className="flex min-h-screen items-center justify-center bg-[#010A26] px-4">
+      {/* Gradient background decoration */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="absolute -top-40 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-[#618C7C]/8 blur-3xl" />
+        <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-[#011640]/60 blur-3xl" />
+      </div>
+
+      <div className="relative w-full max-w-sm animate-fade-up">
         {/* Logo */}
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-600 shadow-lg">
-            <svg className="h-9 w-9 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-[#618C7C]/30 bg-[#011140] shadow-lg shadow-black/30">
+            <svg className="h-8 w-8 text-[#618C7C]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Valida<span className="text-blue-600">AI</span>
+          <h1 className="text-3xl font-bold text-white">
+            Valida<span className="text-[#618C7C]">AI</span>
           </h1>
-          <p className="mt-1 text-sm text-gray-500">Validação inteligente de documentos acadêmicos</p>
+          <p className="mt-1 text-sm text-white/45">Validação inteligente de documentos acadêmicos</p>
         </div>
 
-        <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
-          <h2 className="mb-6 text-center text-base font-semibold text-gray-800">Acesse sua conta</h2>
+        <div className="rounded-2xl border border-white/8 bg-[#011140] p-8 shadow-2xl shadow-black/40">
+          <h2 className="mb-6 text-center text-base font-semibold text-white/80">Acesse sua conta</h2>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            {/* E-mail */}
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="email" className="text-sm font-medium text-gray-700">E-mail</label>
+              <label htmlFor="email" className="text-sm font-medium text-white/65">E-mail</label>
               <input
                 id="email"
                 type="email"
@@ -79,9 +77,8 @@ export function Login() {
               />
             </div>
 
-            {/* Senha */}
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="senha" className="text-sm font-medium text-gray-700">Senha</label>
+              <label htmlFor="senha" className="text-sm font-medium text-white/65">Senha</label>
               <div className="relative">
                 <input
                   id="senha"
@@ -90,13 +87,13 @@ export function Login() {
                   onChange={(e) => { setSenha(e.target.value); if (erro) setErro(''); }}
                   placeholder="Sua senha"
                   autoComplete="current-password"
-                  className={`w-full pr-10 ${inputCls(!!erro && !email)}`}
+                  className={`pr-10 ${inputCls(!!erro && !email)}`}
                 />
                 <button
                   type="button"
                   onClick={() => setMostrarSenha((v) => !v)}
                   tabIndex={-1}
-                  className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 hover:text-gray-600"
+                  className="absolute inset-y-0 right-0 flex items-center px-3 text-white/30 hover:text-white/70 transition-colors"
                   aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
                 >
                   {mostrarSenha ? (
@@ -114,27 +111,27 @@ export function Login() {
             </div>
 
             {erro && (
-              <p className="flex items-start gap-1.5 text-xs text-red-600">
-                <svg className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <div className="flex items-start gap-2 rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2.5">
+                <svg className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-red-400" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                 </svg>
-                {erro}
-              </p>
+                <p className="text-xs text-red-400">{erro}</p>
+              </div>
             )}
 
             <button
               type="submit"
               disabled={loading}
-              className="mt-1 flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-60"
+              className="mt-1 flex items-center justify-center gap-2 rounded-lg bg-[#618C7C] px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-[#7AAA9A] hover:shadow-[0_0_24px_rgba(97,140,124,0.3)] focus:outline-none focus:ring-2 focus:ring-[#618C7C] focus:ring-offset-2 focus:ring-offset-[#011140] disabled:opacity-50"
             >
               {loading ? <><Spinner /> Entrando...</> : 'Entrar'}
             </button>
           </form>
         </div>
 
-        <p className="mt-5 text-center text-sm text-gray-500">
+        <p className="mt-5 text-center text-sm text-white/40">
           Novo por aqui?{' '}
-          <Link to="/cadastro" className="font-medium text-blue-600 hover:text-blue-700">
+          <Link to="/cadastro" className="font-medium text-[#618C7C] hover:text-[#7AAA9A] transition-colors">
             Criar conta de estudante
           </Link>
         </p>

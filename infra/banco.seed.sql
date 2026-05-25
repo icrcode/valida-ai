@@ -53,4 +53,6 @@ JOIN cur c ON c.codigo = v.codigo;
 
 -- Define a senha padrão "senha123" para todos os usuários de desenvolvimento.
 -- O hash é gerado com bcrypt (bf = Blowfish, 10 rounds), compatível com bcryptjs.
-UPDATE usuarios SET senha_hash = crypt('senha123', gen_salt('bf', 10));
+-- WHERE garante que apenas usuários sem senha (recém-inseridos pelo seed) sejam afetados.
+UPDATE usuarios SET senha_hash = crypt('senha123', gen_salt('bf', 10))
+WHERE senha_hash IS NULL;

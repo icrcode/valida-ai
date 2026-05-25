@@ -1,26 +1,24 @@
 import type { StatusDocumento } from '../../types';
 
 const statusColors: Record<StatusDocumento, string> = {
-  pendente: 'bg-yellow-100 text-yellow-800',
-  aprovado: 'bg-green-100 text-green-800',
-  reprovado: 'bg-red-100 text-red-800',
-  cancelado: 'bg-gray-100 text-gray-600',
-  revisao_solicitada: 'bg-blue-100 text-blue-800',
+  pendente:           'bg-amber-500/15 text-amber-300 border border-amber-500/25',
+  aprovado:           'bg-[#618C7C]/20 text-[#7AAA9A] border border-[#618C7C]/30',
+  reprovado:          'bg-red-500/15 text-red-400 border border-red-500/25',
+  cancelado:          'bg-white/5 text-white/40 border border-white/10',
+  revisao_solicitada: 'bg-blue-500/15 text-blue-300 border border-blue-500/25',
 };
 
 const statusLabel: Record<StatusDocumento, string> = {
-  pendente: 'Pendente',
-  aprovado: 'Aprovado',
-  reprovado: 'Reprovado',
-  cancelado: 'Cancelado',
+  pendente:           'Pendente',
+  aprovado:           'Aprovado',
+  reprovado:          'Reprovado',
+  cancelado:          'Cancelado',
   revisao_solicitada: 'Revisão Solicitada',
 };
 
 export function BadgeStatus({ status }: { status: StatusDocumento }) {
   return (
-    <span
-      className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColors[status]}`}
-    >
+    <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColors[status]}`}>
       {statusLabel[status]}
     </span>
   );
