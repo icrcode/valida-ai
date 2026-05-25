@@ -55,4 +55,4 @@ JOIN cur c ON c.codigo = v.codigo;
 -- O hash é gerado com bcrypt (bf = Blowfish, 10 rounds), compatível com bcryptjs.
 -- WHERE garante que apenas usuários sem senha (recém-inseridos pelo seed) sejam afetados.
 UPDATE usuarios SET senha_hash = crypt('senha123', gen_salt('bf', 10))
-WHERE senha_hash IS NULL OR senha_hash = '';
+WHERE senha_hash IS NULL;
