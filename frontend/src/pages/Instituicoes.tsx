@@ -72,14 +72,16 @@ function Modal({ titulo, onClose, children }: { titulo: string; onClose: () => v
 function Campo({
   label,
   obrigatorio,
+  className,
   children,
 }: {
   label: string;
   obrigatorio?: boolean;
+  className?: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-1">
+    <div className={`flex flex-col gap-1${className ? ` ${className}` : ''}`}>
       <label className="text-sm font-medium text-white/70">
         {label}
         {obrigatorio && <span className="ml-0.5 text-red-400">*</span>}
