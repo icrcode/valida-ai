@@ -6,7 +6,7 @@ jest.mock('../../src/eventos/barramento', () => ({
   barramento: { emitir: jest.fn() },
 }));
 jest.mock('../../src/middleware/autenticacao', () =>
-  require('../helpers/mocks').criarModuloAutenticacao('coord-id', 'coordenador', 'coord@test.com', 'Coordenador Teste')
+  require('../helpers/mocks').criarModuloAutenticacao('coord-id', 'coordenador', 'coord@test.com', 'Coordenador Teste', 'curso-1')
 );
 jest.mock('../../src/middleware/autorizacao', () =>
   require('../helpers/mocks').moduloAutorizacao
@@ -40,9 +40,10 @@ const RESULTADO_MOCK = {
 };
 
 describe('PATCH /:id/aprovar', () => {
-  beforeEach(() => { jest.clearAllMocks(); mockEmitir.mockReset(); });
+  beforeEach(() => { jest.resetAllMocks(); mockEmitir.mockReset(); });
 
   it('retorna 200 ao aprovar um documento com sucesso', async () => {
+    mockDoc.buscarPorId.mockResolvedValueOnce(DOC_MOCK);
     mockRepo.executarAcao.mockResolvedValueOnce(RESULTADO_MOCK as any);
     const res = await request(app).patch('/doc-1/aprovar').send({ observacoes: 'Documentação completa' });
     expect(res.status).toBe(200);
@@ -59,18 +60,21 @@ describe('PATCH /:id/aprovar', () => {
   });
 
   it('retorna 200 ao aprovar sem observacoes (campo opcional)', async () => {
+    mockDoc.buscarPorId.mockResolvedValueOnce(DOC_MOCK);
     mockRepo.executarAcao.mockResolvedValueOnce(RESULTADO_MOCK as any);
     const res = await request(app).patch('/doc-1/aprovar').send({});
     expect(res.status).toBe(200);
   });
 
   it('retorna 404 quando o documento não existe ou está cancelado', async () => {
+    mockDoc.buscarPorId.mockResolvedValueOnce(DOC_MOCK);
     mockRepo.executarAcao.mockRejectedValueOnce(new Error('Documento não encontrado ou cancelado'));
     const res = await request(app).patch('/doc-inexistente/aprovar').send({});
     expect(res.status).toBe(404);
   });
 
   it('retorna 500 em caso de erro inesperado', async () => {
+    mockDoc.buscarPorId.mockResolvedValueOnce(DOC_MOCK);
     mockRepo.executarAcao.mockRejectedValueOnce(new Error('Falha na transação'));
     const res = await request(app).patch('/doc-1/aprovar').send({});
     expect(res.status).toBe(500);
@@ -78,7 +82,7 @@ describe('PATCH /:id/aprovar', () => {
 });
 
 describe('PATCH /:id/reprovar', () => {
-  beforeEach(() => { jest.clearAllMocks(); mockEmitir.mockReset(); });
+  beforeEach(() => { jest.resetAllMocks(); mockEmitir.mockReset(); });
 
   it('retorna 400 quando observacoes não são enviadas', async () => {
     const res = await request(app).patch('/doc-1/reprovar').send({});
@@ -92,6 +96,7 @@ describe('PATCH /:id/reprovar', () => {
       documento: { ...RESULTADO_MOCK.documento, status: 'reprovado' },
       historico: { ...RESULTADO_MOCK.historico, status_novo: 'reprovado' },
     };
+    mockDoc.buscarPorId.mockResolvedValueOnce(DOC_MOCK);
     mockRepo.executarAcao.mockResolvedValueOnce(resultadoReprovado as any);
     const res = await request(app).patch('/doc-1/reprovar').send({ observacoes: 'Documentação incompleta' });
     expect(res.status).toBe(200);
@@ -112,6 +117,7 @@ describe('PATCH /:id/reprovar', () => {
   });
 
   it('retorna 404 quando o documento não é encontrado', async () => {
+    mockDoc.buscarPorId.mockResolvedValueOnce(DOC_MOCK);
     mockRepo.executarAcao.mockRejectedValueOnce(new Error('Documento não encontrado ou cancelado'));
     const res = await request(app).patch('/doc-1/reprovar').send({ observacoes: 'Motivo' });
     expect(res.status).toBe(404);
@@ -119,7 +125,7 @@ describe('PATCH /:id/reprovar', () => {
 });
 
 describe('PATCH /:id/solicitar-revisao', () => {
-  beforeEach(() => { jest.clearAllMocks(); mockEmitir.mockReset(); });
+  beforeEach(() => { jest.resetAllMocks(); mockEmitir.mockReset(); });
 
   it('retorna 400 quando observacoes não são enviadas', async () => {
     const res = await request(app).patch('/doc-1/solicitar-revisao').send({});
@@ -132,6 +138,7 @@ describe('PATCH /:id/solicitar-revisao', () => {
       ...RESULTADO_MOCK,
       documento: { ...RESULTADO_MOCK.documento, status: 'revisao_solicitada' },
     };
+    mockDoc.buscarPorId.mockResolvedValueOnce(DOC_MOCK);
     mockRepo.executarAcao.mockResolvedValueOnce(resultadoRevisao as any);
     const res = await request(app)
       .patch('/doc-1/solicitar-revisao')
@@ -154,7 +161,7 @@ describe('PATCH /:id/solicitar-revisao', () => {
 });
 
 describe('GET /:id/historico', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => jest.resetAllMocks());
 
   it('retorna 200 com o histórico do documento', async () => {
     mockDoc.buscarPorId.mockResolvedValueOnce(DOC_MOCK);

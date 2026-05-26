@@ -24,6 +24,8 @@ const USUARIO_LOGIN_MOCK: usuariosRepo.UsuarioParaLogin = {
   nome: 'João Silva',
   email: 'joao@uni.edu',
   matricula: '2021001',
+  cpf: null,
+  endereco: null,
   perfil: 'estudante',
   curso_id: 'curso-1',
   instituicao_id: 'inst-1',
@@ -45,6 +47,9 @@ const CURSO_MOCK: cursosRepo.CursoComDominios = {
   instituicao_id: 'inst-1',
   instituicao_nome: 'Universidade Teste',
   instituicao_sigla: 'UT',
+  ativo: true,
+  criado_em: new Date(),
+  atualizado_em: new Date(),
   dominios_email: null,
 };
 
@@ -53,6 +58,8 @@ const USUARIO_CRIADO: usuariosRepo.Usuario = {
   nome: 'Maria Silva',
   email: 'maria@uni.edu',
   matricula: '2021002',
+  cpf: null,
+  endereco: null,
   perfil: 'estudante',
   curso_id: 'curso-1',
   instituicao_id: 'inst-1',

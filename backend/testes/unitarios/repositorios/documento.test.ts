@@ -29,7 +29,7 @@ const DOC_ROW = {
   atualizado_em: new Date(),
 };
 
-beforeEach(() => jest.clearAllMocks());
+beforeEach(() => jest.resetAllMocks());
 
 // ─────────────────────────────────────────────
 // criar
@@ -105,7 +105,7 @@ describe('listar', () => {
       .mockResolvedValueOnce({ rows: [{ count: '5' }] })
       .mockResolvedValueOnce({ rows: [DOC_ROW] });
 
-    const resultado = await listar({}, 'coord-1', 'coordenador');
+    const resultado = await listar({}, 'coord-1', 'coordenador', 'curso-1');
 
     expect(resultado.total).toBe(5);
     const sql = mockQuery.mock.calls[0][0] as string;
@@ -117,7 +117,7 @@ describe('listar', () => {
       .mockResolvedValueOnce({ rows: [{ count: '2' }] })
       .mockResolvedValueOnce({ rows: [DOC_ROW] });
 
-    await listar({ status: 'aprovado' }, 'coord-1', 'coordenador');
+    await listar({ status: 'aprovado' }, 'coord-1', 'coordenador', 'curso-1');
 
     const sql = mockQuery.mock.calls[0][0] as string;
     expect(sql).toContain('status');
@@ -130,7 +130,7 @@ describe('listar', () => {
       .mockResolvedValueOnce({ rows: [{ count: '200' }] })
       .mockResolvedValueOnce({ rows: [] });
 
-    await listar({ limite: 500 }, 'coord-1', 'coordenador');
+    await listar({ limite: 500 }, 'coord-1', 'coordenador', 'curso-1');
 
     const params = mockQuery.mock.calls[1][1] as unknown[];
     expect(params).toContain(100);

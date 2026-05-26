@@ -31,6 +31,8 @@ const USUARIO_MOCK = {
   nome: 'João Silva',
   email: 'joao@uni.edu',
   matricula: '2021001',
+  cpf: null,
+  endereco: null,
   perfil: 'estudante' as const,
   curso_id: 'curso-1',
   instituicao_id: 'inst-1',
