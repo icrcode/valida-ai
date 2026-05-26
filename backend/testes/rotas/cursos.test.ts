@@ -19,13 +19,16 @@ const CURSO_MOCK: repositorio.Curso = {
   instituicao_id: 'inst-1',
   instituicao_nome: 'Universidade Teste',
   instituicao_sigla: 'UT',
+  ativo: true,
+  criado_em: new Date(),
+  atualizado_em: new Date(),
 };
 
 describe('GET /', () => {
   beforeEach(() => jest.clearAllMocks());
 
   it('retorna 200 com a lista de cursos', async () => {
-    mockRepo.listarCursos.mockResolvedValueOnce([CURSO_MOCK]);
+    mockRepo.listarCursosAtivos.mockResolvedValueOnce([CURSO_MOCK]);
     const res = await request(app).get('/');
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
@@ -34,7 +37,7 @@ describe('GET /', () => {
   });
 
   it('retorna 200 com array vazio quando não há cursos ativos', async () => {
-    mockRepo.listarCursos.mockResolvedValueOnce([]);
+    mockRepo.listarCursosAtivos.mockResolvedValueOnce([]);
     const res = await request(app).get('/');
     expect(res.status).toBe(200);
     expect(res.body).toHaveLength(0);
@@ -45,14 +48,14 @@ describe('GET /', () => {
       CURSO_MOCK,
       { ...CURSO_MOCK, id: 'curso-2', nome: 'Sistemas de Informação', instituicao_sigla: 'UT2' },
     ];
-    mockRepo.listarCursos.mockResolvedValueOnce(cursos);
+    mockRepo.listarCursosAtivos.mockResolvedValueOnce(cursos);
     const res = await request(app).get('/');
     expect(res.status).toBe(200);
     expect(res.body).toHaveLength(2);
   });
 
   it('retorna 500 em caso de erro no repositório', async () => {
-    mockRepo.listarCursos.mockRejectedValueOnce(new Error('Falha no banco'));
+    mockRepo.listarCursosAtivos.mockRejectedValueOnce(new Error('Falha no banco'));
     const res = await request(app).get('/');
     expect(res.status).toBe(500);
     expect(res.body.erro).toBe('Erro interno');

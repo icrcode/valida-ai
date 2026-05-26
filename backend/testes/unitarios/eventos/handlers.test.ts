@@ -30,6 +30,8 @@ const ESTUDANTE_MOCK = {
   nome: 'João Estudante',
   email: 'joao@uni.edu',
   matricula: '2021001',
+  cpf: null,
+  endereco: null,
   perfil: 'estudante' as const,
   curso_id: 'curso-1',
   instituicao_id: 'inst-1',

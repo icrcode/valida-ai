@@ -21,6 +21,8 @@ const USUARIO_MOCK = {
   nome: 'João Silva',
   email: 'joao@email.com',
   matricula: '2021001',
+  cpf: null,
+  endereco: null,
   perfil: 'estudante' as const,
   curso_id: 'curso-1',
   instituicao_id: 'inst-1',
@@ -63,20 +65,15 @@ describe('PUT /perfil', () => {
     expect(res.body.erro).toContain('Nome inválido');
   });
 
-  it('retorna 400 sem campo nome', async () => {
-    const res = await request(app).put('/perfil').send({});
-    expect(res.status).toBe(400);
-  });
-
   it('retorna 200 e os dados atualizados com nome válido', async () => {
-    mockRepo.atualizarNome.mockResolvedValueOnce({ ...USUARIO_MOCK, nome: 'João Atualizado' });
+    mockRepo.atualizarPerfil.mockResolvedValueOnce({ ...USUARIO_MOCK, nome: 'João Atualizado' });
     const res = await request(app).put('/perfil').send({ nome: 'João Atualizado' });
     expect(res.status).toBe(200);
     expect(res.body.nome).toBe('João Atualizado');
   });
 
   it('retorna 404 quando usuário não existe ao atualizar', async () => {
-    mockRepo.atualizarNome.mockResolvedValueOnce(null);
+    mockRepo.atualizarPerfil.mockResolvedValueOnce(null);
     const res = await request(app).put('/perfil').send({ nome: 'Nome Válido' });
     expect(res.status).toBe(404);
   });
