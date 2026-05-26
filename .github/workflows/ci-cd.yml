@@ -1,0 +1,147 @@
+name: CI/CD — Build, Push & Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  BACKEND_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/valida-ai-backend
+  FRONTEND_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/valida-ai-frontend
+
+jobs:
+  # ─────────────────────────────────────────────
+  # 1. Testes (backend)
+  # ─────────────────────────────────────────────
+  test:
+    name: Testes do Backend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Verificar tipos TypeScript
+        run: npx tsc --noEmit
+
+      - name: Rodar testes
+        run: npm test
+        env:
+          NODE_ENV: test
+          JWT_SECRET: test-secret-ci
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+
+  # ─────────────────────────────────────────────
+  # 2. Build e push das imagens Docker
+  # ─────────────────────────────────────────────
+  build-and-push:
+    name: Build & Push Docker Hub
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    outputs:
+      image-tag: ${{ steps.meta.outputs.version }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login no Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Configurar QEMU (multi-plataforma)
+        uses: docker/setup-qemu-action@v3
+
+      - name: Configurar Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Extrair metadados (tag = SHA curto)
+        id: meta
+        run: echo "version=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Build e push — Backend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: |
+            ${{ env.BACKEND_IMAGE }}:${{ steps.meta.outputs.version }}
+            ${{ env.BACKEND_IMAGE }}:latest
+          cache-from: type=registry,ref=${{ env.BACKEND_IMAGE }}:latest
+          cache-to: type=inline
+
+      - name: Build e push — Frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          build-args: |
+            VITE_API_URL=/api
+          tags: |
+            ${{ env.FRONTEND_IMAGE }}:${{ steps.meta.outputs.version }}
+            ${{ env.FRONTEND_IMAGE }}:latest
+          cache-from: type=registry,ref=${{ env.FRONTEND_IMAGE }}:latest
+          cache-to: type=inline
+
+  # ─────────────────────────────────────────────
+  # 3. Deploy no EC2 via SSH
+  # ─────────────────────────────────────────────
+  deploy:
+    name: Deploy EC2
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            set -e
+
+            # Vai para o diretório da aplicação
+            cd /opt/valida-ai
+
+            # Atualiza o repositório
+            git pull origin main
+
+            # Atualiza variável da tag da imagem
+            export TAG=${{ needs.build-and-push.outputs.image-tag }}
+            export DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
+
+            # Faz login no Docker Hub (necessário para pull de imagens privadas)
+            echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+            # Puxa as novas imagens
+            docker pull ${DOCKERHUB_USERNAME}/valida-ai-backend:${TAG}
+            docker pull ${DOCKERHUB_USERNAME}/valida-ai-frontend:${TAG}
+
+            # Reinicia os serviços com zero downtime
+            TAG=${TAG} docker compose -f docker-compose.prod.yml up -d --no-build
+
+            # Remove imagens antigas para liberar espaço
+            docker image prune -f
+
+            echo "Deploy concluído. Tag: ${TAG}"

@@ -1,36 +1,42 @@
-import { Client } from 'minio';
+import {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+  HeadBucketCommand,
+} from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { GetObjectCommand } from '@aws-sdk/client-s3';
 import { configuracao } from '../configuracao';
 import registrador from '../utils/registrador';
 
-const [host, portStr] = configuracao.minio.endpoint.split(':');
-
-const cliente = new Client({
-  endPoint: host,
-  port: Number.parseInt(portStr || '9000', 10),
-  useSSL: configuracao.minio.usarSSL,
-  accessKey: configuracao.minio.chaveAcesso,
-  secretKey: configuracao.minio.chaveSecreta,
+const cliente = new S3Client({
+  region: configuracao.s3.regiao,
+  credentials: {
+    accessKeyId: configuracao.s3.chaveAcesso,
+    secretAccessKey: configuracao.s3.chaveSecreta,
+  },
 });
 
-const balde = configuracao.minio.balde;
-const baldeCertificados = configuracao.minio.baldeCertificados;
+const balde = configuracao.s3.balde;
+const baldeCertificados = configuracao.s3.baldeCertificados;
 
-async function garantirBaldeGenerico(nome: string): Promise<void> {
-  const existe = await cliente.bucketExists(nome);
-  if (existe) {
-    registrador.info(`Balde MinIO já existe: ${nome}`);
-  } else {
-    await cliente.makeBucket(nome, 'us-east-1');
-    registrador.info(`Balde MinIO criado: ${nome}`);
+async function verificarBalde(nome: string): Promise<void> {
+  try {
+    await cliente.send(new HeadBucketCommand({ Bucket: nome }));
+    registrador.info(`Bucket S3 acessível: ${nome}`);
+  } catch {
+    registrador.warn(
+      `Bucket S3 não encontrado ou sem acesso: ${nome}. Verifique a configuração AWS.`,
+    );
   }
 }
 
 export async function garantirBalde(): Promise<void> {
-  await garantirBaldeGenerico(balde);
+  await verificarBalde(balde);
 }
 
 export async function garantirBaldeCertificados(): Promise<void> {
-  await garantirBaldeGenerico(baldeCertificados);
+  await verificarBalde(baldeCertificados);
 }
 
 export async function fazerUpload(
@@ -38,9 +44,14 @@ export async function fazerUpload(
   chaveArquivo: string,
   mimeType: string,
 ): Promise<string> {
-  await cliente.putObject(balde, chaveArquivo, buffer, buffer.length, {
-    'Content-Type': mimeType,
-  });
+  await cliente.send(
+    new PutObjectCommand({
+      Bucket: balde,
+      Key: chaveArquivo,
+      Body: buffer,
+      ContentType: mimeType,
+    }),
+  );
   return chaveArquivo;
 }
 
@@ -48,20 +59,26 @@ export async function gerarUrlAssinada(
   chaveArquivo: string,
   expiracaoSegundos = 3600,
 ): Promise<string> {
-  return cliente.presignedGetObject(balde, chaveArquivo, expiracaoSegundos);
+  const comando = new GetObjectCommand({ Bucket: balde, Key: chaveArquivo });
+  return getSignedUrl(cliente, comando, { expiresIn: expiracaoSegundos });
 }
 
 export async function deletarArquivo(chaveArquivo: string): Promise<void> {
-  await cliente.removeObject(balde, chaveArquivo);
+  await cliente.send(new DeleteObjectCommand({ Bucket: balde, Key: chaveArquivo }));
 }
 
 export async function fazerUploadCertificado(
   buffer: Buffer,
   chaveArquivo: string,
 ): Promise<string> {
-  await cliente.putObject(baldeCertificados, chaveArquivo, buffer, buffer.length, {
-    'Content-Type': 'application/pdf',
-  });
+  await cliente.send(
+    new PutObjectCommand({
+      Bucket: baldeCertificados,
+      Key: chaveArquivo,
+      Body: buffer,
+      ContentType: 'application/pdf',
+    }),
+  );
   return chaveArquivo;
 }
 
@@ -69,5 +86,6 @@ export async function gerarUrlAssinadaCertificado(
   chaveArquivo: string,
   expiracaoSegundos = 3600,
 ): Promise<string> {
-  return cliente.presignedGetObject(baldeCertificados, chaveArquivo, expiracaoSegundos);
+  const comando = new GetObjectCommand({ Bucket: baldeCertificados, Key: chaveArquivo });
+  return getSignedUrl(cliente, comando, { expiresIn: expiracaoSegundos });
 }
