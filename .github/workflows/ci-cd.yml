@@ -93,7 +93,7 @@ jobs:
           file: ./frontend/Dockerfile
           push: true
           build-args: |
-            VITE_API_URL=/api
+            VITE_API_URL=
           tags: |
             ${{ env.FRONTEND_IMAGE }}:${{ steps.meta.outputs.version }}
             ${{ env.FRONTEND_IMAGE }}:latest
@@ -139,7 +139,7 @@ jobs:
             docker pull ${DOCKERHUB_USERNAME}/valida-ai-frontend:${TAG}
 
             # Reinicia os serviços com zero downtime
-            TAG=${TAG} docker compose -f docker-compose.prod.yml up -d --no-build
+            TAG=${TAG} docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --no-build
 
             # Remove imagens antigas para liberar espaço
             docker image prune -f
