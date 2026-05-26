@@ -80,15 +80,15 @@ aplicativo.use((err: unknown, _req: express.Request, res: express.Response) => {
 // Registrar handlers de eventos
 registrarHandlers();
 
-// Inicializar buckets MinIO
+// Verificar acesso aos buckets S3
 garantirBalde().catch((err: unknown) => {
   const mensagem = err instanceof Error ? err.message : String(err);
-  registrador.warn(`Não foi possível inicializar o MinIO: ${mensagem}`);
+  registrador.warn(`Não foi possível verificar o bucket S3: ${mensagem}`);
 });
 
 garantirBaldeCertificados().catch((err: unknown) => {
   const mensagem = err instanceof Error ? err.message : String(err);
-  registrador.warn(`Não foi possível inicializar o balde de certificados: ${mensagem}`);
+  registrador.warn(`Não foi possível verificar o bucket S3 de certificados: ${mensagem}`);
 });
 
 export default aplicativo;

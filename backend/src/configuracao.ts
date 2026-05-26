@@ -31,13 +31,12 @@ export const configuracao = {
     senha: process.env.REDIS_PASSWORD || '',
   },
 
-  minio: {
-    endpoint: process.env.MINIO_ENDPOINT || 'localhost:9000',
-    chaveAcesso: process.env.MINIO_ACCESS_KEY || 'minioadmin',
-    chaveSecreta: process.env.MINIO_SECRET_KEY || 'minioadmin',
-    balde: process.env.MINIO_BUCKET || 'valida-files',
-    baldeCertificados: process.env.MINIO_BUCKET_CERTIFICADOS || 'valida-certificados',
-    usarSSL: process.env.MINIO_USE_SSL === 'true',
+  s3: {
+    regiao: process.env.AWS_REGION || 'sa-east-1',
+    chaveAcesso: obrigatorio('AWS_ACCESS_KEY_ID'),
+    chaveSecreta: obrigatorio('AWS_SECRET_ACCESS_KEY'),
+    balde: process.env.AWS_S3_BUCKET || 'valida-balde-files',
+    baldeCertificados: process.env.AWS_S3_BUCKET_CERTIFICADOS || 'valida-balde-certificados',
   },
 
   jwt: {
