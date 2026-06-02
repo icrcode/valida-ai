@@ -1,9 +1,37 @@
 services:
-  frontend:
-    image: ${DOCKERHUB_USERNAME}/valida-ai-frontend:${TAG:-latest}
+  # ── Proxy reverso com SSL (exposto na internet) ──────────────────
+  nginx-proxy:
+    image: nginx:stable-alpine
     restart: unless-stopped
     ports:
       - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./infra/nginx/default.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
+    depends_on:
+      - frontend
+    networks:
+      - valida-network
+
+  # ── Renovação automática de certificados ─────────────────────────
+  certbot:
+    image: certbot/certbot
+    restart: unless-stopped
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew --quiet; sleep 12h & wait $${!}; done'"
+    networks:
+      - valida-network
+
+  # ── Frontend (interno — acessado via nginx-proxy) ─────────────────
+  frontend:
+    image: ${DOCKERHUB_USERNAME}/valida-ai-frontend:${TAG:-latest}
+    restart: unless-stopped
     depends_on:
       - backend
     networks:

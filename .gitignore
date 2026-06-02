@@ -45,6 +45,9 @@ build/
 coverage/
 cobertura/
 
+# Certificados Let's Encrypt
+certbot/
+
 # OS
 Thumbs.db
 .DS_Store
