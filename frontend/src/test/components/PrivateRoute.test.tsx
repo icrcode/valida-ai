@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { PrivateRoute } from '../../components/PrivateRoute';
@@ -9,7 +9,6 @@ const USUARIO_MOCK: Usuario = {
   id: 'u-1', nome: 'Admin', email: 'a@test.com', perfil: 'admin',
   matricula: null, cpf: null, endereco: null, curso_id: null,
   instituicao_id: 'i-1', instituicao_nome: 'UT', ativo: true,
-  criado_em: '', atualizado_em: '',
 };
 
 function renderComAuth(token: string | null, usuario: Usuario | null, perfis?: string[]) {

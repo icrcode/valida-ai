@@ -4,7 +4,7 @@ import { certificadosService } from '../../services/certificados';
 vi.mock('../../services/api');
 
 import api from '../../services/api';
-const mockGet = (api as { get: ReturnType<typeof vi.fn> }).get;
+const mockGet = (api as unknown as { get: ReturnType<typeof vi.fn> }).get;
 
 beforeEach(() => vi.clearAllMocks());
 

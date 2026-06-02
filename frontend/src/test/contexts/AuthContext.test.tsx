@@ -15,8 +15,6 @@ const USUARIO_MOCK: Usuario = {
   instituicao_id: 'inst-1',
   instituicao_nome: 'Universidade Teste',
   ativo: true,
-  criado_em: new Date().toISOString(),
-  atualizado_em: new Date().toISOString(),
 };
 
 function Probe() {

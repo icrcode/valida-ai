@@ -51,7 +51,6 @@ export const USUARIO_ESTUDANTE: Usuario = {
   id: 'u-1', nome: 'João Estudante', email: 'joao@test.com', perfil: 'estudante',
   matricula: '2021001', cpf: null, endereco: null, curso_id: 'c-1',
   instituicao_id: 'i-1', instituicao_nome: 'Universidade Teste', ativo: true,
-  criado_em: new Date().toISOString(), atualizado_em: new Date().toISOString(),
 };
 
 export const USUARIO_ADMIN: Usuario = {
