@@ -9,9 +9,8 @@ describe('Card', () => {
   });
 
   it('aplica classes padrão', () => {
-    render(<Card>texto</Card>);
-    const el = screen.getByText('texto').parentElement ?? screen.getByText('texto');
-    expect(el).toHaveClass('rounded-xl');
+    const { container } = render(<Card>texto</Card>);
+    expect(container.firstChild).toHaveClass('rounded-xl');
   });
 
   it('aceita className adicional', () => {
