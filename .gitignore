@@ -39,7 +39,6 @@ build/
 .DS_Store
 
 # Testing
-coverage/
 .nyc_output/
 
 # OS
