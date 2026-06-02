@@ -15,6 +15,10 @@ const cliente = new S3Client({
     accessKeyId: configuracao.s3.chaveAcesso,
     secretAccessKey: configuracao.s3.chaveSecreta,
   },
+  ...(configuracao.s3.endpoint && {
+    endpoint: configuracao.s3.endpoint,
+    forcePathStyle: configuracao.s3.forcarCaminhoEstilo,
+  }),
 });
 
 const balde = configuracao.s3.balde;
