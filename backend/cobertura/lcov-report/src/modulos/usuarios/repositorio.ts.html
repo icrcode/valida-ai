@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">59.09% </span>
+                <span class="strong">92.04% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>52/88</span>
+                <span class='fraction'>81/88</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">54.54% </span>
+                <span class="strong">90.9% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>24/44</span>
+                <span class='fraction'>40/44</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">77.77% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>7/9</span>
+                <span class='fraction'>9/9</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">72.88% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>43/59</span>
+                <span class='fraction'>59/59</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line medium'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -305,12 +305,12 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">6x</span>
-<span class="cline-any cline-yes">14x</span>
-<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-yes">19x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">6x</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -324,7 +324,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">6x</span>
@@ -427,27 +427,27 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">6x</span>
@@ -506,8 +506,8 @@ export async function buscarPorId(id: string): Promise&lt;Usuario | null&gt; {
   return res.rows[0] ?? null;
 }
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >buscarPorEmailParaLogin(</span>email: string): Promise&lt;UsuarioParaLogin | null&gt; {
-  const res = <span class="cstat-no" title="statement not covered" >await pool.query&lt;UsuarioParaLogin&gt;(</span>
+export async function buscarPorEmailParaLogin(email: string): Promise&lt;UsuarioParaLogin | null&gt; {
+  const res = await pool.query&lt;UsuarioParaLogin&gt;(
     `SELECT
        u.id, u.nome, u.email, u.matricula, u.perfil, u.curso_id,
        u.senha_hash,
@@ -521,7 +521,7 @@ export async function <span class="fstat-no" title="function not covered" >busca
      WHERE LOWER(u.email) = LOWER($1) AND u.ativo = true`,
     [email],
   );
-<span class="cstat-no" title="statement not covered" >  return res.rows[0] ?? null;</span>
+  return res.rows[0] ?? null;
 }
 &nbsp;
 export async function listarTodos(instituicao_id?: string): Promise&lt;Usuario[]&gt; {
@@ -620,31 +620,31 @@ export async function atualizarUsuario(
   return buscarPorId(id);
 }
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >atualizarPerfil(</span>
+export async function atualizarPerfil(
   id: string,
   dados: AtualizarPerfilInput,
 ): Promise&lt;Usuario | null&gt; {
-  const campos: string[] = <span class="cstat-no" title="statement not covered" >[];</span>
-  const valores: unknown[] = <span class="cstat-no" title="statement not covered" >[];</span>
-  let idx = <span class="cstat-no" title="statement not covered" >1;</span>
+  const campos: string[] = [];
+  const valores: unknown[] = [];
+  let idx = 1;
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  if (dados.nome !== undefined)       { <span class="cstat-no" title="statement not covered" >campos.push(`nome = $${idx++}`); </span>      <span class="cstat-no" title="statement not covered" >valores.push(dados.nome); </span>}</span>
-<span class="cstat-no" title="statement not covered" >  if (dados.email !== undefined)      { <span class="cstat-no" title="statement not covered" >campos.push(`email = $${idx++}`); </span>     <span class="cstat-no" title="statement not covered" >valores.push(dados.email); </span>}</span>
-<span class="cstat-no" title="statement not covered" >  if (dados.matricula !== undefined)  { <span class="cstat-no" title="statement not covered" >campos.push(`matricula = $${idx++}`); </span> <span class="cstat-no" title="statement not covered" >valores.push(dados.matricula); </span>}</span>
-<span class="cstat-no" title="statement not covered" >  if (dados.cpf !== undefined)        { <span class="cstat-no" title="statement not covered" >campos.push(`cpf = $${idx++}`); </span>       <span class="cstat-no" title="statement not covered" >valores.push(dados.cpf); </span>}</span>
-<span class="cstat-no" title="statement not covered" >  if (dados.endereco !== undefined)   { <span class="cstat-no" title="statement not covered" >campos.push(`endereco = $${idx++}`); </span>  <span class="cstat-no" title="statement not covered" >valores.push(dados.endereco); </span>}</span>
-<span class="cstat-no" title="statement not covered" >  if (dados.senha_hash !== undefined) { <span class="cstat-no" title="statement not covered" >campos.push(`senha_hash = $${idx++}`); <span class="cstat-no" title="statement not covered" ></span>valores.push(dados.senha_hash); </span>}</span>
+  if (dados.nome !== undefined)       { campos.push(`nome = $${idx++}`);       valores.push(dados.nome); }
+  if (dados.email !== undefined)      { campos.push(`email = $${idx++}`);      valores.push(dados.email); }
+  if (dados.matricula !== undefined)  { campos.push(`matricula = $${idx++}`);  valores.push(dados.matricula); }
+  if (dados.cpf !== undefined)        { campos.push(`cpf = $${idx++}`);        valores.push(dados.cpf); }
+  if (dados.endereco !== undefined)   { campos.push(`endereco = $${idx++}`);   valores.push(dados.endereco); }
+  if (dados.senha_hash !== undefined) { campos.push(`senha_hash = $${idx++}`); valores.push(dados.senha_hash); }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  if (campos.length === 0) <span class="cstat-no" title="statement not covered" >return buscarPorId(id);</span></span>
+  if (campos.length === 0) return buscarPorId(id);
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  campos.push(`atualizado_em = NOW()`);</span>
-<span class="cstat-no" title="statement not covered" >  valores.push(id);</span>
+  campos.push(`atualizado_em = NOW()`);
+  valores.push(id);
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  await pool.query(</span>
+  await pool.query(
     `UPDATE usuarios SET ${campos.join(', ')} WHERE id = $${idx}`,
     valores,
   );
-<span class="cstat-no" title="statement not covered" >  return buscarPorId(id);</span>
+  return buscarPorId(id);
 }
 &nbsp;
 export async function alterarAtivo(id: string, ativo: boolean): Promise&lt;Usuario | null&gt; {
@@ -661,7 +661,7 @@ export async function alterarAtivo(id: string, ativo: boolean): Promise&lt;Usuar
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-02T16:03:33.475Z
+                at 2026-06-02T23:07:35.242Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

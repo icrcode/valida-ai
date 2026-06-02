@@ -279,3 +279,114 @@ describe('alterarAtivo', () => {
     expect(resultado).toBeNull();
   });
 });
+
+// ─────────────────────────────────────────────
+// buscarPorEmailParaLogin
+// ─────────────────────────────────────────────
+import { buscarPorEmailParaLogin } from '../../../src/modulos/usuarios/repositorio';
+
+describe('buscarPorEmailParaLogin', () => {
+  it('retorna o usuário com senha_hash pelo e-mail', async () => {
+    const loginRow = { ...USUARIO_ROW, senha_hash: '$2b$10$hash', dominios_email: ['uni.edu'] };
+    mockQuery.mockResolvedValueOnce({ rows: [loginRow] });
+
+    const resultado = await buscarPorEmailParaLogin('joao@uni.edu');
+
+    expect(resultado).not.toBeNull();
+    expect(resultado!.senha_hash).toBe('$2b$10$hash');
+    expect(resultado!.dominios_email).toEqual(['uni.edu']);
+    const sql = mockQuery.mock.calls[0][0] as string;
+    expect(sql).toContain('senha_hash');
+    expect(sql).toContain('ativo = true');
+  });
+
+  it('retorna null quando e-mail não existe ou usuário está inativo', async () => {
+    mockQuery.mockResolvedValueOnce({ rows: [] });
+
+    const resultado = await buscarPorEmailParaLogin('inexistente@test.com');
+
+    expect(resultado).toBeNull();
+  });
+
+  it('faz busca case-insensitive pelo e-mail', async () => {
+    mockQuery.mockResolvedValueOnce({ rows: [{ ...USUARIO_ROW, senha_hash: 'hash' }] });
+
+    await buscarPorEmailParaLogin('JOAO@UNI.EDU');
+
+    const sql = mockQuery.mock.calls[0][0] as string;
+    expect(sql).toContain('LOWER(u.email) = LOWER($1)');
+  });
+});
+
+// ─────────────────────────────────────────────
+// atualizarPerfil
+// ─────────────────────────────────────────────
+import { atualizarPerfil } from '../../../src/modulos/usuarios/repositorio';
+
+describe('atualizarPerfil', () => {
+  it('atualiza campos permitidos e retorna perfil atualizado', async () => {
+    const atualizado = { ...USUARIO_ROW, nome: 'Maria', email: 'maria@uni.edu' };
+    mockQuery
+      .mockResolvedValueOnce({ rows: [] })               // UPDATE
+      .mockResolvedValueOnce({ rows: [atualizado] });     // buscarPorId
+
+    const resultado = await atualizarPerfil('usr-1', {
+      nome: 'Maria',
+      email: 'maria@uni.edu',
+    });
+
+    expect(resultado!.nome).toBe('Maria');
+    const sql = mockQuery.mock.calls[0][0] as string;
+    expect(sql).toContain('UPDATE usuarios');
+    expect(sql).toContain('nome =');
+    expect(sql).toContain('email =');
+  });
+
+  it('inclui senha_hash quando fornecida', async () => {
+    mockQuery
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [USUARIO_ROW] });
+
+    await atualizarPerfil('usr-1', { senha_hash: '$2b$10$novo_hash' });
+
+    const sql = mockQuery.mock.calls[0][0] as string;
+    expect(sql).toContain('senha_hash =');
+    expect(mockQuery.mock.calls[0][1]).toContain('$2b$10$novo_hash');
+  });
+
+  it('atualiza matricula, cpf e endereco quando fornecidos', async () => {
+    mockQuery
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [USUARIO_ROW] });
+
+    await atualizarPerfil('usr-1', {
+      matricula: '9999',
+      cpf: '123.456.789-00',
+      endereco: 'Rua Teste, 123',
+    });
+
+    const sql = mockQuery.mock.calls[0][0] as string;
+    expect(sql).toContain('matricula =');
+    expect(sql).toContain('cpf =');
+    expect(sql).toContain('endereco =');
+  });
+
+  it('retorna o usuário sem executar UPDATE quando nenhum campo é enviado', async () => {
+    mockQuery.mockResolvedValueOnce({ rows: [USUARIO_ROW] });
+
+    const resultado = await atualizarPerfil('usr-1', {});
+
+    expect(resultado!.id).toBe('usr-1');
+    expect(mockQuery).toHaveBeenCalledTimes(1);
+  });
+
+  it('retorna null quando usuário não existe após update', async () => {
+    mockQuery
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [] });
+
+    const resultado = await atualizarPerfil('nao-existe', { nome: 'Teste' });
+
+    expect(resultado).toBeNull();
+  });
+});
