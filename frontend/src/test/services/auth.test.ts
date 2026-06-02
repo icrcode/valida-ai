@@ -5,13 +5,12 @@ vi.mock('../../services/api');
 
 import api from '../../services/api';
 
-const mockApi = api as { post: ReturnType<typeof vi.fn> };
+const mockApi = api as unknown as { post: ReturnType<typeof vi.fn> };
 
 const USUARIO_MOCK = {
   id: 'u-1', nome: 'João', email: 'joao@test.com', perfil: 'estudante' as const,
   matricula: null, cpf: null, endereco: null, curso_id: 'c-1',
   instituicao_id: 'i-1', instituicao_nome: 'UT', ativo: true,
-  criado_em: '', atualizado_em: '',
 };
 
 beforeEach(() => vi.clearAllMocks());

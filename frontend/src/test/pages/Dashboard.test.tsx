@@ -1,5 +1,4 @@
 import { describe, it, expect, vi } from 'vitest';
-import { screen } from '@testing-library/react';
 import { renderWithProviders, USUARIO_ESTUDANTE } from '../helpers/renderWithProviders';
 import { Dashboard } from '../../pages/Dashboard';
 

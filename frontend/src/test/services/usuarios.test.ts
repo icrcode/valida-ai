@@ -4,7 +4,7 @@ import { usuariosService } from '../../services/usuarios';
 vi.mock('../../services/api');
 
 import api from '../../services/api';
-const mockApi = api as Record<string, ReturnType<typeof vi.fn>>;
+const mockApi = api as unknown as Record<string, ReturnType<typeof vi.fn>>;
 
 const USR_MOCK = { id: 'u-1', nome: 'João', email: 'j@test.com', perfil: 'estudante' as const };
 
