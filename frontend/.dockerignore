@@ -4,3 +4,19 @@ dist
 .env.*
 !.env.example
 *.log
+
+# Testes e cobertura
+coverage
+src/test
+**/*.test.ts
+**/*.test.tsx
+
+# Git e editor
+.git
+.gitignore
+.vscode
+.idea
+
+# Outros desnecessários no build
+*.md
+tsconfig.tsbuildinfo
