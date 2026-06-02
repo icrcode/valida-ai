@@ -1,14 +1,21 @@
-FROM node:20-alpine AS builder
+FROM node:24-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
-COPY . .
+COPY index.html ./
+COPY vite.config.ts ./
+COPY tsconfig.json ./
+COPY tsconfig.app.json ./
+COPY tsconfig.node.json ./
+COPY eslint.config.js ./
+COPY public ./public
+COPY src ./src
 # Vazio: os services já incluem /api/ no path (ex: api.post('/api/auth/login'))
 ARG VITE_API_URL=
 ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
-FROM nginx:1.27-alpine AS production
+FROM nginx:stable-alpine AS production
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 RUN chown -R nginx:nginx /usr/share/nginx/html \
