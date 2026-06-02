@@ -1,7 +1,3 @@
-/**
- * Smoke tests para páginas — verifica que renderizam sem erros
- * Cobre os caminhos iniciais de render (loading states, estrutura básica)
- */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import { renderWithProviders, USUARIO_ESTUDANTE, USUARIO_ADMIN, USUARIO_COORD } from '../helpers/renderWithProviders';
@@ -27,63 +23,21 @@ import { SubmeterDocumento } from '../../pages/SubmeterDocumento';
 
 beforeEach(() => vi.clearAllMocks());
 
-describe('Documentos page', () => {
-  it('renderiza sem erros para estudante', () => {
-    const { container } = renderWithProviders(<Documentos />, {
-      token: 'tok-123', usuario: USUARIO_ESTUDANTE,
-    });
-    expect(container).toBeTruthy();
-  });
-
-  it('renderiza sem erros para coordenador', () => {
-    const { container } = renderWithProviders(<Documentos />, {
-      token: 'tok-123', usuario: USUARIO_COORD,
-    });
-    expect(container).toBeTruthy();
-  });
-});
-
-describe('Perfil page', () => {
-  it('renderiza sem erros', () => {
-    const { container } = renderWithProviders(<Perfil />, {
-      token: 'tok-123', usuario: USUARIO_ESTUDANTE,
-    });
-    expect(container).toBeTruthy();
-  });
-});
-
-describe('MeusCertificados page', () => {
-  it('renderiza sem erros', () => {
-    const { container } = renderWithProviders(<MeusCertificados />, {
-      token: 'tok-123', usuario: USUARIO_ESTUDANTE,
-    });
-    expect(container).toBeTruthy();
-  });
-});
-
-describe('Usuarios page', () => {
-  it('renderiza sem erros para admin', () => {
-    const { container } = renderWithProviders(<Usuarios />, {
-      token: 'tok-123', usuario: USUARIO_ADMIN,
-    });
-    expect(container).toBeTruthy();
-  });
-});
-
-describe('Cursos page', () => {
-  it('renderiza sem erros para admin', () => {
-    const { container } = renderWithProviders(<Cursos />, {
-      token: 'tok-123', usuario: USUARIO_ADMIN,
-    });
-    expect(container).toBeTruthy();
-  });
-});
-
-describe('Instituicoes page', () => {
-  it('renderiza sem erros para admin', () => {
-    const { container } = renderWithProviders(<Instituicoes />, {
-      token: 'tok-123', usuario: USUARIO_ADMIN,
-    });
+describe('páginas autenticadas — smoke', () => {
+  it.each([
+    ['Documentos (estudante)', Documentos, USUARIO_ESTUDANTE],
+    ['Documentos (coordenador)', Documentos, USUARIO_COORD],
+    ['Perfil', Perfil, USUARIO_ESTUDANTE],
+    ['MeusCertificados', MeusCertificados, USUARIO_ESTUDANTE],
+    ['Usuarios', Usuarios, USUARIO_ADMIN],
+    ['Cursos', Cursos, USUARIO_ADMIN],
+    ['Instituicoes', Instituicoes, USUARIO_ADMIN],
+    ['SubmeterDocumento', SubmeterDocumento, USUARIO_ESTUDANTE],
+  ] as const)('renderiza %s sem erros', (_nome, Componente, usuario) => {
+    const { container } = renderWithProviders(
+      <Componente />,
+      { token: 'tok-123', usuario },
+    );
     expect(container).toBeTruthy();
   });
 });
@@ -102,14 +56,5 @@ describe('Cadastro page', () => {
   it('exibe campo de e-mail', () => {
     renderWithProviders(<Cadastro />);
     expect(screen.getByLabelText(/e-mail/i)).toBeInTheDocument();
-  });
-});
-
-describe('SubmeterDocumento page', () => {
-  it('renderiza sem erros para estudante', () => {
-    const { container } = renderWithProviders(<SubmeterDocumento />, {
-      token: 'tok-123', usuario: USUARIO_ESTUDANTE,
-    });
-    expect(container).toBeTruthy();
   });
 });

@@ -1,15 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { authService } from '../../services/auth';
 
-vi.mock('../../services/api', () => ({
-  default: {
-    post: vi.fn(),
-    get: vi.fn(),
-    put: vi.fn(),
-    patch: vi.fn(),
-    delete: vi.fn(),
-  },
-}));
+vi.mock('../../services/api');
 
 import api from '../../services/api';
 

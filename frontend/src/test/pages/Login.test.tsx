@@ -3,9 +3,7 @@ import { screen } from '@testing-library/react';
 import { renderWithProviders } from '../helpers/renderWithProviders';
 import { Login } from '../../pages/Login';
 
-vi.mock('../../services/api', () => ({
-  default: { post: vi.fn(), get: vi.fn(), put: vi.fn(), patch: vi.fn(), delete: vi.fn() },
-}));
+vi.mock('../../services/api');
 
 describe('Login', () => {
   it('renderiza o título da aplicação', () => {

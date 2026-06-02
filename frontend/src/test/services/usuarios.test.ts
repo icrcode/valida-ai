@@ -1,15 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { usuariosService } from '../../services/usuarios';
 
-vi.mock('../../services/api', () => ({
-  default: {
-    get: vi.fn(),
-    post: vi.fn(),
-    put: vi.fn(),
-    patch: vi.fn(),
-    delete: vi.fn(),
-  },
-}));
+vi.mock('../../services/api');
 
 import api from '../../services/api';
 const mockApi = api as Record<string, ReturnType<typeof vi.fn>>;

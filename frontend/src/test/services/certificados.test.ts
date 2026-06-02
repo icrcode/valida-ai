@@ -1,9 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { certificadosService } from '../../services/certificados';
 
-vi.mock('../../services/api', () => ({
-  default: { get: vi.fn() },
-}));
+vi.mock('../../services/api');
 
 import api from '../../services/api';
 const mockGet = (api as { get: ReturnType<typeof vi.fn> }).get;
