@@ -39,8 +39,13 @@ build/
 .DS_Store
 
 # Testing
-coverage/
 .nyc_output/
+
+# Cobertura — manter lcov.info (lido pelo SonarQube), excluir visualização HTML
+coverage/lcov-report/
+coverage/coverage-summary.json
+cobertura/lcov-report/
+cobertura/coverage-summary.json
 
 # OS
 Thumbs.db

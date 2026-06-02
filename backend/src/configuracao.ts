@@ -37,6 +37,8 @@ export const configuracao = {
     chaveSecreta: obrigatorio('AWS_SECRET_ACCESS_KEY'),
     balde: process.env.AWS_S3_BUCKET || 'valida-balde-files',
     baldeCertificados: process.env.AWS_S3_BUCKET_CERTIFICADOS || 'valida-balde-certificados',
+    endpoint: process.env.S3_ENDPOINT || undefined,
+    forcarCaminhoEstilo: process.env.S3_FORCE_PATH_STYLE === 'true',
   },
 
   jwt: {
