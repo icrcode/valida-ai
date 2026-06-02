@@ -6,8 +6,8 @@ describe('sanitizarUrl', () => {
     expect(sanitizarUrl('https://exemplo.com')).toBe('https://exemplo.com');
   });
 
-  it('retorna URL http válida', () => {
-    expect(sanitizarUrl('http://exemplo.com')).toBe('http://exemplo.com');
+  it('retorna URL http local válida', () => {
+    expect(sanitizarUrl('http://localhost:3000')).toBe('http://localhost:3000');
   });
 
   it('bloqueia protocolo javascript:', () => {
