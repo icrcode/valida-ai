@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">50% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/12</span>
+                <span class='fraction'>6/12</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">33.33% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/15</span>
+                <span class='fraction'>5/15</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">25% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/8</span>
+                <span class='fraction'>2/8</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">50% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/12</span>
+                <span class='fraction'>6/12</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line medium'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -170,29 +170,29 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -270,29 +270,29 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { EmojiEventsIcon } from '../components/icons';
 &nbsp;
-const TIPO_LEGIVEL: Record&lt;string, string&gt; = <span class="cstat-no" title="statement not covered" >{</span>
+const TIPO_LEGIVEL: Record&lt;string, string&gt; = {
   estagio: 'Estágio',
   tcc: 'TCC',
   extensao: 'Extensão',
   monitoria: 'Monitoria',
 };
 &nbsp;
-export function <span class="fstat-no" title="function not covered" >MeusCertificados() {</span>
-  const [baixandoId, <span class="cstat-no" title="statement not covered" >setBaixandoId] = useState&lt;string | null&gt;(null);</span>
+export function MeusCertificados() {
+  const [baixandoId, setBaixandoId] = useState&lt;string | null&gt;(null);
 &nbsp;
-  const { data, isLoading, <span class="cstat-no" title="statement not covered" >isError } = useQuery({</span>
+  const { data, isLoading, isError } = useQuery({
     queryKey: ['meus-certificados'],
-<span class="fstat-no" title="function not covered" >    queryFn: () =&gt; <span class="cstat-no" title="statement not covered" >c</span>ertificadosService.listar(),</span>
+    queryFn: () =&gt; certificadosService.listar(),
   });
 &nbsp;
-  const { mutate: <span class="cstat-no" title="statement not covered" >baixar } = useMutation({</span>
+  const { mutate: baixar } = useMutation({
 <span class="fstat-no" title="function not covered" >    mutationFn: (i</span>d: string) =&gt; <span class="cstat-no" title="statement not covered" >certificadosService.buscarUrlDownload(id),</span>
 <span class="fstat-no" title="function not covered" >    onMutate: (i</span>d) =&gt; <span class="cstat-no" title="statement not covered" >setBaixandoId(id),</span>
 <span class="fstat-no" title="function not covered" >    onSettled: () =&gt; <span class="cstat-no" title="statement not covered" >s</span>etBaixandoId(null),</span>
 <span class="fstat-no" title="function not covered" >    onSuccess: ({</span> url }) =&gt; <span class="cstat-no" title="statement not covered" >window.open(url, '_blank'),</span>
   });
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  return (</span>
+  return (
     &lt;div className="flex flex-col gap-6"&gt;
       &lt;h2 className="text-xl font-semibold text-white animate-fade-up"&gt;Meus Certificados&lt;/h2&gt;
 &nbsp;
@@ -302,10 +302,10 @@ export function <span class="fstat-no" title="function not covered" >MeusCertifi
           &lt;p className="mt-3 text-sm text-white/40"&gt;Carregando certificados...&lt;/p&gt;
         &lt;/div&gt;
       )}
-      {isError &amp;&amp; &lt;p className="text-center text-red-400"&gt;Erro ao carregar certificados.&lt;/p&gt;}
+      {isError &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >&lt;p className="text-center text-red-400"&gt;Erro ao carregar certificados.&lt;/p&gt;}</span>
 &nbsp;
       {data?.length === 0 &amp;&amp; (
-        &lt;Card className="py-14 text-center animate-fade-up"&gt;
+<span class="branch-1 cbranch-no" title="branch not covered" >        &lt;Card className="py-14 text-center animate-fade-up"&gt;</span>
           &lt;div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-white/5"&gt;
             &lt;EmojiEventsIcon className="h-7 w-7 text-white/40" aria-hidden /&gt;
           &lt;/div&gt;
@@ -316,8 +316,8 @@ export function <span class="fstat-no" title="function not covered" >MeusCertifi
         &lt;/Card&gt;
       )}
 &nbsp;
-      {data &amp;&amp; data.length &gt; 0 &amp;&amp; (
-        &lt;div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"&gt;
+      {data &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >data.length &gt; 0 &amp;&amp; (</span>
+<span class="branch-2 cbranch-no" title="branch not covered" >        &lt;div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"&gt;</span>
           {data.<span class="fstat-no" title="function not covered" >map((c</span>ert, i) =&gt; (
 <span class="cstat-no" title="statement not covered" >            &lt;Card key={cert.id} className={`flex flex-col gap-4 animate-fade-up delay-${i &lt; 4 ? i * 75 : 300}`}&gt;</span>
               &lt;div className="flex items-start justify-between"&gt;
@@ -370,7 +370,7 @@ export function <span class="fstat-no" title="function not covered" >MeusCertifi
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-02T16:14:22.958Z
+                at 2026-06-02T16:16:16.073Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
