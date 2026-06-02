@@ -21,13 +21,17 @@ jobs:
       matrix:
         include:
           - app: backend
-            cmd: npm test
+            cmd: npm run test:coverage
+            lcov: cobertura/lcov.info
+            summary: cobertura/coverage-summary.json
             node_env: test
             jwt_secret: test-secret-ci
             aws_key: test
             aws_secret: test
           - app: frontend
             cmd: npm run test:coverage
+            lcov: coverage/lcov.info
+            summary: coverage/coverage-summary.json
     defaults:
       run:
         working-directory: ${{ matrix.app }}
@@ -55,8 +59,64 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ matrix.aws_key }}
           AWS_SECRET_ACCESS_KEY: ${{ matrix.aws_secret }}
 
+      - name: Publicar resumo de cobertura
+        run: |
+          FILE="${{ matrix.summary }}"
+          [ -f "$FILE" ] || exit 0
+          APP="${{ matrix.app }}"
+          {
+            echo "## Cobertura de Testes — ${APP^}"
+            echo ""
+            echo "| Métrica | % | Cobertas / Total |"
+            echo "|---|---|---|"
+            jq -r '.total |
+              "| Statements | \(.statements.pct)% | \(.statements.covered)/\(.statements.total) |",
+              "| Branches   | \(.branches.pct)%   | \(.branches.covered)/\(.branches.total) |",
+              "| Functions  | \(.functions.pct)%  | \(.functions.covered)/\(.functions.total) |",
+              "| Lines      | \(.lines.pct)%      | \(.lines.covered)/\(.lines.total) |"
+            ' "$FILE"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload lcov
+        uses: actions/upload-artifact@v4
+        with:
+          name: lcov-${{ matrix.app }}
+          path: ${{ matrix.app }}/${{ matrix.lcov }}
+          retention-days: 1
+          if-no-files-found: warn
+
   # ─────────────────────────────────────────────
-  # 2. Build e push das imagens Docker
+  # 2. Análise SonarCloud
+  # ─────────────────────────────────────────────
+  sonar:
+    name: Análise SonarCloud
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Download lcov — backend
+        uses: actions/download-artifact@v4
+        with:
+          name: lcov-backend
+          path: backend/cobertura
+
+      - name: Download lcov — frontend
+        uses: actions/download-artifact@v4
+        with:
+          name: lcov-frontend
+          path: frontend/coverage
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  # ─────────────────────────────────────────────
+  # 3. Build e push das imagens Docker
   # ─────────────────────────────────────────────
   build-and-push:
     name: Build & Push Docker Hub
@@ -112,7 +172,7 @@ jobs:
           cache-to: type=inline
 
   # ─────────────────────────────────────────────
-  # 3. Deploy no EC2 via SSH
+  # 4. Deploy no EC2 via SSH
   # ─────────────────────────────────────────────
   deploy:
     name: Deploy EC2
