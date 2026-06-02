@@ -27,7 +27,7 @@ if [ -z "${DOMAIN:-}" ]; then
   exit 1
 fi
 
-COMPOSE="docker compose -f docker-compose.prod.yml"
+COMPOSE="docker compose -f docker-compose.prod.yml --env-file .env.prod"
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  Domínio : $DOMAIN"
