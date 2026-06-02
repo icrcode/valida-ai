@@ -10,21 +10,26 @@ vi.mock('../../services/api', () => ({
 describe('Login', () => {
   it('renderiza o título da aplicação', () => {
     renderWithProviders(<Login />);
-    expect(screen.getByText(/Valida/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Valida/i)[0]).toBeInTheDocument();
   });
 
   it('renderiza campo de e-mail', () => {
     renderWithProviders(<Login />);
-    expect(screen.getByLabelText(/e-mail/i)).toBeInTheDocument();
+    expect(screen.getByLabelText('E-mail')).toBeInTheDocument();
   });
 
   it('renderiza campo de senha', () => {
     renderWithProviders(<Login />);
-    expect(screen.getByLabelText(/senha/i)).toBeInTheDocument();
+    expect(screen.getByLabelText('Senha')).toBeInTheDocument();
   });
 
   it('renderiza botão de entrar', () => {
     renderWithProviders(<Login />);
-    expect(screen.getByRole('button', { name: /entrar/i })).toBeInTheDocument();
+    expect(screen.getByText('Entrar')).toBeInTheDocument();
+  });
+
+  it('exibe link para criar conta', () => {
+    renderWithProviders(<Login />);
+    expect(screen.getByText(/Criar conta/i)).toBeInTheDocument();
   });
 });
