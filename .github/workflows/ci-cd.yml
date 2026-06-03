@@ -195,7 +195,8 @@ jobs:
             # Vai para o diretório da aplicação
             cd /opt/valida-ai
 
-            # Atualiza o repositório
+            # Atualiza o repositório (descarta alterações locais em arquivos rastreados)
+            git reset --hard HEAD
             git pull origin main
 
             # Atualiza variável da tag da imagem
