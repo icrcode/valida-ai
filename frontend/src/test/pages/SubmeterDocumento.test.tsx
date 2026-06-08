@@ -162,6 +162,39 @@ describe('SubmeterDocumento — interações de campo', () => {
     expect(mockNavigate).toHaveBeenCalledWith(-1);
   });
 
+  it('limpa erro de arquivo e força re-render ao selecionar arquivo', async () => {
+    renderSubmeter();
+    // Primeiro dispara erro de arquivo
+    fireEvent.change(screen.getByPlaceholderText('Nome do documento'), { target: { value: 'Cert Válido' } });
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'certificado_curso' } });
+    fireEvent.change(screen.getByPlaceholderText('ex: 40'), { target: { value: '40' } });
+    fireEvent.click(screen.getByText('Submeter documento'));
+    await waitFor(() => screen.getByText('Selecione um arquivo PDF'));
+    // Agora simula seleção de arquivo
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const fakeFile = new File(['pdf'], 'doc.pdf', { type: 'application/pdf' });
+    Object.defineProperty(fileInput, 'files', { value: [fakeFile], configurable: true });
+    fireEvent.change(fileInput);
+    // Erro de arquivo deve desaparecer
+    await waitFor(() => {
+      expect(screen.queryByText('Selecione um arquivo PDF')).not.toBeInTheDocument();
+    });
+  });
+
+  it('submitando com todos os campos válidos e arquivo chama mutation', async () => {
+    mockDocumentosService.submeter.mockResolvedValue({ id: 'doc-1' });
+    renderSubmeter();
+    fireEvent.change(screen.getByPlaceholderText('Nome do documento'), { target: { value: 'Certificado Válido Completo' } });
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'certificado_curso' } });
+    fireEvent.change(screen.getByPlaceholderText('ex: 40'), { target: { value: '40' } });
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const fakeFile = new File(['pdf content'], 'certificado.pdf', { type: 'application/pdf' });
+    Object.defineProperty(fileInput, 'files', { value: [fakeFile], configurable: true });
+    fireEvent.change(fileInput);
+    fireEvent.click(screen.getByText('Submeter documento'));
+    await waitFor(() => expect(mockDocumentosService.submeter).toHaveBeenCalled());
+  });
+
   it('renderiza todas as opções de tipo no select', () => {
     renderSubmeter();
     const select = screen.getByRole('combobox');
