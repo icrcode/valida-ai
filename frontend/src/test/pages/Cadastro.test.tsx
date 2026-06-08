@@ -98,7 +98,9 @@ describe('Cadastro — renderização', () => {
   it('renderiza cursos agrupados por instituição', async () => {
     renderWithProviders(<Cadastro />);
     await waitFor(() => {
-      expect(screen.getByText('Universidade Teste')).toBeInTheDocument();
+      // optgroup label is rendered as an attribute, verifica via querySelector
+      const optgroup = document.querySelector('optgroup[label="Universidade Teste"]');
+      expect(optgroup).toBeTruthy();
     });
   });
 });
@@ -160,7 +162,7 @@ describe('Cadastro — validações', () => {
     await act(async () => {
       fireEvent.submit(screen.getByText('Criar conta').closest('form')!);
     });
-    expect(screen.getByText(/Selecione seu curso/i)).toBeInTheDocument();
+    expect(screen.getByText('Selecione seu curso', { exact: true })).toBeInTheDocument();
   });
 
   it('exibe erro quando matrícula é muito curta', async () => {
