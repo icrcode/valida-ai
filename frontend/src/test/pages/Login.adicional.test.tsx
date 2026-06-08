@@ -3,6 +3,12 @@ import { screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { renderWithProviders } from '../helpers/renderWithProviders';
 import { Login } from '../../pages/Login';
 
+const { mockLogin, mockNavigate, mockAuthService } = vi.hoisted(() => ({
+  mockLogin: vi.fn(),
+  mockNavigate: vi.fn(),
+  mockAuthService: { login: vi.fn() },
+}));
+
 vi.mock('../../services/api', () => ({
   default: {
     get: vi.fn(),
@@ -10,9 +16,6 @@ vi.mock('../../services/api', () => ({
     interceptors: { request: { use: vi.fn() }, response: { use: vi.fn() } },
   },
 }));
-
-const mockLogin = vi.fn();
-const mockNavigate = vi.fn();
 
 vi.mock('../../contexts/AuthContext', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../contexts/AuthContext')>();
@@ -29,8 +32,6 @@ vi.mock('react-router-dom', async (importOriginal) => {
     useNavigate: vi.fn(() => mockNavigate),
   };
 });
-
-const mockAuthService = { login: vi.fn() };
 
 vi.mock('../../services/auth', () => ({
   authService: mockAuthService,
