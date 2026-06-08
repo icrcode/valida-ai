@@ -3,6 +3,16 @@ import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { renderWithProviders, USUARIO_ESTUDANTE, USUARIO_COORD } from '../helpers/renderWithProviders';
 import { DetalheDocumento } from '../../pages/DetalheDocumento';
 
+const mockDocumentosService = vi.hoisted(() => ({
+  buscarPorId: vi.fn(),
+  historico: vi.fn(),
+  buscarUrlDownload: vi.fn(),
+  aprovar: vi.fn(),
+  reprovar: vi.fn(),
+  solicitarRevisao: vi.fn(),
+  cancelar: vi.fn(),
+}));
+
 vi.mock('../../services/api', () => ({
   default: {
     get: vi.fn(),
@@ -21,16 +31,6 @@ vi.mock('react-router-dom', async (importOriginal) => {
     useNavigate: vi.fn(() => vi.fn()),
   };
 });
-
-const mockDocumentosService = {
-  buscarPorId: vi.fn(),
-  historico: vi.fn(),
-  buscarUrlDownload: vi.fn(),
-  aprovar: vi.fn(),
-  reprovar: vi.fn(),
-  solicitarRevisao: vi.fn(),
-  cancelar: vi.fn(),
-};
 
 vi.mock('../../services/documentos', () => ({
   documentosService: mockDocumentosService,

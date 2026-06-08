@@ -3,6 +3,8 @@ import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { renderWithProviders, USUARIO_ESTUDANTE, USUARIO_COORD } from '../helpers/renderWithProviders';
 import { Documentos } from '../../pages/Documentos';
 
+const mockDocumentosService = vi.hoisted(() => ({ listar: vi.fn() }));
+
 vi.mock('../../services/api', () => ({
   default: {
     get: vi.fn(),
@@ -10,8 +12,6 @@ vi.mock('../../services/api', () => ({
     interceptors: { request: { use: vi.fn() }, response: { use: vi.fn() } },
   },
 }));
-
-const mockDocumentosService = { listar: vi.fn() };
 
 vi.mock('../../services/documentos', () => ({
   documentosService: mockDocumentosService,
