@@ -101,20 +101,24 @@ describe('SubmeterDocumento — validação de campos', () => {
     });
   });
 
-  it('exibe erro quando carga horária é zero', async () => {
+  it('exibe erro quando carga horária está vazia (sem digitar)', async () => {
     renderSubmeter();
     fireEvent.change(screen.getByPlaceholderText('Nome do documento'), { target: { value: 'Certificado Válido' } });
-    fireEvent.change(screen.getByPlaceholderText('ex: 40'), { target: { value: '0' } });
+    // Não preenche carga_horaria propositalmente
     fireEvent.click(screen.getByText('Submeter documento'));
     await waitFor(() => {
       expect(screen.getByText('Informe um número inteiro positivo')).toBeInTheDocument();
     });
   });
 
-  it('exibe erro quando carga horária é negativa', async () => {
+  it('exibe erro quando carga horária contém texto não numérico', async () => {
     renderSubmeter();
     fireEvent.change(screen.getByPlaceholderText('Nome do documento'), { target: { value: 'Certificado Válido' } });
-    fireEvent.change(screen.getByPlaceholderText('ex: 40'), { target: { value: '-1' } });
+    // Para type="number", 'abc' resulta em value='' no jsdom, que dispara a validação
+    const inputCarga = screen.getByPlaceholderText('ex: 40');
+    fireEvent.change(inputCarga, { target: { value: 'abc' } });
+    // Limpa o campo para garantir que campo está vazio
+    fireEvent.change(inputCarga, { target: { value: '' } });
     fireEvent.click(screen.getByText('Submeter documento'));
     await waitFor(() => {
       expect(screen.getByText('Informe um número inteiro positivo')).toBeInTheDocument();

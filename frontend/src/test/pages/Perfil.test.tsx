@@ -74,7 +74,7 @@ describe('Perfil — modo VER', () => {
   it('exibe instituição quando presente', async () => {
     renderPerfil();
     await waitFor(() => {
-      expect(screen.getByText('Universidade Teste')).toBeInTheDocument();
+      expect(screen.getAllByText('Universidade Teste')[0]).toBeInTheDocument();
     });
   });
 });

@@ -167,7 +167,9 @@ describe('DetalheDocumento — estudante com documento pendente', () => {
     renderWithProviders(<DetalheDocumento />, { token: 'tok', usuario: USUARIO_ESTUDANTE });
     await waitFor(() => screen.getByText('Cancelar Documento'));
     fireEvent.click(screen.getByText('Cancelar Documento'));
-    fireEvent.click(screen.getByText('Voltar'));
+    // Após abrir modal há dois "Voltar" na tela — usamos o último (dentro do modal)
+    const botoesVoltar = screen.getAllByText('Voltar');
+    fireEvent.click(botoesVoltar[botoesVoltar.length - 1]);
     expect(screen.getByText('Cancelar Documento')).toBeInTheDocument();
   });
 
