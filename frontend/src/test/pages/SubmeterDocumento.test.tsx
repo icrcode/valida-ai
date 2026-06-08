@@ -3,6 +3,11 @@ import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { renderWithProviders, USUARIO_ESTUDANTE } from '../helpers/renderWithProviders';
 import { SubmeterDocumento } from '../../pages/SubmeterDocumento';
 
+const { mockNavigate, mockDocumentosService } = vi.hoisted(() => ({
+  mockNavigate: vi.fn(),
+  mockDocumentosService: { submeter: vi.fn() },
+}));
+
 vi.mock('../../services/api', () => ({
   default: {
     get: vi.fn(),
@@ -11,8 +16,6 @@ vi.mock('../../services/api', () => ({
   },
 }));
 
-const mockNavigate = vi.fn();
-
 vi.mock('react-router-dom', async (importOriginal) => {
   const actual = await importOriginal<typeof import('react-router-dom')>();
   return {
@@ -20,8 +23,6 @@ vi.mock('react-router-dom', async (importOriginal) => {
     useNavigate: vi.fn(() => mockNavigate),
   };
 });
-
-const mockDocumentosService = { submeter: vi.fn() };
 
 vi.mock('../../services/documentos', () => ({
   documentosService: mockDocumentosService,
