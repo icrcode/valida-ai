@@ -3,6 +3,11 @@ import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { renderWithProviders, USUARIO_ESTUDANTE, USUARIO_COORD } from '../helpers/renderWithProviders';
 import { Perfil } from '../../pages/Perfil';
 
+const mockUsuariosService = vi.hoisted(() => ({
+  getPerfil: vi.fn(),
+  atualizarPerfil: vi.fn(),
+}));
+
 vi.mock('../../services/api', () => ({
   default: {
     get: vi.fn(),
@@ -10,11 +15,6 @@ vi.mock('../../services/api', () => ({
     interceptors: { request: { use: vi.fn() }, response: { use: vi.fn() } },
   },
 }));
-
-const mockUsuariosService = {
-  getPerfil: vi.fn(),
-  atualizarPerfil: vi.fn(),
-};
 
 vi.mock('../../services/usuarios', () => ({
   usuariosService: mockUsuariosService,
