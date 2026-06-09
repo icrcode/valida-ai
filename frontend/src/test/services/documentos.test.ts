@@ -18,11 +18,35 @@ describe('documentosService.listar', () => {
     expect(resultado.total).toBe(1);
   });
 
-  it('passa filtros como query params', async () => {
+  it('passa filtros como query params (status e page)', async () => {
     mockApi.get.mockResolvedValueOnce({ data: { dados: [], total: 0 } });
     await documentosService.listar({ status: 'aprovado', page: 2 });
     expect(mockApi.get).toHaveBeenCalledWith('/api/documentos', {
       params: { status: 'aprovado', page: 2 },
+    });
+  });
+
+  it('passa filtro de tipo', async () => {
+    mockApi.get.mockResolvedValueOnce({ data: { dados: [], total: 0 } });
+    await documentosService.listar({ tipo: 'certificado_curso' });
+    expect(mockApi.get).toHaveBeenCalledWith('/api/documentos', {
+      params: { tipo: 'certificado_curso' },
+    });
+  });
+
+  it('passa filtro de estudante_id', async () => {
+    mockApi.get.mockResolvedValueOnce({ data: { dados: [], total: 0 } });
+    await documentosService.listar({ estudante_id: 'u-1' });
+    expect(mockApi.get).toHaveBeenCalledWith('/api/documentos', {
+      params: { estudante_id: 'u-1' },
+    });
+  });
+
+  it('passa filtro de limite', async () => {
+    mockApi.get.mockResolvedValueOnce({ data: { dados: [], total: 0 } });
+    await documentosService.listar({ limite: 10 });
+    expect(mockApi.get).toHaveBeenCalledWith('/api/documentos', {
+      params: { limite: 10 },
     });
   });
 });

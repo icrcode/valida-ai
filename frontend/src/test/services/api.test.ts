@@ -76,4 +76,19 @@ describe('api interceptors', () => {
     });
     expect(globalThis.location.replace).not.toHaveBeenCalled();
   });
+
+  it('rejeita sem redirecionar quando erro não tem response (ex: network error)', async () => {
+    const { default: api } = await import('../../services/api');
+
+    const responseHandlers = (api.interceptors.response as unknown as {
+      handlers: Array<{ rejected: (e: unknown) => unknown }>;
+    }).handlers;
+    const errorHandler = responseHandlers[responseHandlers.length - 1]?.rejected;
+
+    // Erro sem response (timeout, CORS, etc.)
+    await expect(errorHandler({ message: 'Network Error' })).rejects.toMatchObject({
+      message: 'Network Error',
+    });
+    expect(globalThis.location.replace).not.toHaveBeenCalled();
+  });
 });
