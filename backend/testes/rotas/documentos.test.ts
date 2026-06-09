@@ -55,7 +55,7 @@ describe('GET /:id', () => {
     const res = await request(app).get('/doc-1');
     expect(res.status).toBe(200);
     expect(res.body.id).toBe('doc-1');
-    expect(res.body.titulo).toBe('Estágio XYZ');
+    expect(res.body.titulo).toBe('Certificado XYZ');
   });
 
   it('retorna 404 quando o documento não existe', async () => {
@@ -106,8 +106,8 @@ describe('POST /', () => {
   it('retorna 400 quando nenhum arquivo é enviado', async () => {
     const res = await request(app)
       .post('/')
-      .field('titulo', 'Estágio')
-      .field('tipo', 'estagio')
+      .field('titulo', 'Certificado')
+      .field('tipo', 'certificado_curso')
       .field('carga_horaria', '40');
     expect(res.status).toBe(400);
     expect(res.body.erro).toContain('arquivo');
@@ -132,8 +132,8 @@ describe('POST /', () => {
         filename: 'test.pdf',
         contentType: 'application/pdf',
       })
-      .field('titulo', 'Estágio')
-      .field('tipo', 'estagio')
+      .field('titulo', 'Certificado')
+      .field('tipo', 'certificado_curso')
       .field('carga_horaria', 'abc');
     expect(res.status).toBe(400);
     expect(res.body.erro).toContain('carga_horaria');
@@ -147,8 +147,8 @@ describe('POST /', () => {
         filename: 'test.pdf',
         contentType: 'application/pdf',
       })
-      .field('titulo', 'Estágio XYZ')
-      .field('tipo', 'estagio')
+      .field('titulo', 'Certificado XYZ')
+      .field('tipo', 'certificado_curso')
       .field('carga_horaria', '40');
     expect(res.status).toBe(422);
     expect(res.body.erro).toContain('curso');
@@ -156,29 +156,29 @@ describe('POST /', () => {
 
   it('retorna 201 com o documento criado após upload bem-sucedido', async () => {
     mockUsr.buscarPorId.mockResolvedValueOnce({ id: 'estudante-id', curso_id: 'curso-1' } as any);
-    mockArm.fazerUpload.mockResolvedValueOnce('documentos/estudante-id/estagio.pdf');
+    mockArm.fazerUpload.mockResolvedValueOnce('documentos/estudante-id/certificado.pdf');
     mockDoc.criar.mockResolvedValueOnce(DOC_MOCK);
 
     const res = await request(app)
       .post('/')
       .attach('arquivo', Buffer.from('%PDF-1.4'), {
-        filename: 'estagio.pdf',
+        filename: 'certificado.pdf',
         contentType: 'application/pdf',
       })
-      .field('titulo', 'Estágio XYZ')
-      .field('tipo', 'estagio')
+      .field('titulo', 'Certificado XYZ')
+      .field('tipo', 'certificado_curso')
       .field('carga_horaria', '40');
     expect(res.status).toBe(201);
     expect(res.body.id).toBe('doc-1');
-    expect(res.body.titulo).toBe('Estágio XYZ');
+    expect(res.body.titulo).toBe('Certificado XYZ');
     expect(mockEmitir).toHaveBeenCalledWith(
       'documento_submetido',
       expect.objectContaining({
         documentoId: 'doc-1',
         estudanteId: 'estudante-id',
         cursoId: 'curso-1',
-        titulo: 'Estágio XYZ',
-        tipo: 'estagio',
+        titulo: 'Certificado XYZ',
+        tipo: 'certificado_curso',
       }),
     );
   });
@@ -189,9 +189,9 @@ describe('POST /', () => {
 
     await request(app)
       .post('/')
-      .attach('arquivo', Buffer.from('%PDF-1.4'), { filename: 'estagio.pdf', contentType: 'application/pdf' })
-      .field('titulo', 'Estágio XYZ')
-      .field('tipo', 'estagio')
+      .attach('arquivo', Buffer.from('%PDF-1.4'), { filename: 'certificado.pdf', contentType: 'application/pdf' })
+      .field('titulo', 'Certificado XYZ')
+      .field('tipo', 'certificado_curso')
       .field('carga_horaria', '40');
 
     expect(mockEmitir).not.toHaveBeenCalled();

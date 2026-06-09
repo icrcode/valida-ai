@@ -14,15 +14,15 @@ const mockQuery = pool.query as jest.Mock;
 
 const DOC_ROW = {
   id: 'doc-1',
-  titulo: 'Estágio XYZ',
-  tipo: 'estagio',
+  titulo: 'Certificado XYZ',
+  tipo: 'certificado_curso',
   carga_horaria: 40,
   estudante_id: 'est-1',
   curso_id: 'curso-1',
   status: 'pendente',
   coordenador_id: null,
-  nome_arquivo: 'estagio.pdf',
-  caminho_arquivo: 'documentos/est-1/estagio.pdf',
+  nome_arquivo: 'certificado.pdf',
+  caminho_arquivo: 'documentos/est-1/certificado.pdf',
   tamanho_arquivo: 1024,
   mime_type: 'application/pdf',
   criado_em: new Date(),
@@ -39,13 +39,13 @@ describe('criar', () => {
     mockQuery.mockResolvedValueOnce({ rows: [DOC_ROW] });
 
     const resultado = await criar({
-      titulo: 'Estágio XYZ',
-      tipo: 'estagio',
+      titulo: 'Certificado XYZ',
+      tipo: 'certificado_curso',
       carga_horaria: 40,
       estudante_id: 'est-1',
       curso_id: 'curso-1',
-      nome_arquivo: 'estagio.pdf',
-      caminho_arquivo: 'documentos/est-1/estagio.pdf',
+      nome_arquivo: 'certificado.pdf',
+      caminho_arquivo: 'documentos/est-1/certificado.pdf',
       tamanho_arquivo: 1024,
       mime_type: 'application/pdf',
     });

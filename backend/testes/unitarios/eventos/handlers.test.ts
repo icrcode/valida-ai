@@ -43,15 +43,15 @@ const ESTUDANTE_MOCK = {
 
 const DOCUMENTO_MOCK = {
   id: 'doc-1',
-  titulo: 'Estágio XYZ',
-  tipo: 'estagio',
+  titulo: 'Certificado XYZ',
+  tipo: 'certificado_curso',
   carga_horaria: 40,
   estudante_id: 'est-1',
   curso_id: 'curso-1',
   status: 'aprovado',
   coordenador_id: 'coord-1',
-  nome_arquivo: 'estagio.pdf',
-  caminho_arquivo: 'documentos/est-1/estagio.pdf',
+  nome_arquivo: 'certificado.pdf',
+  caminho_arquivo: 'documentos/est-1/certificado.pdf',
   tamanho_arquivo: 1024,
   mime_type: 'application/pdf',
   criado_em: new Date(),
@@ -85,8 +85,8 @@ describe('aoDocumentoSubmetido', () => {
     documentoId: 'doc-1',
     estudanteId: 'est-1',
     cursoId: 'curso-1',
-    titulo: 'Estágio XYZ',
-    tipo: 'estagio',
+    titulo: 'Certificado XYZ',
+    tipo: 'certificado_curso',
   };
 
   it('notifica cada coordenador encontrado para o curso', async () => {
@@ -105,7 +105,7 @@ describe('aoDocumentoSubmetido', () => {
         destinatarioId: 'coord-1',
         destinatarioEmail: 'maria@uni.edu',
         assunto: expect.stringContaining('validação'),
-        mensagem: expect.stringContaining('Estágio XYZ'),
+        mensagem: expect.stringContaining('Certificado XYZ'),
       }),
     );
   });
@@ -134,7 +134,7 @@ describe('aoDocumentoAprovado', () => {
     documentoId: 'doc-1',
     estudanteId: 'est-1',
     coordenadorId: 'coord-1',
-    titulo: 'Estágio XYZ',
+    titulo: 'Certificado XYZ',
   };
 
   it('gera certificado, persiste no banco e notifica o estudante', async () => {
@@ -161,7 +161,7 @@ describe('aoDocumentoAprovado', () => {
         destinatarioId: 'est-1',
         destinatarioEmail: 'joao@uni.edu',
         assunto: expect.stringContaining('aprovado'),
-        mensagem: expect.stringContaining('Estágio XYZ'),
+        mensagem: expect.stringContaining('Certificado XYZ'),
       }),
     );
   });
@@ -208,7 +208,7 @@ describe('aoDocumentoReprovado', () => {
     documentoId: 'doc-1',
     estudanteId: 'est-1',
     coordenadorId: 'coord-1',
-    titulo: 'Estágio XYZ',
+    titulo: 'Certificado XYZ',
     observacoes: 'Documentação incompleta',
   };
 
@@ -250,7 +250,7 @@ describe('aoDocumentoRevisaoSolicitada', () => {
     documentoId: 'doc-1',
     estudanteId: 'est-1',
     coordenadorId: 'coord-1',
-    titulo: 'Estágio XYZ',
+    titulo: 'Certificado XYZ',
     observacoes: 'Ajustar carga horária',
   };
 

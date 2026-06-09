@@ -62,4 +62,21 @@ describe('PrivateRoute', () => {
     renderComAuth('tok-123', USUARIO_MOCK, ['admin']);
     expect(screen.getByText('Conteúdo Protegido')).toBeInTheDocument();
   });
+
+  it('renderiza Outlet quando usado como elemento de rota sem children', () => {
+    localStorage.setItem('token', 'tok-123');
+    localStorage.setItem('usuario', JSON.stringify(USUARIO_MOCK));
+    render(
+      <MemoryRouter initialEntries={['/protegido']}>
+        <AuthProvider>
+          <Routes>
+            <Route element={<PrivateRoute />}>
+              <Route path="/protegido" element={<div>Conteúdo via Outlet</div>} />
+            </Route>
+          </Routes>
+        </AuthProvider>
+      </MemoryRouter>,
+    );
+    expect(screen.getByText('Conteúdo via Outlet')).toBeInTheDocument();
+  });
 });

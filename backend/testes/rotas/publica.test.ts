@@ -57,7 +57,7 @@ describe('GET /verificar/:hash', () => {
     expect(res.status).toBe(200);
     expect(res.body.valido).toBe(true);
     expect(res.body.certificado.id).toBe('cert-1');
-    expect(res.body.documento.titulo).toBe('Estágio XYZ');
+    expect(res.body.documento.titulo).toBe('Certificado XYZ');
     expect(res.body.estudante.nome).toBe('João Silva');
   });
 

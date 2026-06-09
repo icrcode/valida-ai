@@ -50,4 +50,17 @@ describe('ThemeContext', () => {
     await act(async () => { screen.getByText('alternar').click(); });
     expect(localStorage.getItem('tema')).toBe('light');
   });
+
+  it('atualiza o meta color-scheme quando o elemento existe', async () => {
+    const meta = document.createElement('meta');
+    meta.setAttribute('name', 'color-scheme');
+    document.head.appendChild(meta);
+    try {
+      render(<ThemeProvider><Probe /></ThemeProvider>);
+      await act(async () => { screen.getByText('alternar').click(); });
+      expect(meta.content).toBe('light');
+    } finally {
+      document.head.removeChild(meta);
+    }
+  });
 });

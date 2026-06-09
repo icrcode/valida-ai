@@ -146,6 +146,30 @@ describe('Perfil — modo EDITAR DADOS', () => {
     });
   });
 
+  it('exibe erro da API quando mutDados falha com erro personalizado', async () => {
+    mockUsuariosService.atualizarPerfil.mockRejectedValue({
+      response: { data: { erro: 'E-mail já em uso' } },
+    });
+    renderPerfil();
+    await waitFor(() => screen.getByText('Editar perfil'));
+    fireEvent.click(screen.getByText('Editar perfil'));
+    fireEvent.click(screen.getByText('Salvar alterações'));
+    await waitFor(() =>
+      expect(mockUsuariosService.atualizarPerfil).toHaveBeenCalled(),
+    );
+  });
+
+  it('exibe mensagem genérica quando mutDados falha sem detalhe da API', async () => {
+    mockUsuariosService.atualizarPerfil.mockRejectedValue(new Error('Network error'));
+    renderPerfil();
+    await waitFor(() => screen.getByText('Editar perfil'));
+    fireEvent.click(screen.getByText('Editar perfil'));
+    fireEvent.click(screen.getByText('Salvar alterações'));
+    await waitFor(() =>
+      expect(mockUsuariosService.atualizarPerfil).toHaveBeenCalled(),
+    );
+  });
+
   it('salva dados com sucesso e volta ao modo ver', async () => {
     mockUsuariosService.atualizarPerfil.mockResolvedValue({ ...USUARIO_ESTUDANTE, nome: 'Nome Atualizado' });
     renderPerfil();
@@ -244,5 +268,64 @@ describe('Perfil — modo EDITAR SENHA', () => {
       senha_atual: 'senhaAtual',
       nova_senha: 'novaSenha123',
     }));
+  });
+
+  it('exibe erro da API quando mutSenha falha com erro personalizado', async () => {
+    mockUsuariosService.atualizarPerfil.mockRejectedValue({
+      response: { data: { erro: 'Senha atual incorreta' } },
+    });
+    renderPerfil();
+    await waitFor(() => screen.getByText('Alterar senha'));
+    fireEvent.click(screen.getByText('Alterar senha'));
+    fireEvent.change(screen.getByPlaceholderText('Sua senha atual'), { target: { value: 'errada' } });
+    fireEvent.change(screen.getByPlaceholderText('Mínimo 6 caracteres'), { target: { value: 'novaSenha123' } });
+    fireEvent.change(screen.getByPlaceholderText('Repita a nova senha'), { target: { value: 'novaSenha123' } });
+    fireEvent.click(screen.getByText('Salvar nova senha'));
+    await waitFor(() =>
+      expect(screen.getByText('Senha atual incorreta')).toBeInTheDocument(),
+    );
+  });
+
+  it('exibe mensagem genérica quando mutSenha falha sem detalhe da API', async () => {
+    mockUsuariosService.atualizarPerfil.mockRejectedValue(new Error('network error'));
+    renderPerfil();
+    await waitFor(() => screen.getByText('Alterar senha'));
+    fireEvent.click(screen.getByText('Alterar senha'));
+    fireEvent.change(screen.getByPlaceholderText('Sua senha atual'), { target: { value: 'senhaAtual' } });
+    fireEvent.change(screen.getByPlaceholderText('Mínimo 6 caracteres'), { target: { value: 'novaSenha123' } });
+    fireEvent.change(screen.getByPlaceholderText('Repita a nova senha'), { target: { value: 'novaSenha123' } });
+    fireEvent.click(screen.getByText('Salvar nova senha'));
+    await waitFor(() =>
+      expect(screen.getByText('Erro ao alterar senha')).toBeInTheDocument(),
+    );
+  });
+});
+
+describe('Perfil — campos opcionais', () => {
+  it('aceita digitação no campo de matrícula no modo editar (estudante)', async () => {
+    renderPerfil();
+    await waitFor(() => screen.getByText('Editar perfil'));
+    fireEvent.click(screen.getByText('Editar perfil'));
+    const inputMatricula = screen.getByPlaceholderText('Número de matrícula');
+    fireEvent.change(inputMatricula, { target: { value: '2022999' } });
+    expect(inputMatricula).toHaveValue('2022999');
+  });
+
+  it('aceita digitação no campo de CPF no modo editar (coordenador)', async () => {
+    renderPerfil(USUARIO_COORD);
+    await waitFor(() => screen.getByText('Editar perfil'));
+    fireEvent.click(screen.getByText('Editar perfil'));
+    const inputCpf = screen.getByPlaceholderText('000.000.000-00');
+    fireEvent.change(inputCpf, { target: { value: '12345678901' } });
+    expect(inputCpf).toHaveValue('123.456.789-01');
+  });
+
+  it('aceita digitação no campo de endereço no modo editar (coordenador)', async () => {
+    renderPerfil(USUARIO_COORD);
+    await waitFor(() => screen.getByText('Editar perfil'));
+    fireEvent.click(screen.getByText('Editar perfil'));
+    const inputEndereco = screen.getByPlaceholderText(/Rua, número/i);
+    fireEvent.change(inputEndereco, { target: { value: 'Rua das Flores, 42' } });
+    expect(inputEndereco).toHaveValue('Rua das Flores, 42');
   });
 });

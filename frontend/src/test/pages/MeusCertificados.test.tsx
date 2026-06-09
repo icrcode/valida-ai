@@ -27,7 +27,7 @@ const CERT_MOCK = {
   caminho_arquivo: 'certs/cert-1.pdf',
   criado_em: '2024-03-01T10:00:00Z',
   documento: {
-    id: 'doc-1', titulo: 'Workshop React', tipo: 'extensao', carga_horaria: 40,
+    id: 'doc-1', titulo: 'Workshop React', tipo: 'certificado_curso', carga_horaria: 40,
     estudante_id: 'u-1', curso_id: 'c-1', status: 'aprovado' as const,
     coordenador_id: 'coord-1', nome_arquivo: 'cert.pdf', caminho_arquivo: 'docs/cert.pdf',
     tamanho_arquivo: 1024, mime_type: 'application/pdf',
@@ -80,7 +80,7 @@ describe('MeusCertificados — com certificados', () => {
   it('renderiza tipo e carga horária do documento', async () => {
     renderWithProviders(<MeusCertificados />, { token: 'tok', usuario: USUARIO_ESTUDANTE });
     await waitFor(() => {
-      expect(screen.getByText(/Extensão/i)).toBeInTheDocument();
+      expect(screen.getByText(/Certificado de Curso/i)).toBeInTheDocument();
       expect(screen.getByText(/40h/i)).toBeInTheDocument();
     });
   });
@@ -140,5 +140,30 @@ describe('MeusCertificados — com certificados', () => {
     await waitFor(() => {
       expect(screen.getByText('Baixar PDF')).toBeInTheDocument();
     });
+  });
+
+  it('usa tipo bruto como fallback quando tipo não está em TIPO_LEGIVEL', async () => {
+    const certTipoDesconhecido = {
+      ...CERT_MOCK,
+      documento: { ...CERT_MOCK.documento, tipo: 'tipo_desconhecido' },
+    };
+    mockCertificadosService.listar.mockResolvedValue([certTipoDesconhecido]);
+    renderWithProviders(<MeusCertificados />, { token: 'tok', usuario: USUARIO_ESTUDANTE });
+    await waitFor(() => {
+      expect(screen.getByText(/tipo_desconhecido/)).toBeInTheDocument();
+    });
+  });
+
+  it('aplica delay-300 para o 5º certificado ou mais', async () => {
+    const certs = Array.from({ length: 5 }, (_, i) => ({
+      ...CERT_MOCK,
+      id: `cert-${i + 1}`,
+      hash: `hash${i}`,
+      documento: { ...CERT_MOCK.documento, titulo: `Curso ${i}` },
+    }));
+    mockCertificadosService.listar.mockResolvedValue(certs);
+    const { container } = renderWithProviders(<MeusCertificados />, { token: 'tok', usuario: USUARIO_ESTUDANTE });
+    await waitFor(() => screen.getByText('Curso 4'));
+    expect(container.querySelector('.delay-300')).toBeInTheDocument();
   });
 });

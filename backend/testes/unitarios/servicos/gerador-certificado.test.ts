@@ -20,8 +20,8 @@ const DADOS_BASE: DadosCertificado = {
   documentoId: 'doc-1',
   estudanteNome: 'João Silva',
   estudanteEmail: 'joao@uni.edu',
-  titulo: 'Estágio XYZ',
-  tipo: 'estagio',
+  titulo: 'Certificado XYZ',
+  tipo: 'certificado_curso',
   cargaHoraria: 40,
   dataAprovacao: new Date('2024-06-01'),
 };

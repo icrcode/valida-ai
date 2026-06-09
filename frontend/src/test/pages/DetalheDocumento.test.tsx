@@ -62,6 +62,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   mockDocumentosService.buscarPorId.mockResolvedValue(DOC_MOCK);
   mockDocumentosService.historico.mockResolvedValue([]);
+  mockDocumentosService.buscarUrlDownload.mockResolvedValue({ url: 'https://s3.test/doc.pdf', expira_em: '2025-01-01' });
 });
 
 describe('DetalheDocumento — loading e not found', () => {
@@ -144,6 +145,32 @@ describe('DetalheDocumento — detalhes do documento', () => {
     renderWithProviders(<DetalheDocumento />, { token: 'tok', usuario: USUARIO_ESTUDANTE });
     await waitFor(() => screen.getByText('Certificado React'));
     expect(screen.queryByText('Histórico')).not.toBeInTheDocument();
+  });
+});
+
+describe('DetalheDocumento — pré-visualização PDF', () => {
+  it('exibe seção de pré-visualização', async () => {
+    renderWithProviders(<DetalheDocumento />, { token: 'tok', usuario: USUARIO_ESTUDANTE });
+    await waitFor(() => {
+      expect(screen.getByText('Pré-visualização')).toBeInTheDocument();
+    });
+  });
+
+  it('renderiza iframe com src da URL assinada', async () => {
+    renderWithProviders(<DetalheDocumento />, { token: 'tok', usuario: USUARIO_ESTUDANTE });
+    await waitFor(() => {
+      const iframe = document.querySelector('iframe');
+      expect(iframe).toBeInTheDocument();
+      expect(iframe?.src).toContain('s3.test');
+    });
+  });
+
+  it('exibe fallback quando buscarUrlDownload falha', async () => {
+    mockDocumentosService.buscarUrlDownload.mockRejectedValue(new Error('Erro'));
+    renderWithProviders(<DetalheDocumento />, { token: 'tok', usuario: USUARIO_ESTUDANTE });
+    await waitFor(() => {
+      expect(screen.getByText(/Não foi possível carregar a pré-visualização/i)).toBeInTheDocument();
+    });
   });
 });
 

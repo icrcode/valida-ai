@@ -75,6 +75,13 @@ export function DetalheDocumento() {
     onError: () => addToast('Erro ao cancelar o documento.', 'error'),
   });
 
+  const { data: previewData, isLoading: previewLoading } = useQuery({
+    queryKey: ['documento-url', id],
+    queryFn: () => documentosService.buscarUrlDownload(id!),
+    enabled: !!id && !!doc,
+    staleTime: 50 * 60 * 1000,
+  });
+
   const mutDownload = useMutation({
     mutationFn: () => documentosService.buscarUrlDownload(id!),
     onSuccess: ({ url }) => window.open(url, '_blank'),
@@ -137,6 +144,33 @@ export function DetalheDocumento() {
             Baixar PDF
           </Button>
         </div>
+      </Card>
+
+      {/* Pré-visualização PDF */}
+      <Card>
+        <h3 className="mb-4 font-medium text-white">Pré-visualização</h3>
+        {previewLoading && (
+          <div className="flex items-center justify-center py-12">
+            <Spinner className="h-6 w-6 text-[#618C7C]" />
+            <span className="ml-3 text-sm text-white/45">Carregando documento...</span>
+          </div>
+        )}
+        {previewData && (
+          <iframe
+            src={previewData.url}
+            title="Pré-visualização do documento PDF"
+            className="w-full rounded-lg border border-white/10 bg-black/20"
+            style={{ height: '65vh', minHeight: '420px' }}
+          />
+        )}
+        {!previewLoading && !previewData && (
+          <div className="flex flex-col items-center gap-3 py-12 text-center">
+            <p className="text-sm text-white/40">Não foi possível carregar a pré-visualização.</p>
+            <Button variant="secondary" loading={mutDownload.isPending} onClick={() => mutDownload.mutate()}>
+              Baixar PDF
+            </Button>
+          </div>
+        )}
       </Card>
 
       {/* Ações do coordenador */}
