@@ -99,7 +99,7 @@ export function Dashboard() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-white">{doc.titulo}</p>
                   <p className="text-xs text-white/40">
-                    {doc.tipo} · {doc.carga_horaria}h · {new Date(doc.criado_em).toLocaleDateString('pt-BR')}
+                    {doc.tipo} · {doc.carga_horaria}h · {new Date(doc.criado_em.replace(' ', 'T')).toLocaleDateString('pt-BR')}
                   </p>
                 </div>
                 <Link to={`/documentos/${doc.id}`} className="ml-4 flex-shrink-0 text-sm text-[#618C7C] hover:text-[#7AAA9A] transition-colors">
