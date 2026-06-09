@@ -437,6 +437,37 @@ describe('Usuarios — erros de mutation', () => {
   });
 });
 
+describe('Usuarios — editar campos opcionais', () => {
+  it('permite alterar curso no select do modal de edição', async () => {
+    renderUsuarios();
+    await waitFor(() => screen.getAllByText('Editar'));
+    fireEvent.click(screen.getAllByText('Editar')[0]);
+
+    // O select de curso tem a opção "Sem curso vinculado" + cursos
+    const courseSelect = screen.getByDisplayValue(/\[CC-001\]/);
+    fireEvent.change(courseSelect, { target: { value: '' } });
+    expect(screen.queryByDisplayValue(/\[CC-001\]/)).not.toBeInTheDocument();
+  });
+
+  it('permite alterar matrícula no modal de edição (estudante)', async () => {
+    renderUsuarios();
+    await waitFor(() => screen.getAllByText('Editar'));
+    fireEvent.click(screen.getAllByText('Editar')[0]);
+    const matricula = screen.getByDisplayValue('2021001');
+    fireEvent.change(matricula, { target: { value: '2022999' } });
+    expect(screen.getByDisplayValue('2022999')).toBeInTheDocument();
+  });
+
+  it('permite alterar endereço no modal de edição (estudante)', async () => {
+    renderUsuarios();
+    await waitFor(() => screen.getAllByText('Editar'));
+    fireEvent.click(screen.getAllByText('Editar')[0]);
+    const endereco = screen.getByDisplayValue('Rua A, 123');
+    fireEvent.change(endereco, { target: { value: 'Rua B, 456' } });
+    expect(screen.getByDisplayValue('Rua B, 456')).toBeInTheDocument();
+  });
+});
+
 describe('Usuarios — formatação de CPF', () => {
   it('formata CPF com 4 dígitos (d.length <= 6)', async () => {
     renderUsuarios();

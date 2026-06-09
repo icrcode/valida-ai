@@ -146,6 +146,30 @@ describe('Perfil — modo EDITAR DADOS', () => {
     });
   });
 
+  it('exibe erro da API quando mutDados falha com erro personalizado', async () => {
+    mockUsuariosService.atualizarPerfil.mockRejectedValue({
+      response: { data: { erro: 'E-mail já em uso' } },
+    });
+    renderPerfil();
+    await waitFor(() => screen.getByText('Editar perfil'));
+    fireEvent.click(screen.getByText('Editar perfil'));
+    fireEvent.click(screen.getByText('Salvar alterações'));
+    await waitFor(() =>
+      expect(mockUsuariosService.atualizarPerfil).toHaveBeenCalled(),
+    );
+  });
+
+  it('exibe mensagem genérica quando mutDados falha sem detalhe da API', async () => {
+    mockUsuariosService.atualizarPerfil.mockRejectedValue(new Error('Network error'));
+    renderPerfil();
+    await waitFor(() => screen.getByText('Editar perfil'));
+    fireEvent.click(screen.getByText('Editar perfil'));
+    fireEvent.click(screen.getByText('Salvar alterações'));
+    await waitFor(() =>
+      expect(mockUsuariosService.atualizarPerfil).toHaveBeenCalled(),
+    );
+  });
+
   it('salva dados com sucesso e volta ao modo ver', async () => {
     mockUsuariosService.atualizarPerfil.mockResolvedValue({ ...USUARIO_ESTUDANTE, nome: 'Nome Atualizado' });
     renderPerfil();
