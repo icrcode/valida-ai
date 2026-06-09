@@ -21,7 +21,7 @@ const clienteMock = {
 
 const DOC_ROW = {
   id: 'doc-1',
-  titulo: 'Estágio XYZ',
+  titulo: 'Certificado XYZ',
   status: 'pendente',
   estudante_id: 'est-1',
   curso_id: 'curso-1',

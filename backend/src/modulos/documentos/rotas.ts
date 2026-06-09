@@ -97,6 +97,21 @@ router.post('/', autenticar, exigirPerfil('estudante'), upload.single('arquivo')
     return;
   }
 
+  const TIPOS_VALIDOS = [
+    'certificado_curso',
+    'certificado_evento',
+    'declaracao_participacao',
+    'comprovante_atividade',
+    'artigo_publicado',
+    'outro',
+  ];
+  if (!TIPOS_VALIDOS.includes(tipo)) {
+    res.status(400).json({
+      erro: `Tipo inválido. Valores aceitos: ${TIPOS_VALIDOS.join(', ')}`,
+    });
+    return;
+  }
+
   try {
     const usuario = await buscarUsuario(req.usuario!.sub);
     if (!usuario?.curso_id) {

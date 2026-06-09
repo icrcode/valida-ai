@@ -12,15 +12,15 @@ const submetido: EventoDocumentoSubmetido = {
   documentoId: 'doc-1',
   estudanteId: 'est-1',
   cursoId: 'curso-1',
-  titulo: 'Estágio XYZ',
-  tipo: 'estagio',
+  titulo: 'Certificado XYZ',
+  tipo: 'certificado_curso',
 };
 
 const aprovado: EventoDocumentoAprovado = {
   documentoId: 'doc-1',
   estudanteId: 'est-1',
   coordenadorId: 'coord-1',
-  titulo: 'Estágio XYZ',
+  titulo: 'Certificado XYZ',
 };
 
 const reprovado: EventoDocumentoReprovado = {
