@@ -437,6 +437,44 @@ describe('Usuarios — erros de mutation', () => {
   });
 });
 
+describe('Usuarios — formatação de CPF', () => {
+  it('formata CPF com 4 dígitos (d.length <= 6)', async () => {
+    renderUsuarios();
+    await waitFor(() => screen.getAllByText('Editar'));
+    fireEvent.click(screen.getAllByText('Editar')[0]);
+    const cpf = screen.getByDisplayValue('000.000.000-00');
+    fireEvent.change(cpf, { target: { value: '1234' } });
+    expect(cpf).toHaveValue('123.4');
+  });
+
+  it('formata CPF com 7 dígitos (d.length <= 9)', async () => {
+    renderUsuarios();
+    await waitFor(() => screen.getAllByText('Editar'));
+    fireEvent.click(screen.getAllByText('Editar')[0]);
+    const cpf = screen.getByDisplayValue('000.000.000-00');
+    fireEvent.change(cpf, { target: { value: '1234567' } });
+    expect(cpf).toHaveValue('123.456.7');
+  });
+
+  it('formata CPF com 3 dígitos ou menos (retorna direto)', async () => {
+    renderUsuarios();
+    await waitFor(() => screen.getAllByText('Editar'));
+    fireEvent.click(screen.getAllByText('Editar')[0]);
+    const cpf = screen.getByDisplayValue('000.000.000-00');
+    fireEvent.change(cpf, { target: { value: '12' } });
+    expect(cpf).toHaveValue('12');
+  });
+
+  it('formata CPF completo com 11 dígitos', async () => {
+    renderUsuarios();
+    await waitFor(() => screen.getAllByText('Editar'));
+    fireEvent.click(screen.getAllByText('Editar')[0]);
+    const cpf = screen.getByDisplayValue('000.000.000-00');
+    fireEvent.change(cpf, { target: { value: '12345678901' } });
+    expect(cpf).toHaveValue('123.456.789-01');
+  });
+});
+
 describe('Usuarios — fechar modal pelo botão ×', () => {
   it('fecha modal de criação pelo botão × do cabeçalho', async () => {
     renderUsuarios();
