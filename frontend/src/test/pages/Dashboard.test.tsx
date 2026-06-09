@@ -119,7 +119,7 @@ describe('Dashboard — coordenador/admin', () => {
   it('exibe link Fila de Análise para coordenador', async () => {
     renderWithProviders(<Dashboard />, { token: 'tok', usuario: USUARIO_COORD });
     await waitFor(() =>
-      expect(screen.getByText('Revisar documentos pendentes')).toBeInTheDocument(),
+      expect(screen.getByText('Fila de Análise')).toBeInTheDocument(),
     );
   });
 
