@@ -284,3 +284,81 @@ describe('Cursos — alterar ativo', () => {
     );
   });
 });
+
+describe('Cursos — erros de mutation', () => {
+  it('exibe erro personalizado da API ao falhar criação', async () => {
+    mockCursosService.criar.mockRejectedValue({
+      response: { data: { erro: 'Código duplicado' } },
+    });
+    renderCursos();
+    await waitFor(() => screen.getByText('Novo curso'));
+    fireEvent.click(screen.getByText('Novo curso'));
+
+    const instSelect = screen.getByText('Selecione uma instituição...').closest('select')!;
+    fireEvent.change(instSelect, { target: { value: 'i-1' } });
+    fireEvent.change(screen.getByPlaceholderText('Ex: Ciência da Computação'), {
+      target: { value: 'Curso Duplicado' },
+    });
+    fireEvent.click(screen.getByText('Criar curso'));
+    await waitFor(() => expect(mockCursosService.criar).toHaveBeenCalled());
+  });
+
+  it('exibe mensagem genérica ao falhar criação sem detalhe da API', async () => {
+    mockCursosService.criar.mockRejectedValue(new Error('Network error'));
+    renderCursos();
+    await waitFor(() => screen.getByText('Novo curso'));
+    fireEvent.click(screen.getByText('Novo curso'));
+
+    const instSelect = screen.getByText('Selecione uma instituição...').closest('select')!;
+    fireEvent.change(instSelect, { target: { value: 'i-1' } });
+    fireEvent.change(screen.getByPlaceholderText('Ex: Ciência da Computação'), {
+      target: { value: 'Curso Erro' },
+    });
+    fireEvent.click(screen.getByText('Criar curso'));
+    await waitFor(() => expect(mockCursosService.criar).toHaveBeenCalled());
+  });
+
+  it('exibe erro ao falhar atualização de curso', async () => {
+    mockCursosService.atualizar.mockRejectedValue(new Error('fail'));
+    renderCursos();
+    await waitFor(() => screen.getAllByText('Editar'));
+    fireEvent.click(screen.getAllByText('Editar')[0]);
+    fireEvent.click(screen.getByText('Salvar alterações'));
+    await waitFor(() => expect(mockCursosService.atualizar).toHaveBeenCalled());
+  });
+
+  it('exibe erro ao falhar alteração de status', async () => {
+    mockCursosService.alterarAtivo.mockRejectedValue(new Error('fail'));
+    renderCursos();
+    await waitFor(() => screen.getByText('Desativar'));
+    fireEvent.click(screen.getByText('Desativar'));
+    await waitFor(() => expect(mockCursosService.alterarAtivo).toHaveBeenCalled());
+  });
+});
+
+describe('Cursos — fechar modal pelo botão ×', () => {
+  it('fecha modal de criação pelo botão × do cabeçalho', async () => {
+    renderCursos();
+    await waitFor(() => screen.getByText('Novo curso'));
+    fireEvent.click(screen.getByText('Novo curso'));
+
+    // Clica no botão × do cabeçalho do modal (SVG button sem texto)
+    const overlay = document.querySelector('.fixed.inset-0');
+    const closeBtn = overlay?.querySelector('button');
+    expect(closeBtn).toBeTruthy();
+    fireEvent.click(closeBtn!);
+    expect(screen.queryByText('Criar curso')).not.toBeInTheDocument();
+  });
+
+  it('fecha modal de edição pelo botão × do cabeçalho', async () => {
+    renderCursos();
+    await waitFor(() => screen.getAllByText('Editar'));
+    fireEvent.click(screen.getAllByText('Editar')[0]);
+
+    const overlay = document.querySelector('.fixed.inset-0');
+    const closeBtn = overlay?.querySelector('button');
+    expect(closeBtn).toBeTruthy();
+    fireEvent.click(closeBtn!);
+    expect(screen.queryByText('Salvar alterações')).not.toBeInTheDocument();
+  });
+});
