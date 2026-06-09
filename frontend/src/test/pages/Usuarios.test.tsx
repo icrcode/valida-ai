@@ -370,3 +370,95 @@ describe('Usuarios — alterar ativo', () => {
     );
   });
 });
+
+describe('Usuarios — erros de mutation', () => {
+  it('exibe erro personalizado da API ao falhar criação', async () => {
+    mockUsuariosService.criar.mockRejectedValue({
+      response: { data: { erro: 'E-mail já cadastrado' } },
+    });
+    renderUsuarios();
+    await waitFor(() => screen.getByText('Novo usuário'));
+    fireEvent.click(screen.getByText('Novo usuário'));
+
+    fireEvent.change(screen.getByPlaceholderText('Nome completo'), { target: { value: 'Duplicado' } });
+    fireEvent.change(screen.getByPlaceholderText('email@instituicao.edu.br'), {
+      target: { value: 'dup@ufsc.br' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('Mínimo 6 caracteres'), {
+      target: { value: 'senha123' },
+    });
+    fireEvent.click(screen.getByText('Criar usuário'));
+    await waitFor(() => expect(mockUsuariosService.criar).toHaveBeenCalled());
+  });
+
+  it('exibe mensagem genérica ao falhar criação sem detalhe da API', async () => {
+    mockUsuariosService.criar.mockRejectedValue(new Error('Network error'));
+    renderUsuarios();
+    await waitFor(() => screen.getByText('Novo usuário'));
+    fireEvent.click(screen.getByText('Novo usuário'));
+
+    fireEvent.change(screen.getByPlaceholderText('Nome completo'), { target: { value: 'Novo User' } });
+    fireEvent.change(screen.getByPlaceholderText('email@instituicao.edu.br'), {
+      target: { value: 'novo@ufsc.br' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('Mínimo 6 caracteres'), {
+      target: { value: 'senha123' },
+    });
+    fireEvent.click(screen.getByText('Criar usuário'));
+    await waitFor(() => expect(mockUsuariosService.criar).toHaveBeenCalled());
+  });
+
+  it('exibe erro personalizado da API ao falhar atualização', async () => {
+    mockUsuariosService.atualizar.mockRejectedValue({
+      response: { data: { erro: 'E-mail em uso' } },
+    });
+    renderUsuarios();
+    await waitFor(() => screen.getAllByText('Editar'));
+    fireEvent.click(screen.getAllByText('Editar')[0]);
+    fireEvent.click(screen.getByText('Salvar'));
+    await waitFor(() => expect(mockUsuariosService.atualizar).toHaveBeenCalled());
+  });
+
+  it('exibe erro genérico ao falhar atualização', async () => {
+    mockUsuariosService.atualizar.mockRejectedValue(new Error('fail'));
+    renderUsuarios();
+    await waitFor(() => screen.getAllByText('Editar'));
+    fireEvent.click(screen.getAllByText('Editar')[0]);
+    fireEvent.click(screen.getByText('Salvar'));
+    await waitFor(() => expect(mockUsuariosService.atualizar).toHaveBeenCalled());
+  });
+
+  it('exibe erro ao falhar alteração de status', async () => {
+    mockUsuariosService.alterarAtivo.mockRejectedValue(new Error('fail'));
+    renderUsuarios();
+    await waitFor(() => screen.getAllByText('Desativar'));
+    fireEvent.click(screen.getAllByText('Desativar')[0]);
+    await waitFor(() => expect(mockUsuariosService.alterarAtivo).toHaveBeenCalled());
+  });
+});
+
+describe('Usuarios — fechar modal pelo botão ×', () => {
+  it('fecha modal de criação pelo botão × do cabeçalho', async () => {
+    renderUsuarios();
+    await waitFor(() => screen.getByText('Novo usuário'));
+    fireEvent.click(screen.getByText('Novo usuário'));
+
+    const overlay = document.querySelector('.fixed.inset-0');
+    const closeBtn = overlay?.querySelector('button');
+    expect(closeBtn).toBeTruthy();
+    fireEvent.click(closeBtn!);
+    expect(screen.queryByText('Criar usuário')).not.toBeInTheDocument();
+  });
+
+  it('fecha modal de edição pelo botão × do cabeçalho', async () => {
+    renderUsuarios();
+    await waitFor(() => screen.getAllByText('Editar'));
+    fireEvent.click(screen.getAllByText('Editar')[0]);
+
+    const overlay = document.querySelector('.fixed.inset-0');
+    const closeBtn = overlay?.querySelector('button');
+    expect(closeBtn).toBeTruthy();
+    fireEvent.click(closeBtn!);
+    expect(screen.queryByText('Salvar')).not.toBeInTheDocument();
+  });
+});
