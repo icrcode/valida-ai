@@ -44,6 +44,11 @@ const USUARIOS_MOCK = [
     matricula: null, cpf: null, endereco: null,
     curso_id: null, instituicao_id: null, instituicao_nome: null, ativo: true,
   },
+  {
+    id: 'u-4', nome: 'Perfil Desconhecido', email: 'x@ufsc.br', perfil: 'desconhecido' as any,
+    matricula: null, cpf: null, endereco: null,
+    curso_id: null, instituicao_id: null, instituicao_nome: null, ativo: true,
+  },
 ];
 
 const CURSOS_MOCK = [
