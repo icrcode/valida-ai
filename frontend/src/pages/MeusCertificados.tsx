@@ -6,10 +6,12 @@ import { Button } from '../components/ui/Button';
 import { EmojiEventsIcon } from '../components/icons';
 
 const TIPO_LEGIVEL: Record<string, string> = {
-  estagio: 'Estágio',
-  tcc: 'TCC',
-  extensao: 'Extensão',
-  monitoria: 'Monitoria',
+  certificado_curso: 'Certificado de Curso',
+  certificado_evento: 'Certificado de Evento',
+  declaracao_participacao: 'Declaração de Participação',
+  comprovante_atividade: 'Comprovante de Atividade',
+  artigo_publicado: 'Artigo Publicado',
+  outro: 'Outro',
 };
 
 export function MeusCertificados() {

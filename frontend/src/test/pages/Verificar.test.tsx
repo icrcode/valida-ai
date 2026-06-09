@@ -106,12 +106,12 @@ describe('Verificar — estados da página', () => {
       valido: true,
       certificado: { id: 'cert-2', hash: 'xyz456', emitido_em: '2024-03-01T00:00:00Z' },
       estudante: { nome: 'Maria', email: 'maria@ufsc.br' },
-      documento: { titulo: 'TCC Final', tipo: 'tcc', carga_horaria: 60, status: 'aprovado' },
+      documento: { titulo: 'TCC Final', tipo: 'artigo_publicado', carga_horaria: 60, status: 'aprovado' },
     };
     mockAxios.get.mockResolvedValue({ data: dados });
     renderVerificar('xyz456');
     await waitFor(() =>
-      expect(screen.getByText('Trabalho de Conclusão de Curso · 60h')).toBeInTheDocument(),
+      expect(screen.getByText('Artigo Publicado · 60h')).toBeInTheDocument(),
     );
   });
 
