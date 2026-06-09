@@ -206,9 +206,9 @@ describe('Cursos — modal criar', () => {
     await waitFor(() => screen.getByText('Novo curso'));
     fireEvent.click(screen.getByText('Novo curso'));
 
-    const selects = screen.getAllByRole('combobox');
-    const selectInstituicao = selects.find((s) => s.querySelector('option[value="i-1"]'));
-    fireEvent.change(selectInstituicao!, { target: { value: 'i-1' } });
+    // Usa o texto único do placeholder do select dentro do modal
+    const instSelect = screen.getByText('Selecione uma instituição...').closest('select')!;
+    fireEvent.change(instSelect, { target: { value: 'i-1' } });
     fireEvent.change(screen.getByPlaceholderText('Ex: Ciência da Computação'), {
       target: { value: 'Novo Curso Teste' },
     });
