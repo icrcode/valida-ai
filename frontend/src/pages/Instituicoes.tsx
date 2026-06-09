@@ -62,14 +62,22 @@ function Modal({ titulo, onClose, children }: { titulo: string; onClose: () => v
   return (
     <div
       className="fixed inset-0 z-50 overflow-y-auto bg-black/50"
+      role="button"
+      tabIndex={-1}
+      aria-label="Fechar modal"
       onClick={onClose}
+      onKeyDown={(e) => { if (e.key === 'Escape' || e.key === 'Enter') onClose(); }}
     >
       <div className="flex min-h-full items-start justify-center px-4 py-8">
         <div
-          className="w-full max-w-xl rounded-2xl bg-[#011140] shadow-xl"
+          className="w-full max-w-xl rounded-2xl bg-[#011140] shadow-xl flex flex-col"
+          style={{ maxHeight: 'calc(100vh - 2rem)' }}
+          role="dialog"
+          aria-modal="true"
           onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
         >
-          <div className="flex items-center justify-between border-b border-white/8 px-6 py-4">
+          <div className="flex flex-shrink-0 items-center justify-between border-b border-white/8 px-6 py-4">
             <h2 className="text-base font-semibold text-white">{titulo}</h2>
             <button
               onClick={onClose}
@@ -80,7 +88,7 @@ function Modal({ titulo, onClose, children }: { titulo: string; onClose: () => v
               </svg>
             </button>
           </div>
-          <div className="px-6 py-5">{children}</div>
+          <div className="overflow-y-auto px-6 py-5">{children}</div>
         </div>
       </div>
     </div>
