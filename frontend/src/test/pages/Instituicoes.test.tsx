@@ -336,3 +336,76 @@ describe('Instituicoes — alterar ativa', () => {
     );
   });
 });
+
+describe('Instituicoes — erros de mutation', () => {
+  it('exibe erro personalizado da API ao falhar criação', async () => {
+    mockInstituicoesService.criar.mockRejectedValue({
+      response: { data: { erro: 'CNPJ já cadastrado' } },
+    });
+    renderInstituicoes();
+    await waitFor(() => screen.getByText('Nova instituição'));
+    fireEvent.click(screen.getByText('Nova instituição'));
+    fireEvent.change(screen.getByPlaceholderText('Ex: Universidade Federal de SC'), {
+      target: { value: 'Instituição Duplicada' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('UFSC'), { target: { value: 'ID' } });
+    fireEvent.click(screen.getByText('Criar instituição'));
+    await waitFor(() => expect(mockInstituicoesService.criar).toHaveBeenCalled());
+  });
+
+  it('exibe mensagem genérica ao falhar criação sem detalhe da API', async () => {
+    mockInstituicoesService.criar.mockRejectedValue(new Error('Network error'));
+    renderInstituicoes();
+    await waitFor(() => screen.getByText('Nova instituição'));
+    fireEvent.click(screen.getByText('Nova instituição'));
+    fireEvent.change(screen.getByPlaceholderText('Ex: Universidade Federal de SC'), {
+      target: { value: 'Nova Inst' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('UFSC'), { target: { value: 'NI' } });
+    fireEvent.click(screen.getByText('Criar instituição'));
+    await waitFor(() => expect(mockInstituicoesService.criar).toHaveBeenCalled());
+  });
+
+  it('exibe erro ao falhar atualização de instituição', async () => {
+    mockInstituicoesService.atualizar.mockRejectedValue(new Error('fail'));
+    renderInstituicoes();
+    await waitFor(() => screen.getAllByText('Editar'));
+    fireEvent.click(screen.getAllByText('Editar')[0]);
+    fireEvent.click(screen.getByText('Salvar alterações'));
+    await waitFor(() => expect(mockInstituicoesService.atualizar).toHaveBeenCalled());
+  });
+
+  it('exibe erro ao falhar alteração de status', async () => {
+    mockInstituicoesService.alterarAtiva.mockRejectedValue(new Error('fail'));
+    renderInstituicoes();
+    await waitFor(() => screen.getByText('Desativar'));
+    fireEvent.click(screen.getByText('Desativar'));
+    await waitFor(() => expect(mockInstituicoesService.alterarAtiva).toHaveBeenCalled());
+  });
+});
+
+describe('Instituicoes — fechar modal pelo botão ×', () => {
+  it('fecha modal de criação pelo botão × do cabeçalho', async () => {
+    renderInstituicoes();
+    await waitFor(() => screen.getByText('Nova instituição'));
+    fireEvent.click(screen.getByText('Nova instituição'));
+
+    const overlay = document.querySelector('.fixed.inset-0');
+    const closeBtn = overlay?.querySelector('button');
+    expect(closeBtn).toBeTruthy();
+    fireEvent.click(closeBtn!);
+    expect(screen.queryByText('Criar instituição')).not.toBeInTheDocument();
+  });
+
+  it('fecha modal de edição pelo botão × do cabeçalho', async () => {
+    renderInstituicoes();
+    await waitFor(() => screen.getAllByText('Editar'));
+    fireEvent.click(screen.getAllByText('Editar')[0]);
+
+    const overlay = document.querySelector('.fixed.inset-0');
+    const closeBtn = overlay?.querySelector('button');
+    expect(closeBtn).toBeTruthy();
+    fireEvent.click(closeBtn!);
+    expect(screen.queryByText('Salvar alterações')).not.toBeInTheDocument();
+  });
+});
