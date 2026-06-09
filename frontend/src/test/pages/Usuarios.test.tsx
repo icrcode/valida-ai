@@ -442,6 +442,22 @@ describe('Usuarios — erros de mutation', () => {
   });
 });
 
+describe('Usuarios — editar admin (sem cpf/endereço)', () => {
+  it('salva edição de admin sem cpf, endereço e matrícula', async () => {
+    mockUsuariosService.atualizar.mockResolvedValue({ id: 'u-3' });
+    renderUsuarios();
+    await waitFor(() => screen.getAllByText('Editar'));
+    fireEvent.click(screen.getAllByText('Editar')[2]); // Admin User (índice 2)
+    fireEvent.click(screen.getByText('Salvar'));
+    await waitFor(() =>
+      expect(mockUsuariosService.atualizar).toHaveBeenCalledWith(
+        'u-3',
+        expect.objectContaining({ perfil: 'admin', cpf: null, endereco: null, curso_id: null }),
+      ),
+    );
+  });
+});
+
 describe('Usuarios — editar campos opcionais', () => {
   it('permite alterar curso no select do modal de edição', async () => {
     renderUsuarios();

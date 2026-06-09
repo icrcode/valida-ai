@@ -141,4 +141,29 @@ describe('MeusCertificados — com certificados', () => {
       expect(screen.getByText('Baixar PDF')).toBeInTheDocument();
     });
   });
+
+  it('usa tipo bruto como fallback quando tipo não está em TIPO_LEGIVEL', async () => {
+    const certTipoDesconhecido = {
+      ...CERT_MOCK,
+      documento: { ...CERT_MOCK.documento, tipo: 'certificado_curso' },
+    };
+    mockCertificadosService.listar.mockResolvedValue([certTipoDesconhecido]);
+    renderWithProviders(<MeusCertificados />, { token: 'tok', usuario: USUARIO_ESTUDANTE });
+    await waitFor(() => {
+      expect(screen.getByText(/certificado_curso/)).toBeInTheDocument();
+    });
+  });
+
+  it('aplica delay-300 para o 5º certificado ou mais', async () => {
+    const certs = Array.from({ length: 5 }, (_, i) => ({
+      ...CERT_MOCK,
+      id: `cert-${i + 1}`,
+      hash: `hash${i}`,
+      documento: { ...CERT_MOCK.documento, titulo: `Curso ${i}` },
+    }));
+    mockCertificadosService.listar.mockResolvedValue(certs);
+    const { container } = renderWithProviders(<MeusCertificados />, { token: 'tok', usuario: USUARIO_ESTUDANTE });
+    await waitFor(() => screen.getByText('Curso 4'));
+    expect(container.querySelector('.delay-300')).toBeInTheDocument();
+  });
 });
