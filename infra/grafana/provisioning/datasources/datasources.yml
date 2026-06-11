@@ -14,10 +14,10 @@ datasources:
     uid: postgresql
     access: proxy
     url: postgres:5432
-    database: valida_db
-    user: postgres
+    database: ${DB_NAME}
+    user: ${DB_USER}
     secureJsonData:
-      password: postgres
+      password: ${DB_PASSWORD}
     jsonData:
       sslmode: disable
       postgresVersion: 1600
