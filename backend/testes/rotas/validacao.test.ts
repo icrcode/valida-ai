@@ -6,7 +6,7 @@ jest.mock('../../src/eventos/barramento', () => ({
   barramento: { emitir: jest.fn() },
 }));
 jest.mock('../../src/middleware/autenticacao', () =>
-  require('../helpers/mocks').criarModuloAutenticacao('coord-id', 'coordenador', 'coord@test.com', 'Coordenador Teste', 'curso-1')
+  require('../helpers/mocks').criarModuloAutenticacao('coord-id', 'coordenador', 'coord@test.com', 'Coordenador Teste', 'curso-1', ['curso-1'])
 );
 jest.mock('../../src/middleware/autorizacao', () =>
   require('../helpers/mocks').moduloAutorizacao
