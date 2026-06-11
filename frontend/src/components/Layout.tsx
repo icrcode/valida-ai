@@ -21,7 +21,8 @@ export function Layout() {
 
 
   const eEstudante = usuario?.perfil === 'estudante';
-  const eCoordenador = usuario?.perfil === 'coordenador' || usuario?.perfil === 'admin';
+  const eCoordenadorPuro = usuario?.perfil === 'coordenador';
+  const eCoordenador = eCoordenadorPuro || usuario?.perfil === 'admin';
 
   function handleLogout() {
     logout();
@@ -44,6 +45,11 @@ export function Layout() {
       {eCoordenador && (
         <NavLink to="/documentos?status=pendente" className={linkCls} onClick={mobile ? () => setMenuAberto(false) : undefined}>
           Fila de Análise
+        </NavLink>
+      )}
+      {eCoordenadorPuro && (
+        <NavLink to="/alunos" className={linkCls} onClick={mobile ? () => setMenuAberto(false) : undefined}>
+          Alunos
         </NavLink>
       )}
       <NavLink to="/perfil" className={linkCls} onClick={mobile ? () => setMenuAberto(false) : undefined}>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { documentosService } from '../services/documentos';
@@ -13,6 +13,12 @@ function formatBytes(bytes: number) {
   return bytes < 1024 * 1024
     ? `${(bytes / 1024).toFixed(1)} KB`
     : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function formatDate(s: string | null | undefined): string {
+  if (!s) return '—';
+  const d = new Date(s.replace(' ', 'T').replace(/(\+\d{2})$/, '$1:00'));
+  return isNaN(d.getTime()) ? '—' : d.toLocaleString('pt-BR');
 }
 
 const ACAO_LABEL: Record<string, string> = {
@@ -31,6 +37,8 @@ export function DetalheDocumento() {
   const queryClient = useQueryClient();
   const [observacoes, setObservacoes] = useState('');
   const [confirmarCancelamento, setConfirmarCancelamento] = useState(false);
+  const [iframeOk, setIframeOk] = useState(false);
+  const iframeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { data: doc, isLoading } = useQuery({
     queryKey: ['documento', id],
@@ -130,7 +138,7 @@ export function DetalheDocumento() {
             { label: 'Carga Horária',value: `${doc.carga_horaria}h` },
             { label: 'Arquivo',      value: doc.nome_arquivo },
             { label: 'Tamanho',      value: formatBytes(doc.tamanho_arquivo) },
-            { label: 'Submetido em', value: new Date(doc.criado_em).toLocaleString('pt-BR') },
+            { label: 'Submetido em', value: formatDate(doc.criado_em) },
           ].map(({ label, value }) => (
             <div key={label}>
               <dt className="text-xs font-medium uppercase tracking-wide text-white/35">{label}</dt>
@@ -156,12 +164,25 @@ export function DetalheDocumento() {
           </div>
         )}
         {previewData && (
-          <iframe
-            src={previewData.url}
-            title="Pré-visualização do documento PDF"
-            className="w-full rounded-lg border border-white/10 bg-black/20"
-            style={{ height: '65vh', minHeight: '420px' }}
-          />
+          <>
+            {!iframeOk && (
+              <div className="flex items-center justify-center py-4">
+                <Spinner className="h-5 w-5 text-[#618C7C]" />
+                <span className="ml-2 text-sm text-white/45">Preparando visualização...</span>
+              </div>
+            )}
+            <iframe
+              key={previewData.url}
+              src={previewData.url}
+              title="Pré-visualização do documento PDF"
+              className={`w-full rounded-lg border border-white/10 bg-black/20 transition-opacity duration-300 ${iframeOk ? 'opacity-100' : 'opacity-0 h-0'}`}
+              style={iframeOk ? { height: '70vh', minHeight: '480px' } : {}}
+              onLoad={() => {
+                if (iframeTimer.current) clearTimeout(iframeTimer.current);
+                iframeTimer.current = setTimeout(() => setIframeOk(true), 300);
+              }}
+            />
+          </>
         )}
         {!previewLoading && !previewData && (
           <div className="flex flex-col items-center gap-3 py-12 text-center">
@@ -248,7 +269,7 @@ export function DetalheDocumento() {
                     <p className="mt-0.5 text-sm text-white/55">{h.observacoes}</p>
                   )}
                   <p className="mt-0.5 text-xs text-white/35">
-                    {new Date(h.criado_em).toLocaleString('pt-BR')}
+                    {formatDate(h.criado_em)}
                   </p>
                 </div>
               </li>

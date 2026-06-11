@@ -15,7 +15,7 @@ router.patch('/:id/aprovar', autenticar, exigirPerfil('coordenador', 'admin'), a
 
   try {
     const documento = await buscarDocumento(id);
-    if (!verificarAcessoDocumento(res, documento, req.usuario!.perfil, req.usuario!.sub, req.usuario!.curso_id)) return;
+    if (!verificarAcessoDocumento(res, documento, req.usuario!.perfil, req.usuario!.sub, req.usuario!.curso_ids)) return;
 
     const resultado = await repositorio.executarAcao(id, req.usuario!.sub, 'aprovar', observacoes);
 
@@ -43,7 +43,7 @@ router.patch('/:id/reprovar', autenticar, exigirPerfil('coordenador', 'admin'), 
 
   try {
     const documento = await buscarDocumento(id);
-    if (!verificarAcessoDocumento(res, documento, req.usuario!.perfil, req.usuario!.sub, req.usuario!.curso_id)) return;
+    if (!verificarAcessoDocumento(res, documento, req.usuario!.perfil, req.usuario!.sub, req.usuario!.curso_ids)) return;
 
     const resultado = await repositorio.executarAcao(id, req.usuario!.sub, 'reprovar', observacoes);
 
@@ -76,7 +76,7 @@ router.patch(
 
     try {
       const documento = await buscarDocumento(id);
-      if (!verificarAcessoDocumento(res, documento, req.usuario!.perfil, req.usuario!.sub, req.usuario!.curso_id)) return;
+      if (!verificarAcessoDocumento(res, documento, req.usuario!.perfil, req.usuario!.sub, req.usuario!.curso_ids)) return;
 
       const resultado = await repositorio.executarAcao(
         id,
@@ -106,7 +106,7 @@ router.get('/:id/historico', autenticar, async (req, res) => {
 
   try {
     const documento = await buscarDocumento(id);
-    if (!verificarAcessoDocumento(res, documento, req.usuario!.perfil, req.usuario!.sub, req.usuario!.curso_id)) return;
+    if (!verificarAcessoDocumento(res, documento, req.usuario!.perfil, req.usuario!.sub, req.usuario!.curso_ids)) return;
     const historico = await repositorio.buscarHistoricoPorDocumento(id);
     res.json(historico);
   } catch (err: unknown) {

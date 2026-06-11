@@ -26,7 +26,7 @@ export function verificarAcessoDocumento(
   documento: { estudante_id: string; curso_id: string } | null | undefined,
   perfil: string,
   usuarioId: string,
-  cursoId?: string | null,
+  cursoIds?: string[] | null,
 ): boolean {
   if (!documento) {
     res.status(404).json({ erro: 'Documento não encontrado' });
@@ -36,7 +36,7 @@ export function verificarAcessoDocumento(
     res.status(403).json({ erro: 'Sem permissão para este documento' });
     return false;
   }
-  if (perfil === 'coordenador' && documento.curso_id !== cursoId) {
+  if (perfil === 'coordenador' && !(cursoIds ?? []).includes(documento.curso_id)) {
     res.status(403).json({ erro: 'Sem permissão: documento pertence a outro curso' });
     return false;
   }

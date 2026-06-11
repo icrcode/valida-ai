@@ -126,6 +126,22 @@ CREATE INDEX idx_usuarios_perfil ON usuarios(perfil);
 CREATE INDEX idx_usuarios_curso_id ON usuarios(curso_id);
 
 -- ============================================================
+-- Tabela: coordenadores_cursos
+-- Relação N:N — um coordenador pode ser responsável por vários
+-- cursos, e um curso pode ter mais de um coordenador
+-- ============================================================
+CREATE TABLE coordenadores_cursos (
+  coordenador_id uuid        NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+  curso_id       uuid        NOT NULL REFERENCES cursos(id) ON DELETE CASCADE,
+  criado_em      timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (coordenador_id, curso_id)
+);
+
+COMMENT ON TABLE coordenadores_cursos IS 'Vínculo entre coordenadores e os cursos pelos quais são responsáveis';
+
+CREATE INDEX idx_coordenadores_cursos_curso_id ON coordenadores_cursos(curso_id);
+
+-- ============================================================
 -- Tabela: documentos
 -- Certificados e comprovantes enviados pelos estudantes
 -- ============================================================

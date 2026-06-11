@@ -2,9 +2,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import { renderWithProviders, USUARIO_ESTUDANTE, USUARIO_COORD, USUARIO_ADMIN } from '../helpers/renderWithProviders';
 import { Dashboard } from '../../pages/Dashboard';
+import type { Curso } from '../../services/cursos';
 
-const { mockDocumentosService } = vi.hoisted(() => ({
+const { mockDocumentosService, mockCursosService } = vi.hoisted(() => ({
   mockDocumentosService: { listar: vi.fn() },
+  mockCursosService: { meus: vi.fn() },
 }));
 
 vi.mock('../../services/api', () => ({
@@ -16,6 +18,10 @@ vi.mock('../../services/api', () => ({
 
 vi.mock('../../services/documentos', () => ({
   documentosService: mockDocumentosService,
+}));
+
+vi.mock('../../services/cursos', () => ({
+  cursosService: mockCursosService,
 }));
 
 const RESPOSTA_VAZIA = { total: 0, dados: [], pagina: 1, total_paginas: 1 };
@@ -42,10 +48,26 @@ const DOCS_MOCK = {
   ],
 };
 
+const CURSOS_MOCK: Curso[] = [
+  {
+    id: 'curso-1', nome: 'Engenharia de Software', codigo: 'ENG-SW',
+    carga_horaria_complementar: 200, turno: 'noite', modalidade: 'presencial',
+    instituicao_id: 'i-1', instituicao_nome: 'Universidade Teste', instituicao_sigla: 'UT',
+    ativo: true, criado_em: '2024-01-01', atualizado_em: '2024-01-01',
+  },
+  {
+    id: 'curso-2', nome: 'Ciência da Computação', codigo: 'CC',
+    carga_horaria_complementar: 200, turno: 'manhã', modalidade: 'presencial',
+    instituicao_id: 'i-1', instituicao_nome: 'Universidade Teste', instituicao_sigla: 'UT',
+    ativo: true, criado_em: '2024-01-01', atualizado_em: '2024-01-01',
+  },
+];
+
 beforeEach(() => {
   vi.clearAllMocks();
   localStorage.clear();
   mockDocumentosService.listar.mockResolvedValue(RESPOSTA_VAZIA);
+  mockCursosService.meus.mockResolvedValue([]);
 });
 
 describe('Dashboard — estudante', () => {
@@ -142,5 +164,51 @@ describe('Dashboard — coordenador/admin', () => {
       expect(screen.getByText('Pendentes')).toBeInTheDocument();
       expect(screen.getByText('Em Revisão')).toBeInTheDocument();
     });
+  });
+
+  it('não exibe Documentos Recentes para coordenador', async () => {
+    renderWithProviders(<Dashboard />, { token: 'tok', usuario: USUARIO_COORD });
+    await waitFor(() => screen.getByText(/Visão geral/));
+    expect(screen.queryByText('Documentos Recentes')).not.toBeInTheDocument();
+  });
+
+  it('não exibe Documentos Recentes para admin', async () => {
+    renderWithProviders(<Dashboard />, { token: 'tok', usuario: USUARIO_ADMIN });
+    await waitFor(() => screen.getByText(/Visão geral/));
+    expect(screen.queryByText('Documentos Recentes')).not.toBeInTheDocument();
+  });
+});
+
+describe('Dashboard — pendências por curso (coordenador)', () => {
+  it('exibe mensagem quando o coordenador não tem cursos vinculados', async () => {
+    mockCursosService.meus.mockResolvedValue([]);
+    renderWithProviders(<Dashboard />, { token: 'tok', usuario: USUARIO_COORD });
+    await waitFor(() =>
+      expect(screen.getByText('Você ainda não está vinculado a nenhum curso.')).toBeInTheDocument(),
+    );
+  });
+
+  it('exibe os cursos do coordenador com a contagem de pendências', async () => {
+    mockCursosService.meus.mockResolvedValue(CURSOS_MOCK);
+    mockDocumentosService.listar.mockImplementation((filtros) => {
+      if (filtros?.curso_id === 'curso-1') return Promise.resolve({ ...RESPOSTA_VAZIA, total: 3 });
+      return Promise.resolve(RESPOSTA_VAZIA);
+    });
+
+    renderWithProviders(<Dashboard />, { token: 'tok', usuario: USUARIO_COORD });
+
+    await waitFor(() => {
+      expect(screen.getByText('Engenharia de Software')).toBeInTheDocument();
+      expect(screen.getByText('Ciência da Computação')).toBeInTheDocument();
+      expect(screen.getByText('3 pendentes')).toBeInTheDocument();
+      expect(screen.getByText('Em dia')).toBeInTheDocument();
+    });
+  });
+
+  it('não exibe a seção de pendências por curso para admin', async () => {
+    renderWithProviders(<Dashboard />, { token: 'tok', usuario: USUARIO_ADMIN });
+    await waitFor(() => screen.getByText(/Visão geral/));
+    expect(screen.queryByText('Pendências por Curso')).not.toBeInTheDocument();
+    expect(mockCursosService.meus).not.toHaveBeenCalled();
   });
 });

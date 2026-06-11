@@ -102,7 +102,7 @@ export function Documentos() {
                   <td className="px-4 py-3 text-white/55">{doc.tipo}</td>
                   <td className="px-4 py-3 text-white/55">{doc.carga_horaria}h</td>
                   <td className="px-4 py-3"><BadgeStatus status={doc.status} /></td>
-                  <td className="px-4 py-3 text-white/40">{new Date(doc.criado_em).toLocaleDateString('pt-BR')}</td>
+                  <td className="px-4 py-3 text-white/40">{new Date(doc.criado_em.replace(' ', 'T')).toLocaleDateString('pt-BR')}</td>
                   <td className="px-4 py-3 text-right">
                     <Link to={`/documentos/${doc.id}`} className="text-sm text-[#618C7C] hover:text-[#7AAA9A] transition-colors">
                       Ver →

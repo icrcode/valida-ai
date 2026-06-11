@@ -26,7 +26,7 @@ const upload = multer({
 
 // GET /api/documentos — listar com filtros e paginação
 router.get('/', autenticar, async (req, res) => {
-  const { status, tipo, estudante_id, page, limite } = req.query as Record<string, string>;
+  const { status, tipo, estudante_id, curso_id, page, limite } = req.query as Record<string, string>;
 
   try {
     const resultado = await repositorio.listar(
@@ -34,12 +34,13 @@ router.get('/', autenticar, async (req, res) => {
         status,
         tipo,
         estudante_id,
+        curso_id,
         page: page ? Number.parseInt(page, 10) : undefined,
         limite: limite ? Number.parseInt(limite, 10) : undefined,
       },
       req.usuario!.sub,
       req.usuario!.perfil,
-      req.usuario!.curso_id,
+      req.usuario!.curso_ids,
     );
 
     res.json({
@@ -58,7 +59,7 @@ router.get('/:id', autenticar, async (req, res) => {
   const { id } = req.params as { id: string };
   try {
     const documento = await repositorio.buscarPorId(id);
-    if (!verificarAcessoDocumento(res, documento, req.usuario!.perfil, req.usuario!.sub, req.usuario!.curso_id)) return;
+    if (!verificarAcessoDocumento(res, documento, req.usuario!.perfil, req.usuario!.sub, req.usuario!.curso_ids)) return;
     res.json(documento);
   } catch (err: unknown) {
     tratarErro(res, err);
@@ -70,7 +71,7 @@ router.get('/:id/download', autenticar, async (req, res) => {
   const { id } = req.params as { id: string };
   try {
     const documento = await repositorio.buscarPorId(id);
-    if (!verificarAcessoDocumento(res, documento, req.usuario!.perfil, req.usuario!.sub, req.usuario!.curso_id)) return;
+    if (!verificarAcessoDocumento(res, documento, req.usuario!.perfil, req.usuario!.sub, req.usuario!.curso_ids)) return;
     const url = await armazenamento.gerarUrlAssinada(documento!.caminho_arquivo);
     res.json({ url, expira_em: new Date(Date.now() + 3600 * 1000).toISOString() });
   } catch (err: unknown) {

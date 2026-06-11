@@ -23,6 +23,15 @@ export interface CursoComDominios extends Curso {
   dominios_email: string[] | null;
 }
 
+export interface AlunoDoCurso {
+  id: string;
+  nome: string;
+  email: string;
+  matricula: string | null;
+  ativo: boolean;
+  criado_em: Date;
+}
+
 export interface CriarCursoInput {
   nome: string;
   instituicao_id: string;
@@ -165,4 +174,48 @@ export async function alterarAtivo(id: string, ativo: boolean): Promise<CursoCom
     [ativo, id],
   );
   return buscarCursoPorId(id);
+}
+
+// ─── Vínculo coordenador ↔ cursos (relação N:N) ────────────────
+
+// Lista os cursos pelos quais um coordenador é responsável
+export async function listarCursosDoCoordenador(coordenadorId: string): Promise<Curso[]> {
+  const res = await pool.query<Curso>(
+    `${SELECT_CURSO}
+     JOIN coordenadores_cursos cc ON cc.curso_id = c.id
+     WHERE cc.coordenador_id = $1
+     ORDER BY i.nome ASC, c.nome ASC`,
+    [coordenadorId],
+  );
+  return res.rows;
+}
+
+// Lista os ids dos cursos pelos quais um coordenador é responsável (usado no JWT)
+export async function listarCursoIdsDoCoordenador(coordenadorId: string): Promise<string[]> {
+  const res = await pool.query<{ curso_id: string }>(
+    `SELECT curso_id FROM coordenadores_cursos WHERE coordenador_id = $1`,
+    [coordenadorId],
+  );
+  return res.rows.map((r) => r.curso_id);
+}
+
+// Verifica se um coordenador é responsável por um determinado curso
+export async function coordenadorTemCurso(coordenadorId: string, cursoId: string): Promise<boolean> {
+  const res = await pool.query(
+    `SELECT 1 FROM coordenadores_cursos WHERE coordenador_id = $1 AND curso_id = $2`,
+    [coordenadorId, cursoId],
+  );
+  return (res.rowCount ?? 0) > 0;
+}
+
+// Lista os estudantes vinculados a um curso (somente leitura)
+export async function listarAlunosDoCurso(cursoId: string): Promise<AlunoDoCurso[]> {
+  const res = await pool.query<AlunoDoCurso>(
+    `SELECT id, nome, email, matricula, ativo, criado_em
+     FROM usuarios
+     WHERE curso_id = $1 AND perfil = 'estudante'
+     ORDER BY nome ASC`,
+    [cursoId],
+  );
+  return res.rows;
 }

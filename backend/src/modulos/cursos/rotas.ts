@@ -61,6 +61,42 @@ router.get('/admin', autenticar, exigirPerfil('admin'), async (req, res) => {
   }
 });
 
+// GET /api/cursos/meus — cursos pelos quais o coordenador logado é responsável
+router.get('/meus', autenticar, exigirPerfil('coordenador'), async (req, res) => {
+  try {
+    const cursos = await repositorio.listarCursosDoCoordenador(req.usuario!.sub);
+    res.json(cursos);
+  } catch (err: unknown) {
+    tratarErro(res, err, 'cursos/meus');
+  }
+});
+
+// GET /api/cursos/:id/alunos — lista os estudantes vinculados a um curso (somente leitura)
+router.get('/:id/alunos', autenticar, exigirPerfil('coordenador', 'admin'), async (req, res) => {
+  const { id } = req.params as { id: string };
+
+  try {
+    if (req.usuario!.perfil === 'coordenador') {
+      const temAcesso = await repositorio.coordenadorTemCurso(req.usuario!.sub, id);
+      if (!temAcesso) {
+        res.status(403).json({ erro: 'Sem permissão: você não é coordenador deste curso' });
+        return;
+      }
+    }
+
+    const curso = await repositorio.buscarCursoPorId(id);
+    if (!curso) {
+      res.status(404).json({ erro: 'Curso não encontrado' });
+      return;
+    }
+
+    const alunos = await repositorio.listarAlunosDoCurso(id);
+    res.json(alunos);
+  } catch (err: unknown) {
+    tratarErro(res, err, 'cursos/alunos');
+  }
+});
+
 // GET /api/cursos/:id — detalhes de um curso (autenticado)
 router.get('/:id', autenticar, async (req, res) => {
   const { id } = req.params as { id: string };

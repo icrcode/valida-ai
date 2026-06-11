@@ -58,6 +58,7 @@ export interface FiltrosDocumento {
   status?: StatusDocumento | '';
   tipo?: string;
   estudante_id?: string;
+  curso_id?: string;
   page?: number;
   limite?: number;
 }

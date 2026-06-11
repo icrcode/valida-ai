@@ -10,6 +10,10 @@ import {
   criarCurso,
   atualizarCurso,
   alterarAtivo,
+  listarCursosDoCoordenador,
+  listarCursoIdsDoCoordenador,
+  coordenadorTemCurso,
+  listarAlunosDoCurso,
 } from '../../../src/modulos/cursos/repositorio';
 
 const mockQuery = pool.query as jest.Mock;
@@ -135,5 +139,92 @@ describe('alterarAtivo', () => {
 
     const resultado = await alterarAtivo('nao-existe', true);
     expect(resultado).toBeNull();
+  });
+});
+
+describe('listarCursosDoCoordenador', () => {
+  it('retorna os cursos vinculados ao coordenador', async () => {
+    mockQuery.mockResolvedValueOnce({ rows: [CURSO_ROW] });
+
+    const resultado = await listarCursosDoCoordenador('coord-1');
+
+    expect(resultado).toHaveLength(1);
+    expect(mockQuery.mock.calls[0][0]).toContain('coordenadores_cursos');
+    expect(mockQuery.mock.calls[0][1]).toEqual(['coord-1']);
+  });
+
+  it('retorna lista vazia quando o coordenador não tem cursos', async () => {
+    mockQuery.mockResolvedValueOnce({ rows: [] });
+
+    const resultado = await listarCursosDoCoordenador('coord-1');
+
+    expect(resultado).toHaveLength(0);
+  });
+});
+
+describe('listarCursoIdsDoCoordenador', () => {
+  it('retorna os ids dos cursos vinculados ao coordenador', async () => {
+    mockQuery.mockResolvedValueOnce({ rows: [{ curso_id: 'curso-1' }, { curso_id: 'curso-2' }] });
+
+    const resultado = await listarCursoIdsDoCoordenador('coord-1');
+
+    expect(resultado).toEqual(['curso-1', 'curso-2']);
+    expect(mockQuery.mock.calls[0][1]).toEqual(['coord-1']);
+  });
+
+  it('retorna lista vazia quando o coordenador não tem cursos', async () => {
+    mockQuery.mockResolvedValueOnce({ rows: [] });
+
+    const resultado = await listarCursoIdsDoCoordenador('coord-1');
+
+    expect(resultado).toEqual([]);
+  });
+});
+
+describe('coordenadorTemCurso', () => {
+  it('retorna true quando o coordenador é responsável pelo curso', async () => {
+    mockQuery.mockResolvedValueOnce({ rowCount: 1, rows: [{}] });
+
+    const resultado = await coordenadorTemCurso('coord-1', 'curso-1');
+
+    expect(resultado).toBe(true);
+    expect(mockQuery.mock.calls[0][1]).toEqual(['coord-1', 'curso-1']);
+  });
+
+  it('retorna false quando o coordenador não é responsável pelo curso', async () => {
+    mockQuery.mockResolvedValueOnce({ rowCount: 0, rows: [] });
+
+    const resultado = await coordenadorTemCurso('coord-1', 'curso-2');
+
+    expect(resultado).toBe(false);
+  });
+});
+
+describe('listarAlunosDoCurso', () => {
+  it('retorna os estudantes vinculados ao curso', async () => {
+    const ALUNO_ROW = {
+      id: 'est-1',
+      nome: 'João Silva',
+      email: 'joao@uni.edu',
+      matricula: '2021001',
+      ativo: true,
+      criado_em: new Date(),
+    };
+    mockQuery.mockResolvedValueOnce({ rows: [ALUNO_ROW] });
+
+    const resultado = await listarAlunosDoCurso('curso-1');
+
+    expect(resultado).toHaveLength(1);
+    expect(resultado[0].nome).toBe('João Silva');
+    expect(mockQuery.mock.calls[0][0]).toContain("perfil = 'estudante'");
+    expect(mockQuery.mock.calls[0][1]).toEqual(['curso-1']);
+  });
+
+  it('retorna lista vazia quando o curso não tem alunos', async () => {
+    mockQuery.mockResolvedValueOnce({ rows: [] });
+
+    const resultado = await listarAlunosDoCurso('curso-1');
+
+    expect(resultado).toEqual([]);
   });
 });

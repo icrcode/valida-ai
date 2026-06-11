@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { usuariosService, type CriarUsuarioInput, type AtualizarUsuarioInput } from '../services/usuarios';
 import { cursosService, type Curso } from '../services/cursos';
 import { useToast } from '../contexts/ToastContext';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import { Modal } from '../components/ui/Modal';
 import { PERFIL_LABEL, PERFIL_COR, iniciais } from '../utils/perfil';
 import type { Perfil, Usuario } from '../types';
 import { AddIcon } from '../components/icons';
@@ -52,44 +53,6 @@ function formatarCpf(valor: string) {
   if (d.length <= 6) return `${d.slice(0, 3)}.${d.slice(3)}`;
   if (d.length <= 9) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6)}`;
   return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
-}
-
-// ─── Modal ────────────────────────────────────────────────────
-function Modal({ titulo, onClose, children }: { titulo: string; onClose: () => void; children: React.ReactNode }) {
-  useEffect(() => {
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = ''; };
-  }, []);
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [onClose]);
-
-  return (
-    <div
-      className="fixed inset-0 z-50 overflow-y-auto bg-black/50"
-      onClick={onClose}
-    >
-      <div className="flex min-h-full items-start justify-center px-4 py-8">
-        <div
-          className="w-full max-w-md rounded-2xl bg-[#011140] shadow-xl"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="flex items-center justify-between border-b border-white/8 px-6 py-4">
-            <h2 className="text-base font-semibold text-white">{titulo}</h2>
-            <button onClick={onClose} className="rounded-lg p-1.5 text-white/45 hover:bg-white/6 hover:text-white/70">
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-          <div className="px-6 py-5">{children}</div>
-        </div>
-      </div>
-    </div>
-  );
 }
 
 // ─── Campos comuns de formulário ──────────────────────────────

@@ -39,9 +39,6 @@ export function Verificar() {
 
   return (
     <div className="min-h-screen bg-[#010A26] flex items-center justify-center px-4 py-12">
-      <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute -top-40 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-[#618C7C]/6 blur-3xl" />
-      </div>
 
       <div className="relative w-full max-w-lg animate-fade-up">
         {/* Header */}

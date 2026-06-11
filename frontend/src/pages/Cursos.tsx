@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { cursosService, type CursoComContagem, type CriarCursoInput } from '../services/cursos';
 import { instituicoesService, type Instituicao } from '../services/instituicoes';
 import { useToast } from '../contexts/ToastContext';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import { Modal } from '../components/ui/Modal';
 import { AddIcon } from '../components/icons';
 
 // ─── Constantes ───────────────────────────────────────────────
@@ -36,55 +37,6 @@ const FORM_VAZIO: FormState = {
   turno: '',
   modalidade: '',
 };
-
-// ─── Modal ────────────────────────────────────────────────────
-function Modal({
-  titulo,
-  onClose,
-  children,
-}: {
-  titulo: string;
-  onClose: () => void;
-  children: React.ReactNode;
-}) {
-  useEffect(() => {
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = ''; };
-  }, []);
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [onClose]);
-
-  return (
-    <div
-      className="fixed inset-0 z-50 overflow-y-auto bg-black/50"
-      onClick={onClose}
-    >
-      <div className="flex min-h-full items-start justify-center px-4 py-8">
-        <div
-          className="w-full max-w-lg rounded-2xl bg-[#011140] shadow-xl"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="flex items-center justify-between border-b border-white/8 px-6 py-4">
-            <h2 className="text-base font-semibold text-white">{titulo}</h2>
-            <button
-              onClick={onClose}
-              className="rounded-lg p-1.5 text-white/45 hover:bg-white/6 hover:text-white/70"
-            >
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-          <div className="px-6 py-5">{children}</div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 const inputCls =
   'rounded-lg border border-white/10 bg-[#011640] px-3 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#618C7C] hover:border-white/20 transition-all';
@@ -461,7 +413,7 @@ export function Cursos() {
 
       {/* Modal — Novo curso */}
       {modalCriar && (
-        <Modal titulo="Novo curso" onClose={() => setModalCriar(false)}>
+        <Modal titulo="Novo curso" onClose={() => setModalCriar(false)} tamanho="lg">
           <FormCurso form={form} onChange={setForm} instituicoes={instituicoes} />
           <div className="mt-6 flex justify-end gap-3 border-t border-white/8 pt-4">
             <Button variant="secondary" onClick={() => setModalCriar(false)}>
@@ -476,7 +428,7 @@ export function Cursos() {
 
       {/* Modal — Editar */}
       {editando && (
-        <Modal titulo={`Editar — ${editando.nome}`} onClose={() => setEditando(null)}>
+        <Modal titulo={`Editar — ${editando.nome}`} onClose={() => setEditando(null)} tamanho="lg">
           <FormCurso form={form} onChange={setForm} instituicoes={instituicoes} />
           <div className="mt-6 flex justify-end gap-3 border-t border-white/8 pt-4">
             <Button variant="secondary" onClick={() => setEditando(null)}>

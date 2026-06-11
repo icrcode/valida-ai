@@ -19,6 +19,15 @@ export interface CursoComContagem extends Curso {
   total_estudantes: number;
 }
 
+export interface AlunoDoCurso {
+  id: string;
+  nome: string;
+  email: string;
+  matricula: string | null;
+  ativo: boolean;
+  criado_em: string;
+}
+
 export interface CriarCursoInput {
   nome: string;
   instituicao_id: string;
@@ -41,6 +50,14 @@ export const cursosService = {
         params: instituicao_id ? { instituicao_id } : undefined,
       })
       .then((r) => r.data),
+
+  // Cursos pelos quais o coordenador logado é responsável
+  meus: (): Promise<Curso[]> =>
+    api.get<Curso[]>('/api/cursos/meus').then((r) => r.data),
+
+  // Estudantes vinculados a um curso (somente leitura)
+  listarAlunos: (cursoId: string): Promise<AlunoDoCurso[]> =>
+    api.get<AlunoDoCurso[]>(`/api/cursos/${cursoId}/alunos`).then((r) => r.data),
 
   criar: (dados: CriarCursoInput): Promise<Curso> =>
     api.post<Curso>('/api/cursos', dados).then((r) => r.data),

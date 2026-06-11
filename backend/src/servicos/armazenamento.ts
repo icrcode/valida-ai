@@ -63,7 +63,12 @@ export async function gerarUrlAssinada(
   chaveArquivo: string,
   expiracaoSegundos = 3600,
 ): Promise<string> {
-  const comando = new GetObjectCommand({ Bucket: balde, Key: chaveArquivo });
+  const comando = new GetObjectCommand({
+    Bucket: balde,
+    Key: chaveArquivo,
+    ResponseContentDisposition: 'inline',
+    ResponseContentType: 'application/pdf',
+  });
   return getSignedUrl(cliente, comando, { expiresIn: expiracaoSegundos });
 }
 

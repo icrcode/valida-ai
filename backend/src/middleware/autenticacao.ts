@@ -9,6 +9,7 @@ export interface PayloadJWT {
   perfil: 'estudante' | 'coordenador' | 'admin';
   matricula?: string | null;
   curso_id?: string | null;
+  curso_ids?: string[];
   instituicao_id?: string | null;
   instituicao_nome?: string | null;
 }

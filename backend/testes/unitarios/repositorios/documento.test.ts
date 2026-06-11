@@ -105,11 +105,51 @@ describe('listar', () => {
       .mockResolvedValueOnce({ rows: [{ count: '5' }] })
       .mockResolvedValueOnce({ rows: [DOC_ROW] });
 
-    const resultado = await listar({}, 'coord-1', 'coordenador', 'curso-1');
+    const resultado = await listar({}, 'coord-1', 'coordenador', ['curso-1']);
 
     expect(resultado.total).toBe(5);
     const sql = mockQuery.mock.calls[0][0] as string;
     expect(sql).not.toContain('estudante_id');
+  });
+
+  it('coordenador sem cursos vinculados não retorna documentos', async () => {
+    const resultado = await listar({}, 'coord-1', 'coordenador', []);
+
+    expect(resultado).toEqual({ dados: [], total: 0 });
+    expect(mockQuery).not.toHaveBeenCalled();
+  });
+
+  it('coordenador com múltiplos cursos usa curso_id = ANY(...)', async () => {
+    mockQuery
+      .mockResolvedValueOnce({ rows: [{ count: '5' }] })
+      .mockResolvedValueOnce({ rows: [DOC_ROW] });
+
+    await listar({}, 'coord-1', 'coordenador', ['curso-1', 'curso-2']);
+
+    const sql = mockQuery.mock.calls[0][0] as string;
+    expect(sql).toContain('curso_id = ANY(');
+    const params = mockQuery.mock.calls[0][1] as unknown[];
+    expect(params).toContainEqual(['curso-1', 'curso-2']);
+  });
+
+  it('coordenador pode filtrar por um curso específico dentre os seus', async () => {
+    mockQuery
+      .mockResolvedValueOnce({ rows: [{ count: '1' }] })
+      .mockResolvedValueOnce({ rows: [DOC_ROW] });
+
+    await listar({ curso_id: 'curso-2' }, 'coord-1', 'coordenador', ['curso-1', 'curso-2']);
+
+    const sql = mockQuery.mock.calls[0][0] as string;
+    expect(sql).toContain('curso_id = $1');
+    const params = mockQuery.mock.calls[0][1] as unknown[];
+    expect(params).toContain('curso-2');
+  });
+
+  it('coordenador filtrando por curso fora do seu escopo não retorna documentos', async () => {
+    const resultado = await listar({ curso_id: 'curso-outro' }, 'coord-1', 'coordenador', ['curso-1']);
+
+    expect(resultado).toEqual({ dados: [], total: 0 });
+    expect(mockQuery).not.toHaveBeenCalled();
   });
 
   it('aplica filtro de status quando fornecido', async () => {
@@ -117,7 +157,7 @@ describe('listar', () => {
       .mockResolvedValueOnce({ rows: [{ count: '2' }] })
       .mockResolvedValueOnce({ rows: [DOC_ROW] });
 
-    await listar({ status: 'aprovado' }, 'coord-1', 'coordenador', 'curso-1');
+    await listar({ status: 'aprovado' }, 'coord-1', 'coordenador', ['curso-1']);
 
     const sql = mockQuery.mock.calls[0][0] as string;
     expect(sql).toContain('status');
@@ -130,7 +170,7 @@ describe('listar', () => {
       .mockResolvedValueOnce({ rows: [{ count: '200' }] })
       .mockResolvedValueOnce({ rows: [] });
 
-    await listar({ limite: 500 }, 'coord-1', 'coordenador', 'curso-1');
+    await listar({ limite: 500 }, 'coord-1', 'coordenador', ['curso-1']);
 
     const params = mockQuery.mock.calls[1][1] as unknown[];
     expect(params).toContain(100);

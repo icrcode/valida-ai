@@ -39,12 +39,6 @@ export function Login() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#010A26] px-4">
-      {/* Gradient background decoration */}
-      <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute -top-40 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-[#618C7C]/8 blur-3xl" />
-        <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-[#011640]/60 blur-3xl" />
-      </div>
-
       <div className="relative w-full max-w-sm animate-fade-up">
         {/* Logo */}
         <div className="mb-8 text-center">

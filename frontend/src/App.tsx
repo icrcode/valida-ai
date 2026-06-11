@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/queryClient';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -6,6 +6,7 @@ import { ToastProvider } from './contexts/ToastContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { PrivateRoute } from './components/PrivateRoute';
 import { Layout } from './components/Layout';
+import { Apresentacao } from './pages/Apresentacao';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { Documentos } from './pages/Documentos';
@@ -15,6 +16,7 @@ import { MeusCertificados } from './pages/MeusCertificados';
 import { Perfil } from './pages/Perfil';
 import { Cadastro } from './pages/Cadastro';
 import { Usuarios } from './pages/Usuarios';
+import { Alunos } from './pages/Alunos';
 import { Instituicoes } from './pages/Instituicoes';
 import { Cursos } from './pages/Cursos';
 import { Verificar } from './pages/Verificar';
@@ -38,6 +40,7 @@ function AppRoutes() {
     <BrowserRouter>
       <Routes>
         {/* Rotas públicas */}
+        <Route path="/" element={<Apresentacao />} />
         <Route path="/login" element={<Login />} />
         <Route path="/cadastro" element={<Cadastro />} />
         <Route path="/verificar/:hash" element={<Verificar />} />
@@ -45,7 +48,6 @@ function AppRoutes() {
         {/* Rotas autenticadas */}
         <Route element={<PrivateRoute />}>
           <Route element={<Layout />}>
-            <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/documentos" element={<Documentos />} />
             <Route path="/documentos/:id" element={<DetalheDocumento />} />
@@ -66,6 +68,14 @@ function AppRoutes() {
               }
             />
             <Route path="/perfil" element={<Perfil />} />
+            <Route
+              path="/alunos"
+              element={
+                <PrivateRoute perfis={['coordenador']}>
+                  <Alunos />
+                </PrivateRoute>
+              }
+            />
             <Route
               path="/usuarios"
               element={
