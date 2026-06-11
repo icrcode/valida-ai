@@ -1,0 +1,73 @@
+{
+  "title": "Valida AI - Negócio Overview",
+  "uid": "valida-negocio-overview",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "tags": ["valida-ai", "negocio"],
+  "timezone": "browser",
+  "time": { "from": "now-90d", "to": "now" },
+  "refresh": "5m",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Documentos por status",
+      "type": "piechart",
+      "datasource": { "type": "postgres", "uid": "postgresql" },
+      "gridPos": { "h": 9, "w": 8, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "postgresql" },
+          "format": "table",
+          "rawSql": "SELECT status, COUNT(*) AS total FROM documentos GROUP BY status ORDER BY total DESC",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Documentos por instituição",
+      "type": "barchart",
+      "datasource": { "type": "postgres", "uid": "postgresql" },
+      "gridPos": { "h": 9, "w": 8, "x": 8, "y": 0 },
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "postgresql" },
+          "format": "table",
+          "rawSql": "SELECT i.nome AS instituicao, COUNT(d.id) AS total\nFROM documentos d\nJOIN cursos c ON c.id = d.curso_id\nJOIN instituicoes i ON i.id = c.instituicao_id\nGROUP BY i.nome\nORDER BY total DESC",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Usuários por perfil",
+      "type": "piechart",
+      "datasource": { "type": "postgres", "uid": "postgresql" },
+      "gridPos": { "h": 9, "w": 8, "x": 16, "y": 0 },
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "postgresql" },
+          "format": "table",
+          "rawSql": "SELECT perfil, COUNT(*) AS total FROM usuarios GROUP BY perfil ORDER BY total DESC",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Documentos criados ao longo do tempo",
+      "type": "timeseries",
+      "datasource": { "type": "postgres", "uid": "postgresql" },
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 9 },
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "postgresql" },
+          "format": "time_series",
+          "rawSql": "SELECT\n  $__timeGroup(criado_em, '1d') AS time,\n  COUNT(*) AS total\nFROM documentos\nWHERE $__timeFilter(criado_em)\nGROUP BY 1\nORDER BY 1",
+          "refId": "A"
+        }
+      ]
+    }
+  ]
+}

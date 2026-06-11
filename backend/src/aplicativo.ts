@@ -2,6 +2,7 @@ import express, { Express } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import registrador from './utils/registrador';
+import { registro, medirRequisicoes } from './utils/metricas';
 import rotasVerificacao from './routes/verificacao';
 import rotasPublica from './routes/publica';
 import rotasAuth from './modulos/auth/rotas';
@@ -43,10 +44,19 @@ aplicativo.use(
 aplicativo.use(express.json({ limit: '10mb' }));
 aplicativo.use(express.urlencoded({ limit: '10mb', extended: true }));
 
+// Middleware de métricas (Prometheus)
+aplicativo.use(medirRequisicoes);
+
 // Middleware de registro
 aplicativo.use((req, _res, next) => {
   registrador.info(`${req.method} ${req.path}`);
   next();
+});
+
+// Métricas para o Prometheus
+aplicativo.get('/metrics', async (_req, res) => {
+  res.set('Content-Type', registro.contentType);
+  res.end(await registro.metrics());
 });
 
 // Rotas
