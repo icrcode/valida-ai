@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen } from '@testing-library/react';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { renderWithProviders, USUARIO_ESTUDANTE, USUARIO_ADMIN, USUARIO_COORD } from '../helpers/renderWithProviders';
 
 vi.mock('../../services/api', () => ({
@@ -48,13 +48,15 @@ describe('Cadastro page', () => {
     expect(container).toBeTruthy();
   });
 
-  it('exibe campo de nome', () => {
+  it('exibe campo de nome na etapa 1', () => {
     renderWithProviders(<Cadastro />);
     expect(screen.getByLabelText(/nome/i)).toBeInTheDocument();
   });
 
-  it('exibe campo de e-mail', () => {
+  it('avança para a etapa de dados acadêmicos ao informar o nome', async () => {
     renderWithProviders(<Cadastro />);
-    expect(screen.getByLabelText(/e-mail/i)).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText(/nome/i), { target: { value: 'Nome Válido' } });
+    fireEvent.click(screen.getByText('Continuar'));
+    await waitFor(() => expect(screen.getByLabelText(/universidade/i)).toBeInTheDocument());
   });
 });
