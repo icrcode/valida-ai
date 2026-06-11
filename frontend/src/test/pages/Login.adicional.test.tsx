@@ -42,37 +42,54 @@ beforeEach(() => {
   localStorage.clear();
 });
 
-describe('Login — validações de formulário', () => {
+function avancarParaSenha(email: string) {
+  fireEvent.change(screen.getByLabelText('E-mail'), { target: { value: email } });
+  fireEvent.click(screen.getByText('Continuar'));
+}
+
+describe('Login — etapa de e-mail', () => {
   it('exibe erro quando submete sem email', async () => {
     renderWithProviders(<Login />);
     await act(async () => {
-      fireEvent.submit(screen.getByText('Entrar').closest('form')!);
+      fireEvent.submit(screen.getByText('Continuar').closest('form')!);
     });
     expect(screen.getByText('Informe seu e-mail')).toBeInTheDocument();
   });
 
+  it('exibe erro quando o e-mail é inválido', async () => {
+    renderWithProviders(<Login />);
+    fireEvent.change(screen.getByLabelText('E-mail'), { target: { value: 'invalido' } });
+    await act(async () => {
+      fireEvent.submit(screen.getByText('Continuar').closest('form')!);
+    });
+    expect(screen.getByText('Informe um e-mail válido')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Senha')).not.toBeInTheDocument();
+  });
+
+  it('limpa erro ao digitar no campo de email', async () => {
+    renderWithProviders(<Login />);
+    await act(async () => {
+      fireEvent.submit(screen.getByText('Continuar').closest('form')!);
+    });
+    expect(screen.getByText('Informe seu e-mail')).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('E-mail'), { target: { value: 'a' } });
+    expect(screen.queryByText('Informe seu e-mail')).not.toBeInTheDocument();
+  });
+});
+
+describe('Login — etapa de senha', () => {
   it('exibe erro quando submete sem senha', async () => {
     renderWithProviders(<Login />);
-    fireEvent.change(screen.getByLabelText('E-mail'), { target: { value: 'joao@test.com' } });
+    avancarParaSenha('joao@test.com');
     await act(async () => {
       fireEvent.submit(screen.getByText('Entrar').closest('form')!);
     });
     expect(screen.getByText('Informe sua senha')).toBeInTheDocument();
   });
 
-  it('limpa erro ao digitar no campo de email', async () => {
-    renderWithProviders(<Login />);
-    await act(async () => {
-      fireEvent.submit(screen.getByText('Entrar').closest('form')!);
-    });
-    expect(screen.getByText('Informe seu e-mail')).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText('E-mail'), { target: { value: 'a' } });
-    expect(screen.queryByText('Informe seu e-mail')).not.toBeInTheDocument();
-  });
-
   it('limpa erro ao digitar no campo de senha', async () => {
     renderWithProviders(<Login />);
-    fireEvent.change(screen.getByLabelText('E-mail'), { target: { value: 'joao@test.com' } });
+    avancarParaSenha('joao@test.com');
     await act(async () => {
       fireEvent.submit(screen.getByText('Entrar').closest('form')!);
     });
@@ -80,13 +97,26 @@ describe('Login — validações de formulário', () => {
     fireEvent.change(screen.getByLabelText('Senha'), { target: { value: 's' } });
     expect(screen.queryByText('Informe sua senha')).not.toBeInTheDocument();
   });
+
+  it('permite trocar o e-mail e voltar para a primeira etapa', async () => {
+    renderWithProviders(<Login />);
+    avancarParaSenha('joao@test.com');
+    fireEvent.change(screen.getByLabelText('Senha'), { target: { value: 'senha123' } });
+    fireEvent.click(screen.getByText('Trocar'));
+
+    expect(screen.getByLabelText('E-mail')).toHaveValue('joao@test.com');
+    expect(screen.queryByLabelText('Senha')).not.toBeInTheDocument();
+
+    avancarParaSenha('joao@test.com');
+    expect(screen.getByLabelText('Senha')).toHaveValue('');
+  });
 });
 
 describe('Login — submit com sucesso e erro', () => {
   it('chama authService.login e navega para dashboard em caso de sucesso', async () => {
     mockAuthService.login.mockResolvedValue({ token: 'tok-123', usuario: { id: 'u-1', nome: 'João', email: 'joao@test.com', perfil: 'estudante' } });
     renderWithProviders(<Login />);
-    fireEvent.change(screen.getByLabelText('E-mail'), { target: { value: 'joao@test.com' } });
+    avancarParaSenha('joao@test.com');
     fireEvent.change(screen.getByLabelText('Senha'), { target: { value: 'senha123' } });
     await act(async () => {
       fireEvent.submit(screen.getByText('Entrar').closest('form')!);
@@ -99,18 +129,19 @@ describe('Login — submit com sucesso e erro', () => {
   it('exibe mensagem de erro quando authService.login rejeita', async () => {
     mockAuthService.login.mockRejectedValue({ response: { data: { erro: 'Credenciais inválidas' } } });
     renderWithProviders(<Login />);
-    fireEvent.change(screen.getByLabelText('E-mail'), { target: { value: 'joao@test.com' } });
+    avancarParaSenha('joao@test.com');
     fireEvent.change(screen.getByLabelText('Senha'), { target: { value: 'errada' } });
     await act(async () => {
       fireEvent.submit(screen.getByText('Entrar').closest('form')!);
     });
     await waitFor(() => expect(screen.queryByText('Entrando...')).not.toBeInTheDocument());
+    expect(screen.getByText('Credenciais inválidas')).toBeInTheDocument();
   });
 
   it('normaliza o e-mail para lowercase antes de enviar', async () => {
     mockAuthService.login.mockResolvedValue({ token: 'tok', usuario: { id: 'u-1', nome: 'João', email: 'joao@test.com', perfil: 'estudante' } });
     renderWithProviders(<Login />);
-    fireEvent.change(screen.getByLabelText('E-mail'), { target: { value: '  JOAO@TEST.COM  ' } });
+    avancarParaSenha('  JOAO@TEST.COM  ');
     fireEvent.change(screen.getByLabelText('Senha'), { target: { value: 'senha123' } });
     await act(async () => {
       fireEvent.submit(screen.getByText('Entrar').closest('form')!);
@@ -122,11 +153,13 @@ describe('Login — submit com sucesso e erro', () => {
 describe('Login — toggle mostrar/ocultar senha', () => {
   it('senha começa como password', () => {
     renderWithProviders(<Login />);
+    avancarParaSenha('joao@test.com');
     expect(screen.getByLabelText('Senha')).toHaveAttribute('type', 'password');
   });
 
   it('clicando em Mostrar senha muda para text', () => {
     renderWithProviders(<Login />);
+    avancarParaSenha('joao@test.com');
     fireEvent.click(screen.getByLabelText('Mostrar senha'));
     expect(screen.getByLabelText('Senha')).toHaveAttribute('type', 'text');
     expect(screen.getByLabelText('Ocultar senha')).toBeInTheDocument();
@@ -134,6 +167,7 @@ describe('Login — toggle mostrar/ocultar senha', () => {
 
   it('clicando novamente volta para password', () => {
     renderWithProviders(<Login />);
+    avancarParaSenha('joao@test.com');
     fireEvent.click(screen.getByLabelText('Mostrar senha'));
     fireEvent.click(screen.getByLabelText('Ocultar senha'));
     expect(screen.getByLabelText('Senha')).toHaveAttribute('type', 'password');
