@@ -84,34 +84,36 @@ export function Documentos() {
 
       {data && data.dados.length > 0 && (
         <Card className="overflow-hidden p-0">
-          <table className="w-full text-sm">
-            <thead className="border-b border-white/8 bg-white/3">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-white/40">Título</th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-white/40">Tipo</th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-white/40">Carga (h)</th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-white/40">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-white/40">Data</th>
-                <th className="px-4 py-3" />
-              </tr>
-            </thead>
-            <tbody>
-              {data.dados.map((doc) => (
-                <tr key={doc.id} className="border-b border-white/6 transition-colors hover:bg-white/3">
-                  <td className="px-4 py-3 font-medium text-white">{doc.titulo}</td>
-                  <td className="px-4 py-3 text-white/55">{doc.tipo}</td>
-                  <td className="px-4 py-3 text-white/55">{doc.carga_horaria}h</td>
-                  <td className="px-4 py-3"><BadgeStatus status={doc.status} /></td>
-                  <td className="px-4 py-3 text-white/40">{new Date(doc.criado_em.replace(' ', 'T')).toLocaleDateString('pt-BR')}</td>
-                  <td className="px-4 py-3 text-right">
-                    <Link to={`/documentos/${doc.id}`} className="text-sm text-[#618C7C] hover:text-[#7AAA9A] transition-colors">
-                      Ver →
-                    </Link>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[640px] text-sm">
+              <thead className="border-b border-white/8 bg-white/3">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-white/40">Título</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-white/40">Tipo</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-white/40">Carga (h)</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-white/40">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-white/40">Data</th>
+                  <th className="px-4 py-3" />
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {data.dados.map((doc) => (
+                  <tr key={doc.id} className="border-b border-white/6 transition-colors hover:bg-white/3">
+                    <td className="px-4 py-3 font-medium text-white">{doc.titulo}</td>
+                    <td className="px-4 py-3 text-white/55">{doc.tipo}</td>
+                    <td className="px-4 py-3 text-white/55">{doc.carga_horaria}h</td>
+                    <td className="px-4 py-3"><BadgeStatus status={doc.status} /></td>
+                    <td className="px-4 py-3 text-white/40">{new Date(doc.criado_em.replace(' ', 'T')).toLocaleDateString('pt-BR')}</td>
+                    <td className="px-4 py-3 text-right">
+                      <Link to={`/documentos/${doc.id}`} className="text-sm text-[#618C7C] hover:text-[#7AAA9A] transition-colors">
+                        Ver →
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </Card>
       )}
 

@@ -75,34 +75,36 @@ export function Alunos() {
 
           {!carregandoAlunos && alunos.length > 0 && (
             <Card className="overflow-hidden p-0">
-              <table className="w-full text-sm">
-                <thead className="border-b border-white/8 bg-white/3">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-white/40">Nome</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-white/40">E-mail</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-white/40">Matrícula</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-white/40">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {alunos.map((aluno) => (
-                    <tr key={aluno.id} className="border-b border-white/6 transition-colors hover:bg-white/3">
-                      <td className="px-4 py-3 font-medium text-white">{aluno.nome}</td>
-                      <td className="px-4 py-3 text-white/55">{aluno.email}</td>
-                      <td className="px-4 py-3 text-white/55">{aluno.matricula ?? '—'}</td>
-                      <td className="px-4 py-3">
-                        <span className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${
-                          aluno.ativo
-                            ? 'border-[#618C7C]/30 bg-[#618C7C]/15 text-[#7AAA9A]'
-                            : 'border-red-500/30 bg-red-500/15 text-red-300'
-                        }`}>
-                          {aluno.ativo ? 'Ativo' : 'Inativo'}
-                        </span>
-                      </td>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[520px] text-sm">
+                  <thead className="border-b border-white/8 bg-white/3">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-white/40">Nome</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-white/40">E-mail</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-white/40">Matrícula</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-white/40">Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {alunos.map((aluno) => (
+                      <tr key={aluno.id} className="border-b border-white/6 transition-colors hover:bg-white/3">
+                        <td className="px-4 py-3 font-medium text-white">{aluno.nome}</td>
+                        <td className="px-4 py-3 text-white/55">{aluno.email}</td>
+                        <td className="px-4 py-3 text-white/55">{aluno.matricula ?? '—'}</td>
+                        <td className="px-4 py-3">
+                          <span className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${
+                            aluno.ativo
+                              ? 'border-[#618C7C]/30 bg-[#618C7C]/15 text-[#7AAA9A]'
+                              : 'border-red-500/30 bg-red-500/15 text-red-300'
+                          }`}>
+                            {aluno.ativo ? 'Ativo' : 'Inativo'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </Card>
           )}
         </>
