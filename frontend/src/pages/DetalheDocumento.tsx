@@ -140,9 +140,9 @@ export function DetalheDocumento() {
             { label: 'Tamanho',      value: formatBytes(doc.tamanho_arquivo) },
             { label: 'Submetido em', value: formatDate(doc.criado_em) },
           ].map(({ label, value }) => (
-            <div key={label}>
+            <div key={label} className="min-w-0">
               <dt className="text-xs font-medium uppercase tracking-wide text-white/35">{label}</dt>
-              <dd className="mt-1 text-sm text-white">{value}</dd>
+              <dd className="mt-1 break-words text-sm text-white">{value}</dd>
             </div>
           ))}
         </dl>
