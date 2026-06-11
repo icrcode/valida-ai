@@ -21,6 +21,7 @@ export interface FiltrosDocumento {
   status?: string;
   tipo?: string;
   estudante_id?: string;
+  curso_id?: string;
   page?: number;
   limite?: number;
 }
@@ -66,7 +67,7 @@ export async function listar(
   filtros: FiltrosDocumento,
   usuarioId: string,
   perfil: string,
-  cursoId?: string | null,
+  cursoIds?: string[] | null,
 ): Promise<{ dados: Documento[]; total: number }> {
   const pagina = filtros.page || 1;
   const limite = Math.min(filtros.limite || 10, 100);
@@ -80,19 +81,31 @@ export async function listar(
     params.push(usuarioId);
     condicoes.push(`estudante_id = $${params.length}`);
   } else if (perfil === 'coordenador') {
-    // Coordenador só vê documentos do seu curso
-    if (!cursoId) {
+    // Coordenador só vê documentos dos cursos pelos quais é responsável
+    if (!cursoIds || cursoIds.length === 0) {
       return { dados: [], total: 0 };
     }
-    params.push(cursoId);
-    condicoes.push(`curso_id = $${params.length}`);
+    if (filtros.curso_id) {
+      if (!cursoIds.includes(filtros.curso_id)) {
+        return { dados: [], total: 0 };
+      }
+      params.push(filtros.curso_id);
+      condicoes.push(`curso_id = $${params.length}`);
+    } else {
+      params.push(cursoIds);
+      condicoes.push(`curso_id = ANY($${params.length}::uuid[])`);
+    }
     // Admin pode passar estudante_id como filtro adicional; coordenador não
     if (filtros.estudante_id) {
       params.push(filtros.estudante_id);
       condicoes.push(`estudante_id = $${params.length}`);
     }
   } else {
-    // Admin: sem restrição, mas pode filtrar por estudante_id
+    // Admin: sem restrição, mas pode filtrar por curso_id e/ou estudante_id
+    if (filtros.curso_id) {
+      params.push(filtros.curso_id);
+      condicoes.push(`curso_id = $${params.length}`);
+    }
     if (filtros.estudante_id) {
       params.push(filtros.estudante_id);
       condicoes.push(`estudante_id = $${params.length}`);

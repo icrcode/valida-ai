@@ -10,13 +10,17 @@ import {
   criarUsuario,
   type UsuarioParaLogin,
 } from '../usuarios/repositorio';
-import { buscarCursoPorId } from '../cursos/repositorio';
+import { buscarCursoPorId, listarCursoIdsDoCoordenador } from '../cursos/repositorio';
 
 const router = Router();
 
-function gerarToken(
+async function gerarToken(
   usuario: Omit<UsuarioParaLogin, 'dominios_email' | 'ativo' | 'criado_em' | 'atualizado_em' | 'senha_hash'>,
-): string {
+): Promise<string> {
+  const curso_ids = usuario.perfil === 'coordenador'
+    ? await listarCursoIdsDoCoordenador(usuario.id)
+    : undefined;
+
   return jwt.sign(
     {
       sub: usuario.id,
@@ -25,6 +29,7 @@ function gerarToken(
       perfil: usuario.perfil,
       matricula: usuario.matricula ?? null,
       curso_id: usuario.curso_id ?? null,
+      ...(curso_ids ? { curso_ids } : {}),
       instituicao_id: usuario.instituicao_id ?? null,
       instituicao_nome: usuario.instituicao_nome ?? null,
     },
@@ -100,7 +105,7 @@ router.post('/login', async (req, res) => {
       }
     }
 
-    const token = gerarToken(usuario);
+    const token = await gerarToken(usuario);
 
     registrador.info('[auth/login] Login bem-sucedido', {
       id: usuario.id,
@@ -198,7 +203,7 @@ router.post('/cadastro', async (req, res) => {
       curso_id,
     });
 
-    const token = gerarToken(novoUsuario);
+    const token = await gerarToken(novoUsuario);
 
     registrador.info('[auth/cadastro] Novo estudante cadastrado', {
       id: novoUsuario.id,

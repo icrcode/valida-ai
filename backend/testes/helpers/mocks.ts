@@ -1,9 +1,9 @@
 import type { Request, Response, NextFunction } from 'express';
 
-export function criarModuloAutenticacao(sub: string, perfil: string, email: string, nome: string, cursoId?: string) {
+export function criarModuloAutenticacao(sub: string, perfil: string, email: string, nome: string, cursoId?: string, cursoIds?: string[]) {
   return {
     autenticar: (req: Request, _res: Response, next: NextFunction) => {
-      (req as any).usuario = { sub, perfil, email, nome, curso_id: cursoId };
+      (req as any).usuario = { sub, perfil, email, nome, curso_id: cursoId, curso_ids: cursoIds };
       next();
     },
   };

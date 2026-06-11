@@ -71,6 +71,21 @@ describe('Layout', () => {
     expect(screen.getAllByText('Fila de Análise')[0]).toBeInTheDocument();
   });
 
+  it('exibe link de Alunos para coordenador', () => {
+    renderLayout(USUARIO_COORD);
+    expect(screen.getAllByText('Alunos')[0]).toBeInTheDocument();
+  });
+
+  it('não exibe link de Alunos para admin', () => {
+    renderLayout(USUARIO_ADMIN);
+    expect(screen.queryByText('Alunos')).not.toBeInTheDocument();
+  });
+
+  it('não exibe link de Alunos para estudante', () => {
+    renderLayout(USUARIO_ESTUDANTE);
+    expect(screen.queryByText('Alunos')).not.toBeInTheDocument();
+  });
+
   it('exibe o nome do usuário no cabeçalho', () => {
     renderLayout(USUARIO_ESTUDANTE);
     expect(screen.getAllByText(USUARIO_ESTUDANTE.nome)[0]).toBeInTheDocument();

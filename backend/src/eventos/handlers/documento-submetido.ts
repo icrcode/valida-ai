@@ -16,9 +16,10 @@ interface CoordenadorRow {
 export async function aoDocumentoSubmetido(payload: EventoDocumentoSubmetido): Promise<void> {
   try {
     const res = await pool.query<CoordenadorRow>(
-      `SELECT id, nome, email
-       FROM usuarios
-       WHERE perfil = 'coordenador' AND curso_id = $1 AND ativo = true`,
+      `SELECT u.id, u.nome, u.email
+       FROM usuarios u
+       JOIN coordenadores_cursos cc ON cc.coordenador_id = u.id
+       WHERE u.perfil = 'coordenador' AND cc.curso_id = $1 AND u.ativo = true`,
       [payload.cursoId],
     );
 

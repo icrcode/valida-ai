@@ -33,14 +33,14 @@ describe('App', () => {
     expect(container).toBeTruthy();
   });
 
-  it('exibe a tela de login na rota padrão quando não autenticado', () => {
+  it('exibe a tela de apresentação na rota padrão quando não autenticado', () => {
     render(<App />);
     expect(document.body).toBeTruthy();
   });
 
-  it('exibe formulário de login com campo de e-mail quando não autenticado', () => {
+  it('exibe convite para criar conta na tela de apresentação quando não autenticado', () => {
     render(<App />);
-    const emailInput = screen.queryByLabelText('E-mail');
-    expect(emailInput).toBeInTheDocument();
+    const link = screen.queryByRole('link', { name: /criar conta de estudante/i });
+    expect(link).toBeInTheDocument();
   });
 });

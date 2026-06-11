@@ -7,6 +7,7 @@ export const documentosService = {
     if (filtros.status) params.status = filtros.status;
     if (filtros.tipo) params.tipo = filtros.tipo;
     if (filtros.estudante_id) params.estudante_id = filtros.estudante_id;
+    if (filtros.curso_id) params.curso_id = filtros.curso_id;
     if (filtros.page) params.page = filtros.page;
     if (filtros.limite) params.limite = filtros.limite;
     return api.get<PaginacaoDocumentos>('/api/documentos', { params }).then((r) => r.data);

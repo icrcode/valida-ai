@@ -1,7 +1,8 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueries } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { documentosService } from '../services/documentos';
+import { cursosService } from '../services/cursos';
 import { Card } from '../components/ui/Card';
 import { UploadIcon, SchoolIcon, PendingActionsIcon } from '../components/icons';
 import type { StatusDocumento } from '../types';
@@ -55,9 +56,73 @@ function CardContagem({ item, delay }: Readonly<{ item: CardStatus; delay: strin
   );
 }
 
+function PendenciasPorCurso() {
+  const { data: cursos = [], isLoading: carregandoCursos } = useQuery({
+    queryKey: ['meus-cursos'],
+    queryFn: cursosService.meus,
+  });
+
+  const pendenciasQueries = useQueries({
+    queries: cursos.map((curso) => ({
+      queryKey: ['documentos-contagem', 'pendente', curso.id],
+      queryFn: () => documentosService.listar({ status: 'pendente', curso_id: curso.id, limite: 1 }),
+      staleTime: 60_000,
+    })),
+  });
+
+  return (
+    <Card className="animate-fade-up delay-300">
+      <div className="flex items-center justify-between mb-5">
+        <h3 className="text-base font-semibold text-white">Pendências por Curso</h3>
+        <Link to="/documentos?status=pendente" className="text-sm text-[#618C7C] hover:text-[#7AAA9A] transition-colors">
+          Ver todos →
+        </Link>
+      </div>
+
+      {carregandoCursos && (
+        <div className="py-6 text-center">
+          <div className="inline-block h-6 w-6 animate-spin rounded-full border-4 border-[#618C7C]/20 border-t-[#618C7C]" />
+        </div>
+      )}
+
+      {!carregandoCursos && cursos.length === 0 && (
+        <p className="py-4 text-center text-sm text-white/35">Você ainda não está vinculado a nenhum curso.</p>
+      )}
+
+      {!carregandoCursos && cursos.length > 0 && (
+        <div className="divide-y divide-white/6">
+          {cursos.map((curso, i) => {
+            const total = pendenciasQueries[i]?.data?.total ?? 0;
+            const carregando = pendenciasQueries[i]?.isLoading;
+            return (
+              <Link
+                key={curso.id}
+                to="/documentos?status=pendente"
+                className="flex items-center justify-between py-3 transition-colors hover:bg-white/3"
+              >
+                <p className="truncate text-sm font-medium text-white">{curso.nome}</p>
+                {carregando ? (
+                  <span className="text-sm text-white/30 animate-pulse">—</span>
+                ) : total > 0 ? (
+                  <span className="rounded-full border border-amber-500/20 bg-amber-500/8 px-2.5 py-0.5 text-xs font-medium text-amber-300">
+                    {total} pendente{total === 1 ? '' : 's'}
+                  </span>
+                ) : (
+                  <span className="text-xs text-white/30">Em dia</span>
+                )}
+              </Link>
+            );
+          })}
+        </div>
+      )}
+    </Card>
+  );
+}
+
 export function Dashboard() {
   const { usuario } = useAuth();
   const eCoordenador = usuario?.perfil === 'coordenador' || usuario?.perfil === 'admin';
+  const eCoordenadorPuro = usuario?.perfil === 'coordenador';
   const cards = eCoordenador ? CARDS_COORDENADOR : CARDS_ESTUDANTE;
   const delays = ['', 'delay-75', 'delay-150', 'delay-225'];
 
@@ -65,6 +130,7 @@ export function Dashboard() {
     queryKey: ['documentos-recentes'],
     queryFn: () => documentosService.listar({ limite: 5 }),
     staleTime: 30_000,
+    enabled: !eCoordenador,
   });
 
   return (
@@ -82,34 +148,38 @@ export function Dashboard() {
         {cards.map((card, i) => <CardContagem key={card.status} item={card} delay={delays[i]} />)}
       </div>
 
-      <Card className="animate-fade-up delay-300">
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="text-base font-semibold text-white">Documentos Recentes</h3>
-          <Link to="/documentos" className="text-sm text-[#618C7C] hover:text-[#7AAA9A] transition-colors">
-            Ver todos →
-          </Link>
-        </div>
+      {eCoordenadorPuro && <PendenciasPorCurso />}
 
-        {!recentes || recentes.dados.length === 0 ? (
-          <p className="py-4 text-center text-sm text-white/35">Nenhum documento encontrado.</p>
-        ) : (
-          <div className="divide-y divide-white/6">
-            {recentes.dados.map((doc) => (
-              <div key={doc.id} className="flex items-center justify-between py-3">
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-white">{doc.titulo}</p>
-                  <p className="text-xs text-white/40">
-                    {doc.tipo} · {doc.carga_horaria}h · {new Date(doc.criado_em.replace(' ', 'T')).toLocaleDateString('pt-BR')}
-                  </p>
-                </div>
-                <Link to={`/documentos/${doc.id}`} className="ml-4 flex-shrink-0 text-sm text-[#618C7C] hover:text-[#7AAA9A] transition-colors">
-                  Ver
-                </Link>
-              </div>
-            ))}
+      {!eCoordenador && (
+        <Card className="animate-fade-up delay-300">
+          <div className="flex items-center justify-between mb-5">
+            <h3 className="text-base font-semibold text-white">Documentos Recentes</h3>
+            <Link to="/documentos" className="text-sm text-[#618C7C] hover:text-[#7AAA9A] transition-colors">
+              Ver todos →
+            </Link>
           </div>
-        )}
-      </Card>
+
+          {!recentes || recentes.dados.length === 0 ? (
+            <p className="py-4 text-center text-sm text-white/35">Nenhum documento encontrado.</p>
+          ) : (
+            <div className="divide-y divide-white/6">
+              {recentes.dados.map((doc) => (
+                <div key={doc.id} className="flex items-center justify-between py-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-white">{doc.titulo}</p>
+                    <p className="text-xs text-white/40">
+                      {doc.tipo} · {doc.carga_horaria}h · {new Date(doc.criado_em.replace(' ', 'T')).toLocaleDateString('pt-BR')}
+                    </p>
+                  </div>
+                  <Link to={`/documentos/${doc.id}`} className="ml-4 flex-shrink-0 text-sm text-[#618C7C] hover:text-[#7AAA9A] transition-colors">
+                    Ver
+                  </Link>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+      )}
 
       {!eCoordenador && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 animate-fade-up delay-300">
