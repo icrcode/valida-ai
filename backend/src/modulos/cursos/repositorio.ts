@@ -10,6 +10,7 @@ export interface Curso {
   instituicao_id: string;
   instituicao_nome: string;
   instituicao_sigla: string;
+  dominios_email?: string[] | null;
   ativo: boolean;
   criado_em: Date;
   atualizado_em: Date;
@@ -48,7 +49,8 @@ const SELECT_CURSO = `
     c.turno, c.modalidade, c.ativo, c.criado_em, c.atualizado_em,
     c.instituicao_id,
     i.nome  AS instituicao_nome,
-    i.sigla AS instituicao_sigla
+    i.sigla AS instituicao_sigla,
+    i.dominios_email
   FROM cursos c
   JOIN instituicoes i ON i.id = c.instituicao_id
 `;
@@ -61,6 +63,7 @@ export async function listarCursos(instituicao_id?: string): Promise<CursoComCon
       c.instituicao_id,
       i.nome  AS instituicao_nome,
       i.sigla AS instituicao_sigla,
+      i.dominios_email,
       COUNT(u.id) FILTER (WHERE u.perfil = 'estudante' AND u.ativo = true)::int AS total_estudantes
     FROM cursos c
     JOIN instituicoes i ON i.id = c.instituicao_id
@@ -69,14 +72,14 @@ export async function listarCursos(instituicao_id?: string): Promise<CursoComCon
 
   if (instituicao_id) {
     const res = await pool.query<CursoComContagem>(
-      `${base} WHERE c.instituicao_id = $1 GROUP BY c.id, i.nome, i.sigla ORDER BY c.nome ASC`,
+      `${base} WHERE c.instituicao_id = $1 GROUP BY c.id, i.nome, i.sigla, i.dominios_email ORDER BY c.nome ASC`,
       [instituicao_id],
     );
     return res.rows;
   }
 
   const res = await pool.query<CursoComContagem>(
-    `${base} GROUP BY c.id, i.nome, i.sigla ORDER BY i.nome ASC, c.nome ASC`,
+    `${base} GROUP BY c.id, i.nome, i.sigla, i.dominios_email ORDER BY i.nome ASC, c.nome ASC`,
   );
   return res.rows;
 }

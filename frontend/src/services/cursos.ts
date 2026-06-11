@@ -10,6 +10,7 @@ export interface Curso {
   instituicao_id: string;
   instituicao_nome: string;
   instituicao_sigla: string;
+  dominios_email: string[];
   ativo: boolean;
   criado_em: string;
   atualizado_em: string;
