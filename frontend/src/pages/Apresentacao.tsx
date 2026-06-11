@@ -59,12 +59,6 @@ export function Apresentacao() {
 
   return (
     <div className="min-h-screen bg-[#010A26]">
-      {/* Gradient background decoration */}
-      <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute -top-40 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-[#618C7C]/8 blur-3xl" />
-        <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-[#011640]/60 blur-3xl" />
-      </div>
-
       <div className="relative mx-auto flex min-h-screen max-w-5xl flex-col px-4 py-8">
         {/* Topo */}
         <header className="flex items-center justify-between">

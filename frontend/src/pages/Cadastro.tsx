@@ -75,10 +75,6 @@ export function Cadastro() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#010A26] px-4 py-8">
-      <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute -top-40 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-[#618C7C]/8 blur-3xl" />
-      </div>
-
       <div className="relative w-full max-w-sm animate-fade-up">
         <div className="mb-8 text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-[#618C7C]/30 bg-[#011140] shadow-lg shadow-black/30">
