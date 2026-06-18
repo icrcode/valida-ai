@@ -6,13 +6,14 @@ import { gerarEArmazenarCertificado } from '../../servicos/gerador-certificado';
 import * as repositorioCert from '../../modulos/certificados/repositorio';
 import type { EventoDocumentoAprovado } from '../tipos';
 
-const URL_BASE = process.env.APP_URL || 'http://localhost:3000';
+const FRONTEND_URL = process.env.FRONTEND_URL || process.env.CORS_ORIGIN || 'http://localhost:5173';
 
 export async function aoDocumentoAprovado(payload: EventoDocumentoAprovado): Promise<void> {
   try {
-    const [estudante, documento] = await Promise.all([
+    const [estudante, documento, coordenador] = await Promise.all([
       buscarUsuario(payload.estudanteId),
       buscarDocumento(payload.documentoId),
+      buscarUsuario(payload.coordenadorId),
     ]);
 
     if (!estudante || !documento) {
@@ -22,18 +23,21 @@ export async function aoDocumentoAprovado(payload: EventoDocumentoAprovado): Pro
       return;
     }
 
+    const coordenadorNome = coordenador?.nome ?? 'Coordenador';
+
     // Gerar e armazenar certificado PDF
     const { hash, caminhoArquivo } = await gerarEArmazenarCertificado(
       {
         documentoId: documento.id,
         estudanteNome: estudante.nome,
         estudanteEmail: estudante.email,
+        coordenadorNome,
         titulo: documento.titulo,
         tipo: documento.tipo,
         cargaHoraria: documento.carga_horaria,
         dataAprovacao: new Date(),
       },
-      URL_BASE,
+      FRONTEND_URL,
     );
 
     // Persistir certificado no banco
@@ -44,6 +48,8 @@ export async function aoDocumentoAprovado(payload: EventoDocumentoAprovado): Pro
       caminho_arquivo: caminhoArquivo,
     });
 
+    const urlVerificacao = `${FRONTEND_URL.replace(/\/+$/, '')}/verificar/${hash}`;
+
     // Notificar estudante
     await notificar({
       destinatarioId: estudante.id,
@@ -53,7 +59,7 @@ export async function aoDocumentoAprovado(payload: EventoDocumentoAprovado): Pro
       mensagem:
         `Parabéns, ${estudante.nome}!\n\n` +
         `Seu documento "${documento.titulo}" foi aprovado e seu certificado está disponível.\n\n` +
-        `Verifique a autenticidade em: ${URL_BASE}/api/publica/verificar/${hash}`,
+        `Verifique a autenticidade em: ${urlVerificacao}`,
     });
 
     registrador.info(

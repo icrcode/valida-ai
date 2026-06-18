@@ -8,6 +8,7 @@ export interface DadosCertificado {
   documentoId: string;
   estudanteNome: string;
   estudanteEmail: string;
+  coordenadorNome: string;
   titulo: string;
   tipo: string;
   cargaHoraria: number;
@@ -131,12 +132,25 @@ export async function gerarPDF(dados: DadosCertificado, urlVerificacao: string):
       .fillColor('#555555')
       .text(`aprovado em ${dataFormatada}`, 0, 338, { align: 'center', width: largura });
 
-    // Linha divisória
+    // Assinatura do coordenador
+    const assinaturaY = 380;
     doc
-      .moveTo(80, 370)
-      .lineTo(largura - 80, 370)
+      .moveTo(largura / 2 - 120, assinaturaY + 30)
+      .lineTo(largura / 2 + 120, assinaturaY + 30)
       .lineWidth(1)
-      .stroke('#cccccc');
+      .stroke('#1a3c6e');
+
+    doc
+      .fontSize(13)
+      .fillColor('#1a3c6e')
+      .font('Helvetica-Bold')
+      .text(dados.coordenadorNome, 0, assinaturaY + 36, { align: 'center', width: largura });
+
+    doc
+      .fontSize(10)
+      .fillColor('#555555')
+      .font('Helvetica')
+      .text('Coordenador(a) Responsável', 0, assinaturaY + 54, { align: 'center', width: largura });
 
     // Rodapé: QR Code e URL de verificação
     const qrX = largura - 140;
@@ -164,10 +178,10 @@ export async function gerarPDF(dados: DadosCertificado, urlVerificacao: string):
 
 export async function gerarEArmazenarCertificado(
   dados: DadosCertificado,
-  urlBase: string,
+  urlFrontend: string,
 ): Promise<{ hash: string; caminhoArquivo: string; pdfBuffer: Buffer }> {
   const hash = gerarHash(dados.documentoId);
-  const urlVerificacao = `${urlBase}/api/publica/verificar/${hash}`;
+  const urlVerificacao = `${urlFrontend.replace(/\/+$/, '')}/verificar/${hash}`;
 
   const pdfBuffer = await gerarPDF(dados, urlVerificacao);
 
