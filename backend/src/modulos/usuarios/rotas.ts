@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { autenticar } from '../../middleware/autenticacao';
 import { exigirPerfil } from '../../middleware/autorizacao';
 import * as repositorio from './repositorio';
+import { vincularCoordenadorAoCurso } from '../cursos/repositorio';
 import { tratarErro } from '../../utils/erros';
 
 const router = Router();
@@ -189,6 +190,10 @@ router.post('/', autenticar, exigirPerfil('admin'), async (req, res) => {
       curso_id: curso_id || null,
     });
 
+    if (perfil === 'coordenador' && curso_id) {
+      await vincularCoordenadorAoCurso(usuario.id, curso_id);
+    }
+
     res.status(201).json(usuario);
   } catch (err: unknown) {
     tratarErro(res, err, 'usuarios/criar');
@@ -245,6 +250,10 @@ router.put('/:id', autenticar, exigirPerfil('admin'), async (req, res) => {
     if (!usuario) {
       res.status(404).json({ erro: 'Usuário não encontrado' });
       return;
+    }
+
+    if (usuario.perfil === 'coordenador' && usuario.curso_id) {
+      await vincularCoordenadorAoCurso(usuario.id, usuario.curso_id);
     }
 
     res.json(usuario);

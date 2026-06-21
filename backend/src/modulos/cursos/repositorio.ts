@@ -211,6 +211,16 @@ export async function coordenadorTemCurso(coordenadorId: string, cursoId: string
   return (res.rowCount ?? 0) > 0;
 }
 
+// Vincula um coordenador a um curso (idempotente)
+export async function vincularCoordenadorAoCurso(coordenadorId: string, cursoId: string): Promise<void> {
+  await pool.query(
+    `INSERT INTO coordenadores_cursos (coordenador_id, curso_id)
+     VALUES ($1, $2)
+     ON CONFLICT DO NOTHING`,
+    [coordenadorId, cursoId],
+  );
+}
+
 // Lista os estudantes vinculados a um curso (somente leitura)
 export async function listarAlunosDoCurso(cursoId: string): Promise<AlunoDoCurso[]> {
   const res = await pool.query<AlunoDoCurso>(
