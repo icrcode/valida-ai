@@ -138,7 +138,9 @@ describe('aoDocumentoAprovado', () => {
   };
 
   it('gera certificado, persiste no banco e notifica o estudante', async () => {
-    mockUsuarios.buscarPorId.mockResolvedValueOnce(ESTUDANTE_MOCK);
+    mockUsuarios.buscarPorId
+      .mockResolvedValueOnce(ESTUDANTE_MOCK)
+      .mockResolvedValueOnce(COORDENADOR_MOCK as any);
     mockDocumentos.buscarPorId.mockResolvedValueOnce(DOCUMENTO_MOCK);
     mockGerador.gerarEArmazenarCertificado.mockResolvedValueOnce(CERT_GERADO);
     mockCertRepo.criar.mockResolvedValueOnce(CERT_PERSISTIDO);
@@ -147,6 +149,10 @@ describe('aoDocumentoAprovado', () => {
     await aoDocumentoAprovado(payload);
 
     expect(mockGerador.gerarEArmazenarCertificado).toHaveBeenCalledTimes(1);
+    expect(mockGerador.gerarEArmazenarCertificado).toHaveBeenCalledWith(
+      expect.objectContaining({ coordenadorNome: 'Maria Coord' }),
+      expect.any(String),
+    );
     expect(mockCertRepo.criar).toHaveBeenCalledWith(
       expect.objectContaining({
         documento_id: 'doc-1',
@@ -166,8 +172,27 @@ describe('aoDocumentoAprovado', () => {
     );
   });
 
+  it('usa fallback quando coordenador não é encontrado', async () => {
+    mockUsuarios.buscarPorId
+      .mockResolvedValueOnce(ESTUDANTE_MOCK)
+      .mockResolvedValueOnce(null);
+    mockDocumentos.buscarPorId.mockResolvedValueOnce(DOCUMENTO_MOCK);
+    mockGerador.gerarEArmazenarCertificado.mockResolvedValueOnce(CERT_GERADO);
+    mockCertRepo.criar.mockResolvedValueOnce(CERT_PERSISTIDO);
+    mockNotificacao.notificar.mockResolvedValue(undefined);
+
+    await aoDocumentoAprovado(payload);
+
+    expect(mockGerador.gerarEArmazenarCertificado).toHaveBeenCalledWith(
+      expect.objectContaining({ coordenadorNome: 'Coordenador' }),
+      expect.any(String),
+    );
+  });
+
   it('não gera certificado quando estudante não é encontrado', async () => {
-    mockUsuarios.buscarPorId.mockResolvedValueOnce(null);
+    mockUsuarios.buscarPorId
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(COORDENADOR_MOCK as any);
     mockDocumentos.buscarPorId.mockResolvedValueOnce(DOCUMENTO_MOCK);
 
     await aoDocumentoAprovado(payload);
@@ -177,7 +202,9 @@ describe('aoDocumentoAprovado', () => {
   });
 
   it('não gera certificado quando documento não é encontrado', async () => {
-    mockUsuarios.buscarPorId.mockResolvedValueOnce(ESTUDANTE_MOCK);
+    mockUsuarios.buscarPorId
+      .mockResolvedValueOnce(ESTUDANTE_MOCK)
+      .mockResolvedValueOnce(COORDENADOR_MOCK as any);
     mockDocumentos.buscarPorId.mockResolvedValueOnce(null);
 
     await aoDocumentoAprovado(payload);
@@ -192,7 +219,9 @@ describe('aoDocumentoAprovado', () => {
   });
 
   it('captura erro sem propagar exceção quando geração de certificado falha', async () => {
-    mockUsuarios.buscarPorId.mockResolvedValueOnce(ESTUDANTE_MOCK);
+    mockUsuarios.buscarPorId
+      .mockResolvedValueOnce(ESTUDANTE_MOCK)
+      .mockResolvedValueOnce(COORDENADOR_MOCK as any);
     mockDocumentos.buscarPorId.mockResolvedValueOnce(DOCUMENTO_MOCK);
     mockGerador.gerarEArmazenarCertificado.mockRejectedValueOnce(new Error('PDF falhou'));
 

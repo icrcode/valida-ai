@@ -154,17 +154,16 @@ export function Cadastro() {
     setTurno('');
   }, [universidadeId]);
 
-  // Reseta o turno ao trocar de curso
-  useEffect(() => {
-    setTurno('');
-  }, [grupoCursoChave]);
-
-  // Auto-seleciona o turno quando há apenas uma opção disponível
+  // Reseta ou auto-seleciona turno ao trocar de curso ou quando os turnos mudam
   const turnosKey = turnosDisponiveis.join('|');
   useEffect(() => {
-    if (turnosDisponiveis.length === 1) setTurno(turnosDisponiveis[0]);
+    if (turnosDisponiveis.length === 1) {
+      setTurno(turnosDisponiveis[0]);
+    } else {
+      setTurno('');
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [turnosKey]);
+  }, [grupoCursoChave, turnosKey]);
 
   function validarEtapa1(): string | null {
     if (!nome.trim() || nome.trim().length < 2) return 'Informe seu nome completo (mínimo 2 caracteres)';

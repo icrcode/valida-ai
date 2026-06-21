@@ -20,6 +20,7 @@ const DADOS_BASE: DadosCertificado = {
   documentoId: 'doc-1',
   estudanteNome: 'João Silva',
   estudanteEmail: 'joao@uni.edu',
+  coordenadorNome: 'Maria Coordenadora',
   titulo: 'Certificado XYZ',
   tipo: 'certificado_curso',
   cargaHoraria: 40,

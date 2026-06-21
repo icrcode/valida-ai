@@ -8,6 +8,7 @@ export interface DadosCertificado {
   documentoId: string;
   estudanteNome: string;
   estudanteEmail: string;
+  coordenadorNome: string;
   titulo: string;
   tipo: string;
   cargaHoraria: number;
@@ -46,52 +47,32 @@ export async function gerarPDF(dados: DadosCertificado, urlVerificacao: string):
     doc.on('end', () => resolve(Buffer.concat(chunks)));
     doc.on('error', reject);
 
-    const largura = doc.page.width;
-    const altura = doc.page.height;
+    const largura = doc.page.width;  // ~842
+    const altura = doc.page.height;  // ~595
 
-    // Borda decorativa
-    doc
-      .rect(20, 20, largura - 40, altura - 40)
-      .lineWidth(3)
-      .stroke('#1a3c6e');
+    // Borda decorativa dupla
+    doc.rect(20, 20, largura - 40, altura - 40).lineWidth(3).stroke('#1a3c6e');
+    doc.rect(28, 28, largura - 56, altura - 56).lineWidth(1).stroke('#4a90d9');
 
+    // ── Cabeçalho ──
     doc
-      .rect(28, 28, largura - 56, altura - 56)
-      .lineWidth(1)
-      .stroke('#4a90d9');
-
-    // Cabeçalho
-    doc
-      .fontSize(28)
-      .fillColor('#1a3c6e')
-      .font('Helvetica-Bold')
-      .text('CERTIFICADO', 0, 70, { align: 'center', width: largura });
+      .fontSize(28).fillColor('#1a3c6e').font('Helvetica-Bold')
+      .text('CERTIFICADO', 0, 60, { align: 'center', width: largura });
 
     doc
-      .fontSize(14)
-      .fillColor('#4a90d9')
-      .font('Helvetica')
-      .text('DE CONCLUSÃO DE ATIVIDADE', 0, 108, { align: 'center', width: largura });
+      .fontSize(14).fillColor('#4a90d9').font('Helvetica')
+      .text('DE CONCLUSÃO DE ATIVIDADE', 0, 95, { align: 'center', width: largura });
 
-    // Linha divisória
-    doc
-      .moveTo(80, 140)
-      .lineTo(largura - 80, 140)
-      .lineWidth(1)
-      .stroke('#cccccc');
+    doc.moveTo(80, 122).lineTo(largura - 80, 122).lineWidth(1).stroke('#cccccc');
 
-    // Corpo
+    // ── Corpo ──
     doc
-      .fontSize(14)
-      .fillColor('#333333')
-      .font('Helvetica')
-      .text('Certificamos que', 0, 170, { align: 'center', width: largura });
+      .fontSize(14).fillColor('#333333').font('Helvetica')
+      .text('Certificamos que', 0, 145, { align: 'center', width: largura });
 
     doc
-      .fontSize(24)
-      .fillColor('#1a3c6e')
-      .font('Helvetica-Bold')
-      .text(dados.estudanteNome, 0, 200, { align: 'center', width: largura });
+      .fontSize(24).fillColor('#1a3c6e').font('Helvetica-Bold')
+      .text(dados.estudanteNome, 0, 172, { align: 'center', width: largura });
 
     const tipoLegivel = TIPO_LEGIVEL[dados.tipo] ?? dados.tipo;
     const dataFormatada = dados.dataAprovacao.toLocaleDateString('pt-BR', {
@@ -101,62 +82,57 @@ export async function gerarPDF(dados: DadosCertificado, urlVerificacao: string):
     });
 
     doc
-      .fontSize(13)
-      .fillColor('#333333')
-      .font('Helvetica')
-      .text(
-        `concluiu com aprovação a atividade de ${tipoLegivel}`,
-        0,
-        248,
-        { align: 'center', width: largura },
-      );
-
-    doc
-      .fontSize(16)
-      .fillColor('#1a3c6e')
-      .font('Helvetica-Bold')
-      .text(`"${dados.titulo}"`, 0, 276, { align: 'center', width: largura });
-
-    doc
-      .fontSize(13)
-      .fillColor('#333333')
-      .font('Helvetica')
-      .text(`com carga horária de ${dados.cargaHoraria} horas`, 0, 310, {
-        align: 'center',
-        width: largura,
+      .fontSize(13).fillColor('#333333').font('Helvetica')
+      .text(`concluiu com aprovação a atividade de ${tipoLegivel}`, 0, 215, {
+        align: 'center', width: largura,
       });
 
     doc
-      .fontSize(12)
-      .fillColor('#555555')
-      .text(`aprovado em ${dataFormatada}`, 0, 338, { align: 'center', width: largura });
-
-    // Linha divisória
-    doc
-      .moveTo(80, 370)
-      .lineTo(largura - 80, 370)
-      .lineWidth(1)
-      .stroke('#cccccc');
-
-    // Rodapé: QR Code e URL de verificação
-    const qrX = largura - 140;
-    const qrY = altura - 130;
-    doc.image(qrBuffer, qrX, qrY, { width: 90, height: 90 });
+      .fontSize(16).fillColor('#1a3c6e').font('Helvetica-Bold')
+      .text(`"${dados.titulo}"`, 0, 242, { align: 'center', width: largura });
 
     doc
-      .fontSize(9)
-      .fillColor('#888888')
-      .text('Verifique a autenticidade:', qrX - 10, qrY + 94, { width: 110, align: 'center' });
+      .fontSize(13).fillColor('#333333').font('Helvetica')
+      .text(`com carga horária de ${dados.cargaHoraria} horas`, 0, 274, {
+        align: 'center', width: largura,
+      });
 
     doc
-      .fontSize(8)
-      .fillColor('#888888')
-      .text('Scan o QR Code ou acesse:', 60, altura - 60, { width: largura - 200 });
+      .fontSize(12).fillColor('#555555')
+      .text(`aprovado em ${dataFormatada}`, 0, 300, { align: 'center', width: largura });
+
+    // ── Assinatura do coordenador (centralizada) ──
+    const assinaturaY = 370;
+    doc.moveTo(largura / 2 - 120, assinaturaY).lineTo(largura / 2 + 120, assinaturaY)
+      .lineWidth(1).stroke('#1a3c6e');
 
     doc
-      .fontSize(8)
-      .fillColor('#4a90d9')
-      .text(urlVerificacao, 60, altura - 48, { width: largura - 200 });
+      .fontSize(13).fillColor('#1a3c6e').font('Helvetica-Bold')
+      .text(dados.coordenadorNome, 0, assinaturaY + 6, { align: 'center', width: largura });
+
+    doc
+      .fontSize(10).fillColor('#555555').font('Helvetica')
+      .text('Coordenador(a) Responsável', 0, assinaturaY + 22, { align: 'center', width: largura });
+
+    // ── Rodapé: QR Code (canto inferior direito) e URL (canto inferior esquerdo) ──
+    const qrTamanho = 80;
+    const qrX = largura - 40 - qrTamanho - 10;
+    const qrY = altura - 40 - qrTamanho - 30;
+    doc.image(qrBuffer, qrX, qrY, { width: qrTamanho, height: qrTamanho });
+
+    doc
+      .fontSize(7).fillColor('#888888')
+      .text('Verifique a autenticidade', qrX - 5, qrY + qrTamanho + 3, {
+        width: qrTamanho + 10, align: 'center',
+      });
+
+    doc
+      .fontSize(7).fillColor('#888888')
+      .text('Verifique este certificado em:', 50, altura - 58, { width: largura - 220 });
+
+    doc
+      .fontSize(7).fillColor('#4a90d9')
+      .text(urlVerificacao, 50, altura - 48, { width: largura - 220 });
 
     doc.end();
   });
@@ -164,10 +140,10 @@ export async function gerarPDF(dados: DadosCertificado, urlVerificacao: string):
 
 export async function gerarEArmazenarCertificado(
   dados: DadosCertificado,
-  urlBase: string,
+  urlFrontend: string,
 ): Promise<{ hash: string; caminhoArquivo: string; pdfBuffer: Buffer }> {
   const hash = gerarHash(dados.documentoId);
-  const urlVerificacao = `${urlBase}/api/publica/verificar/${hash}`;
+  const urlVerificacao = `${urlFrontend.replace(/\/+$/, '')}/verificar/${hash}`;
 
   const pdfBuffer = await gerarPDF(dados, urlVerificacao);
 
