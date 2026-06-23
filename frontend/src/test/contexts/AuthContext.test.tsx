@@ -1,7 +1,11 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
 import { AuthProvider, useAuth } from '../../contexts/AuthContext';
 import type { Usuario } from '../../types';
+
+vi.mock('../../services/api', () => ({
+  default: { post: vi.fn().mockResolvedValue({}) },
+}));
 
 const USUARIO_MOCK: Usuario = {
   id: 'u-1',
@@ -23,7 +27,7 @@ function Probe() {
     <div>
       <span data-testid="autenticado">{String(auth.isAuthenticated)}</span>
       <span data-testid="nome">{auth.usuario?.nome ?? 'sem-usuario'}</span>
-      <button onClick={() => auth.login('tok-123', USUARIO_MOCK)}>login</button>
+      <button onClick={() => auth.login(USUARIO_MOCK)}>login</button>
       <button onClick={() => auth.logout()}>logout</button>
     </div>
   );
@@ -34,13 +38,12 @@ beforeEach(() => {
 });
 
 describe('AuthContext', () => {
-  it('inicia não autenticado quando não há token no localStorage', () => {
+  it('inicia não autenticado quando não há usuario no localStorage', () => {
     render(<AuthProvider><Probe /></AuthProvider>);
     expect(screen.getByTestId('autenticado').textContent).toBe('false');
   });
 
-  it('inicia autenticado quando há token no localStorage', () => {
-    localStorage.setItem('token', 'tok-existente');
+  it('inicia autenticado quando há usuario no localStorage', () => {
     localStorage.setItem('usuario', JSON.stringify(USUARIO_MOCK));
     render(<AuthProvider><Probe /></AuthProvider>);
     expect(screen.getByTestId('autenticado').textContent).toBe('true');
@@ -53,18 +56,17 @@ describe('AuthContext', () => {
     });
     expect(screen.getByTestId('autenticado').textContent).toBe('true');
     expect(screen.getByTestId('nome').textContent).toBe('João Silva');
-    expect(localStorage.getItem('token')).toBe('tok-123');
+    expect(localStorage.getItem('usuario')).toBeTruthy();
   });
 
   it('faz logout corretamente', async () => {
-    localStorage.setItem('token', 'tok-123');
     localStorage.setItem('usuario', JSON.stringify(USUARIO_MOCK));
     render(<AuthProvider><Probe /></AuthProvider>);
     await act(async () => {
       screen.getByText('logout').click();
     });
     expect(screen.getByTestId('autenticado').textContent).toBe('false');
-    expect(localStorage.getItem('token')).toBeNull();
+    expect(localStorage.getItem('usuario')).toBeNull();
   });
 
   it('lança erro quando useAuth é usado fora do AuthProvider', () => {

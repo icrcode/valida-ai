@@ -377,7 +377,7 @@ describe('Cadastro — submit', () => {
   }
 
   it('chama authService.cadastrar com o curso correspondente ao turno escolhido', async () => {
-    mockAuthService.cadastrar.mockResolvedValue({ token: 'tok', usuario: { id: 'u-1', nome: 'Nome Válido', email: 'joao@aluno.ut.edu.br', perfil: 'estudante' } });
+    mockAuthService.cadastrar.mockResolvedValue({ usuario: { id: 'u-1', nome: 'Nome Válido', email: 'joao@aluno.ut.edu.br', perfil: 'estudante' } });
     renderWithProviders(<Cadastro />);
     await preencherFluxoCompleto();
     fireEvent.click(screen.getByText('Criar conta'));

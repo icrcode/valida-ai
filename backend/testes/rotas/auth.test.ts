@@ -135,12 +135,13 @@ describe('POST /login', () => {
     expect(res.body.erro).toContain('Domínio');
   });
 
-  it('retorna 200 com token quando login é bem-sucedido (sem restrição de domínio)', async () => {
+  it('retorna 200 com cookie httpOnly quando login é bem-sucedido (sem restrição de domínio)', async () => {
     mockUsuarios.buscarPorEmailParaLogin.mockResolvedValueOnce(USUARIO_LOGIN_MOCK);
     mockBcryptCompare.mockResolvedValueOnce(true);
     const res = await request(app).post('/login').send(DADOS_LOGIN);
     expect(res.status).toBe(200);
-    expect(res.body.token).toBeDefined();
+    const cookies = ([] as string[]).concat(res.headers['set-cookie'] ?? []);
+    expect(cookies.some((c) => c.startsWith('valida_token=') && c.includes('HttpOnly'))).toBe(true);
     expect(res.body.usuario.email).toBe('joao@uni.edu');
     expect(res.body.usuario.perfil).toBe('estudante');
   });
@@ -153,7 +154,8 @@ describe('POST /login', () => {
     mockBcryptCompare.mockResolvedValueOnce(true);
     const res = await request(app).post('/login').send(DADOS_LOGIN);
     expect(res.status).toBe(200);
-    expect(res.body.token).toBeDefined();
+    const cookies = ([] as string[]).concat(res.headers['set-cookie'] ?? []);
+    expect(cookies.some((c) => c.startsWith('valida_token='))).toBe(true);
   });
 
   it('retorna 200 quando lista de domínios está vazia (sem restrição)', async () => {
@@ -234,14 +236,15 @@ describe('POST /cadastro', () => {
     expect(res.status).toBe(403);
   });
 
-  it('retorna 201 com token quando cadastro é bem-sucedido', async () => {
+  it('retorna 201 com cookie httpOnly quando cadastro é bem-sucedido', async () => {
     mockUsuarios.buscarPorEmail.mockResolvedValueOnce(null);
     mockCursos.buscarCursoPorId.mockResolvedValueOnce(CURSO_MOCK);
     mockBcryptHash.mockResolvedValueOnce('$2b$10$hashed');
     mockUsuarios.criarUsuario.mockResolvedValueOnce(USUARIO_CRIADO);
     const res = await request(app).post('/cadastro').send(DADOS_CADASTRO);
     expect(res.status).toBe(201);
-    expect(res.body.token).toBeDefined();
+    const cookies = ([] as string[]).concat(res.headers['set-cookie'] ?? []);
+    expect(cookies.some((c) => c.startsWith('valida_token=') && c.includes('HttpOnly'))).toBe(true);
     expect(res.body.usuario.perfil).toBe('estudante');
     expect(res.body.usuario.email).toBe('maria@uni.edu');
   });

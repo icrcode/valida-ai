@@ -216,14 +216,14 @@ export function Cadastro() {
     setErro('');
     setLoading(true);
     try {
-      const { token, usuario } = await authService.cadastrar({
+      const { usuario } = await authService.cadastrar({
         nome: nome.trim(),
         email: email.trim().toLowerCase(),
         senha,
         matricula: matricula.trim(),
         curso_id: cursoId,
       });
-      login(token, usuario);
+      login(usuario);
       navigate('/dashboard');
     } catch (err: unknown) {
       setErro(mensagemErroSegura(err, 'Falha ao criar conta. Tente novamente.'));

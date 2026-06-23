@@ -1,7 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-// Testa os interceptors do axios diretamente sem mockar o módulo api
-// O queryClient precisa ser mockado para evitar imports circulares
 vi.mock('../../lib/queryClient', () => ({
   queryClient: { clear: vi.fn() },
 }));
@@ -16,37 +14,21 @@ describe('api interceptors', () => {
     vi.unstubAllGlobals();
   });
 
-  it('adiciona header Authorization quando token existe no localStorage', async () => {
-    localStorage.setItem('token', 'meu-token-123');
+  it('configura withCredentials como true', async () => {
     const { default: api } = await import('../../services/api');
-
-    // Pega o handler do request interceptor e executa diretamente
-    const handlers = (api.interceptors.request as unknown as {
-      handlers: Array<{ fulfilled: (c: unknown) => unknown }>;
-    }).handlers;
-    const handler = handlers[handlers.length - 1]?.fulfilled;
-    expect(handler).toBeDefined();
-
-    const fakeConfig = { headers: {} as Record<string, string> };
-    const result = handler(fakeConfig) as typeof fakeConfig;
-    expect(result.headers.Authorization).toBe('Bearer meu-token-123');
+    expect(api.defaults.withCredentials).toBe(true);
   });
 
-  it('não adiciona header Authorization quando token não existe', async () => {
+  it('não possui request interceptor de Authorization', async () => {
     const { default: api } = await import('../../services/api');
-
     const handlers = (api.interceptors.request as unknown as {
-      handlers: Array<{ fulfilled: (c: unknown) => unknown }>;
+      handlers: Array<{ fulfilled: (c: unknown) => unknown } | null>;
     }).handlers;
-    const handler = handlers[handlers.length - 1]?.fulfilled;
-
-    const fakeConfig = { headers: {} as Record<string, string> };
-    const result = handler(fakeConfig) as typeof fakeConfig;
-    expect(result.headers.Authorization).toBeUndefined();
+    const activeHandlers = handlers.filter(Boolean);
+    expect(activeHandlers).toHaveLength(0);
   });
 
-  it('limpa token e redireciona ao receber 401', async () => {
-    localStorage.setItem('token', 'tok');
+  it('limpa usuario e redireciona ao receber 401', async () => {
     localStorage.setItem('usuario', '{}');
     const { default: api } = await import('../../services/api');
     const { queryClient } = await import('../../lib/queryClient');
@@ -59,7 +41,6 @@ describe('api interceptors', () => {
 
     await expect(errorHandler({ response: { status: 401 } })).rejects.toBeTruthy();
     expect(queryClient.clear).toHaveBeenCalled();
-    expect(localStorage.getItem('token')).toBeNull();
     expect(localStorage.getItem('usuario')).toBeNull();
   });
 
@@ -85,7 +66,6 @@ describe('api interceptors', () => {
     }).handlers;
     const errorHandler = responseHandlers[responseHandlers.length - 1]?.rejected;
 
-    // Erro sem response (timeout, CORS, etc.)
     await expect(errorHandler({ message: 'Network Error' })).rejects.toMatchObject({
       message: 'Network Error',
     });

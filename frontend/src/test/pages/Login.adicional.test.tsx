@@ -114,7 +114,7 @@ describe('Login — etapa de senha', () => {
 
 describe('Login — submit com sucesso e erro', () => {
   it('chama authService.login e navega para dashboard em caso de sucesso', async () => {
-    mockAuthService.login.mockResolvedValue({ token: 'tok-123', usuario: { id: 'u-1', nome: 'João', email: 'joao@test.com', perfil: 'estudante' } });
+    mockAuthService.login.mockResolvedValue({ usuario: { id: 'u-1', nome: 'João', email: 'joao@test.com', perfil: 'estudante' } });
     renderWithProviders(<Login />);
     avancarParaSenha('joao@test.com');
     fireEvent.change(screen.getByLabelText('Senha'), { target: { value: 'senha123' } });
@@ -139,7 +139,7 @@ describe('Login — submit com sucesso e erro', () => {
   });
 
   it('normaliza o e-mail para lowercase antes de enviar', async () => {
-    mockAuthService.login.mockResolvedValue({ token: 'tok', usuario: { id: 'u-1', nome: 'João', email: 'joao@test.com', perfil: 'estudante' } });
+    mockAuthService.login.mockResolvedValue({ usuario: { id: 'u-1', nome: 'João', email: 'joao@test.com', perfil: 'estudante' } });
     renderWithProviders(<Login />);
     avancarParaSenha('  JOAO@TEST.COM  ');
     fireEvent.change(screen.getByLabelText('Senha'), { target: { value: 'senha123' } });
