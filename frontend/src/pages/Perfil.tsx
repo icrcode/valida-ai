@@ -37,7 +37,6 @@ export function Perfil() {
   const { usuario, login } = useAuth();
   const { addToast } = useToast();
   const queryClient = useQueryClient();
-  const token = localStorage.getItem('token') ?? '';
 
   const [modo, setModo] = useState<Modo>('ver');
 
@@ -87,7 +86,7 @@ export function Perfil() {
         endereco: temCpfEndereco ? (endereco.trim() || null) : undefined,
       }),
     onSuccess: (atualizado) => {
-      login(token, atualizado);
+      login(atualizado);
       queryClient.setQueryData(['perfil'], atualizado);
       addToast('Dados atualizados com sucesso!', 'success');
       setModo('ver');

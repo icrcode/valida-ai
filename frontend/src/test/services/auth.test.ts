@@ -5,7 +5,7 @@ vi.mock('../../services/api');
 
 import api from '../../services/api';
 
-const mockApi = api as unknown as { post: ReturnType<typeof vi.fn> };
+const mockApi = api as unknown as { post: ReturnType<typeof vi.fn>; get: ReturnType<typeof vi.fn> };
 
 const USUARIO_MOCK = {
   id: 'u-1', nome: 'João', email: 'joao@test.com', perfil: 'estudante' as const,
@@ -16,21 +16,20 @@ const USUARIO_MOCK = {
 beforeEach(() => vi.clearAllMocks());
 
 describe('authService.login', () => {
-  it('chama POST /api/auth/login e retorna token e usuario', async () => {
-    const resposta = { token: 'tok-123', usuario: USUARIO_MOCK };
+  it('chama POST /api/auth/login e retorna usuario', async () => {
+    const resposta = { usuario: USUARIO_MOCK };
     mockApi.post.mockResolvedValueOnce({ data: resposta });
 
     const resultado = await authService.login('joao@test.com', 'senha123');
 
     expect(mockApi.post).toHaveBeenCalledWith('/api/auth/login', { email: 'joao@test.com', senha: 'senha123' });
-    expect(resultado.token).toBe('tok-123');
     expect(resultado.usuario.email).toBe('joao@test.com');
   });
 });
 
 describe('authService.cadastrar', () => {
-  it('chama POST /api/auth/cadastro e retorna token e usuario', async () => {
-    const resposta = { token: 'tok-456', usuario: USUARIO_MOCK };
+  it('chama POST /api/auth/cadastro e retorna usuario', async () => {
+    const resposta = { usuario: USUARIO_MOCK };
     mockApi.post.mockResolvedValueOnce({ data: resposta });
 
     const resultado = await authService.cadastrar({
@@ -39,6 +38,14 @@ describe('authService.cadastrar', () => {
     });
 
     expect(mockApi.post).toHaveBeenCalledWith('/api/auth/cadastro', expect.objectContaining({ nome: 'João' }));
-    expect(resultado.token).toBe('tok-456');
+    expect(resultado.usuario.email).toBe('joao@test.com');
+  });
+});
+
+describe('authService.logout', () => {
+  it('chama POST /api/auth/logout', async () => {
+    mockApi.post.mockResolvedValueOnce({ data: {} });
+    await authService.logout();
+    expect(mockApi.post).toHaveBeenCalledWith('/api/auth/logout');
   });
 });

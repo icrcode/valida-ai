@@ -41,8 +41,8 @@ export function Login() {
     setErro('');
     setLoading(true);
     try {
-      const { token, usuario } = await authService.login(email.trim().toLowerCase(), senha);
-      login(token, usuario);
+      const { usuario } = await authService.login(email.trim().toLowerCase(), senha);
+      login(usuario);
       navigate('/dashboard');
     } catch (err: unknown) {
       setErro(mensagemErroSegura(err, 'Falha ao conectar com o servidor'));

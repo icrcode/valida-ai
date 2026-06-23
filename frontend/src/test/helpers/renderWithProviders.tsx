@@ -23,11 +23,10 @@ interface Options {
 }
 
 export function renderWithProviders(ui: ReactNode, options: Options = {}) {
-  const { route = '/', token, usuario } = options;
+  const { route = '/', usuario } = options;
 
-  if (token) {
-    localStorage.setItem('token', token);
-    if (usuario) localStorage.setItem('usuario', JSON.stringify(usuario));
+  if (usuario) {
+    localStorage.setItem('usuario', JSON.stringify(usuario));
   }
 
   const queryClient = createTestQueryClient();
