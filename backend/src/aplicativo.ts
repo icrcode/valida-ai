@@ -17,6 +17,13 @@ import { registrarHandlers } from './eventos/registrar';
 
 const aplicativo: Express = express();
 
+// Rotas internas (antes do CORS — acesso apenas via rede interna)
+aplicativo.use('/', rotasVerificacao);
+aplicativo.get('/metrics', async (_req, res) => {
+  res.set('Content-Type', registro.contentType);
+  res.end(await registro.metrics());
+});
+
 // Middlewares de segurança
 aplicativo.use(helmet());
 
@@ -53,14 +60,7 @@ aplicativo.use((req, _res, next) => {
   next();
 });
 
-// Métricas para o Prometheus
-aplicativo.get('/metrics', async (_req, res) => {
-  res.set('Content-Type', registro.contentType);
-  res.end(await registro.metrics());
-});
-
 // Rotas
-aplicativo.use('/', rotasVerificacao);
 aplicativo.use('/api/publica', rotasPublica);
 aplicativo.use('/api/auth', rotasAuth);
 aplicativo.use('/api/usuarios', rotasUsuarios);
