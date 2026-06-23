@@ -1,6 +1,7 @@
 import express, { Express } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 import registrador from './utils/registrador';
 import { registro, medirRequisicoes } from './utils/metricas';
 import rotasVerificacao from './routes/verificacao';
@@ -46,6 +47,9 @@ aplicativo.use(
     credentials: true,
   })
 );
+
+// Cookie parser
+aplicativo.use(cookieParser());
 
 // Analisador de corpo
 aplicativo.use(express.json({ limit: '10mb' }));

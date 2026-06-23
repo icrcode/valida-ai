@@ -1,9 +1,10 @@
-import { Router } from 'express';
+import { Router, type CookieOptions } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { configuracao } from '../../configuracao';
 import { tratarErro } from '../../utils/erros';
 import registrador from '../../utils/registrador';
+import { autenticar } from '../../middleware/autenticacao';
 import {
   buscarPorEmailParaLogin,
   buscarPorEmail,
@@ -13,6 +14,29 @@ import {
 import { buscarCursoPorId, listarCursoIdsDoCoordenador } from '../cursos/repositorio';
 
 const router = Router();
+
+function parseDuracaoMs(duracao: string): number {
+  const match = duracao.match(/^(\d+)([smhd])$/);
+  if (!match) return 7 * 24 * 60 * 60 * 1000;
+  const n = parseInt(match[1], 10);
+  switch (match[2]) {
+    case 's': return n * 1000;
+    case 'm': return n * 60 * 1000;
+    case 'h': return n * 60 * 60 * 1000;
+    case 'd': return n * 24 * 60 * 60 * 1000;
+    default: return 7 * 24 * 60 * 60 * 1000;
+  }
+}
+
+function opcoesCookie(): CookieOptions {
+  return {
+    httpOnly: true,
+    secure: configuracao.ambienteNode === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: parseDuracaoMs(configuracao.jwt.expiraEm),
+  };
+}
 
 async function gerarToken(
   usuario: Omit<UsuarioParaLogin, 'dominios_email' | 'ativo' | 'criado_em' | 'atualizado_em' | 'senha_hash'>,
@@ -113,8 +137,8 @@ router.post('/login', async (req, res) => {
       instituicao: usuario.instituicao_nome,
     });
 
+    res.cookie('valida_token', token, opcoesCookie());
     res.json({
-      token,
       usuario: {
         id: usuario.id,
         nome: usuario.nome,
@@ -210,8 +234,8 @@ router.post('/cadastro', async (req, res) => {
       instituicao: curso.instituicao_nome,
     });
 
+    res.cookie('valida_token', token, opcoesCookie());
     res.status(201).json({
-      token,
       usuario: {
         id: novoUsuario.id,
         nome: novoUsuario.nome,
@@ -226,6 +250,27 @@ router.post('/cadastro', async (req, res) => {
   } catch (err: unknown) {
     tratarErro(res, err, 'auth/cadastro');
   }
+});
+
+router.get('/me', autenticar, (req, res) => {
+  const u = req.usuario!;
+  res.json({
+    usuario: {
+      id: u.sub,
+      nome: u.nome,
+      email: u.email,
+      perfil: u.perfil,
+      matricula: u.matricula ?? null,
+      curso_id: u.curso_id ?? null,
+      instituicao_id: u.instituicao_id ?? null,
+      instituicao_nome: u.instituicao_nome ?? null,
+    },
+  });
+});
+
+router.post('/logout', (_req, res) => {
+  res.clearCookie('valida_token', { path: '/' });
+  res.json({ mensagem: 'Logout realizado' });
 });
 
 export default router;

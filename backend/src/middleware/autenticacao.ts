@@ -24,13 +24,14 @@ declare global {
 }
 
 export function autenticar(req: Request, res: Response, next: NextFunction): void {
-  const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith('Bearer ')) {
+  const token = req.cookies?.valida_token
+    ?? (req.headers.authorization?.startsWith('Bearer ') ? req.headers.authorization.slice(7) : undefined);
+
+  if (!token) {
     res.status(401).json({ erro: 'Token não fornecido' });
     return;
   }
 
-  const token = authHeader.slice(7);
   try {
     const payload = jwt.verify(token, configuracao.jwt.segredo) as PayloadJWT;
     req.usuario = payload;
