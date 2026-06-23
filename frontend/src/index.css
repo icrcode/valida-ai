@@ -75,6 +75,15 @@ body {
 .delay-225 { animation-delay: 225ms; }
 .delay-300 { animation-delay: 300ms; }
 
+/* Landing page floating elements */
+@keyframes landingFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-20px) rotate(3deg); }
+}
+.landing-float-slow { animation: landingFloat 8s ease-in-out infinite; }
+.landing-float-med  { animation: landingFloat 6s ease-in-out infinite 1s; }
+.landing-float-fast { animation: landingFloat 4s ease-in-out infinite 0.5s; }
+
 /* ============================================================
    MODO CLARO — sobrescreve utilitários Tailwind via seletor
    de maior especificidade (fora de @layer, sempre vence)
