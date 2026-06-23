@@ -79,7 +79,7 @@ aplicativo.use((_req, res) => {
 });
 
 // Manipulador de erros
-aplicativo.use((err: unknown, _req: express.Request, res: express.Response) => {
+aplicativo.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   const mensagem = err instanceof Error ? err.message : 'Erro Interno do Servidor';
   const status = (err as { status?: number }).status || 500;
 
