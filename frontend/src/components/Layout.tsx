@@ -7,7 +7,7 @@ import { PERFIL_LABEL, PERFIL_COR, iniciais } from '../utils/perfil';
 import { SunIcon, MoonIcon } from './icons';
 
 const linkCls = ({ isActive }: { isActive: boolean }) =>
-  `px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+  `px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
     isActive
       ? 'bg-[#618C7C]/15 text-[#7AAA9A] border border-[#618C7C]/25'
       : 'text-white/55 border border-transparent hover:text-white hover:bg-white/5'
@@ -20,66 +20,48 @@ export function Layout() {
   const [menuAberto, setMenuAberto] = useState(false);
 
 
-  const eEstudante = usuario?.perfil === 'estudante';
-  const eCoordenadorPuro = usuario?.perfil === 'coordenador';
-  const eCoordenador = eCoordenadorPuro || usuario?.perfil === 'admin';
+  const perfil = usuario?.perfil;
 
   function handleLogout() {
     logout();
     navigate('/login');
   }
 
-  const navLinks = (mobile = false) => (
-    <>
-      <NavLink to="/dashboard" className={linkCls} onClick={mobile ? () => setMenuAberto(false) : undefined}>
-        Início
+  const allLinks: { to: string; label: string; perfis?: string[] }[] = [
+    { to: '/dashboard', label: 'Início' },
+    { to: '/documentos', label: 'Documentos' },
+    { to: '/certificados', label: 'Certificados', perfis: ['estudante'] },
+    { to: '/documentos?status=pendente', label: 'Fila de Análise', perfis: ['coordenador', 'admin'] },
+    { to: '/alunos', label: 'Alunos', perfis: ['coordenador'] },
+    { to: '/perfil', label: 'Perfil' },
+    { to: '/usuarios', label: 'Usuários', perfis: ['admin'] },
+    { to: '/instituicoes', label: 'Instituições', perfis: ['admin'] },
+    { to: '/cursos', label: 'Cursos', perfis: ['admin'] },
+  ];
+
+  const visibleLinks = allLinks.filter((l) => !l.perfis || (perfil && l.perfis.includes(perfil)));
+
+  const navLinks = (mobile = false) =>
+    visibleLinks.map((l) => (
+      <NavLink
+        key={l.to}
+        to={l.to}
+        className={linkCls}
+        onClick={mobile ? () => setMenuAberto(false) : undefined}
+      >
+        {l.label}
       </NavLink>
-      <NavLink to="/documentos" className={linkCls} onClick={mobile ? () => setMenuAberto(false) : undefined}>
-        Documentos
-      </NavLink>
-      {eEstudante && (
-        <NavLink to="/certificados" className={linkCls} onClick={mobile ? () => setMenuAberto(false) : undefined}>
-          Certificados
-        </NavLink>
-      )}
-      {eCoordenador && (
-        <NavLink to="/documentos?status=pendente" className={linkCls} onClick={mobile ? () => setMenuAberto(false) : undefined}>
-          Fila de Análise
-        </NavLink>
-      )}
-      {eCoordenadorPuro && (
-        <NavLink to="/alunos" className={linkCls} onClick={mobile ? () => setMenuAberto(false) : undefined}>
-          Alunos
-        </NavLink>
-      )}
-      <NavLink to="/perfil" className={linkCls} onClick={mobile ? () => setMenuAberto(false) : undefined}>
-        Perfil
-      </NavLink>
-      {usuario?.perfil === 'admin' && (
-        <>
-          <NavLink to="/usuarios" className={linkCls} onClick={mobile ? () => setMenuAberto(false) : undefined}>
-            Usuários
-          </NavLink>
-          <NavLink to="/instituicoes" className={linkCls} onClick={mobile ? () => setMenuAberto(false) : undefined}>
-            Instituições
-          </NavLink>
-          <NavLink to="/cursos" className={linkCls} onClick={mobile ? () => setMenuAberto(false) : undefined}>
-            Cursos
-          </NavLink>
-        </>
-      )}
-    </>
-  );
+    ));
 
   return (
     <div className="min-h-screen bg-[#010A26]">
       {/* Header */}
       <header className="nav-header-bg sticky top-0 z-10 border-b border-white/8">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 sm:px-8">
           {/* Logo */}
-          <NavLink to="/dashboard" className="flex items-center gap-2.5 text-base font-bold text-white group">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#618C7C]/20 border border-[#618C7C]/30 transition-all group-hover:bg-[#618C7C]/30">
-              <svg className="h-4 w-4 text-[#618C7C]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+          <NavLink to="/dashboard" className="flex items-center gap-3 text-xl font-bold text-white group">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#618C7C]/20 border border-[#618C7C]/30 transition-all group-hover:bg-[#618C7C]/30">
+              <svg className="h-5 w-5 text-[#618C7C]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
             </div>
@@ -90,25 +72,25 @@ export function Layout() {
           <nav className="hidden items-center gap-1 md:flex">{navLinks()}</nav>
 
           {/* Ações do header */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             {/* Botão tema */}
             <button
               onClick={alternar}
               aria-label={tema === 'dark' ? 'Mudar para modo claro' : 'Mudar para modo escuro'}
               title={tema === 'dark' ? 'Modo claro' : 'Modo escuro'}
-              className="rounded-lg p-2 text-white/50 hover:bg-white/5 hover:text-white transition-all"
+              className="rounded-lg p-2.5 text-white/50 hover:bg-white/5 hover:text-white transition-all"
             >
               {tema === 'dark'
-                ? <SunIcon className="h-4 w-4" aria-hidden />
-                : <MoonIcon className="h-4 w-4" aria-hidden />}
+                ? <SunIcon className="h-5 w-5" aria-hidden />
+                : <MoonIcon className="h-5 w-5" aria-hidden />}
             </button>
 
             <NavLink
               to="/perfil"
-              className="hidden items-center gap-2.5 rounded-lg px-2.5 py-1.5 transition-all hover:bg-white/5 sm:flex"
+              className="hidden items-center gap-3 rounded-lg px-3 py-2 transition-all hover:bg-white/5 sm:flex"
             >
               <div
-                className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-[#618C7C] text-xs font-bold ring-2 ring-[#618C7C]/30"
+                className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#618C7C] text-sm font-bold ring-2 ring-[#618C7C]/30"
                 style={{ color: 'white' }}
               >
                 {usuario?.nome ? iniciais(usuario.nome) : '?'}
@@ -125,7 +107,7 @@ export function Layout() {
 
             <button
               onClick={handleLogout}
-              className="rounded-lg px-3 py-2 text-sm text-white/50 hover:bg-white/5 hover:text-white transition-all"
+              className="rounded-lg px-4 py-2.5 text-sm text-white/50 hover:bg-white/5 hover:text-white transition-all"
             >
               Sair
             </button>
@@ -133,7 +115,7 @@ export function Layout() {
             <button
               onClick={() => setMenuAberto((v) => !v)}
               aria-label={menuAberto ? 'Fechar menu' : 'Abrir menu'}
-              className="rounded-lg p-2 text-white/50 hover:bg-white/5 hover:text-white transition-all md:hidden"
+              className="rounded-lg p-2.5 text-white/50 hover:bg-white/5 hover:text-white transition-all md:hidden"
             >
               {menuAberto ? (
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -150,11 +132,11 @@ export function Layout() {
 
         {/* Menu mobile */}
         {menuAberto && (
-          <nav className="nav-mobile-bg border-t border-white/8 px-4 py-3 md:hidden animate-fade-up">
+          <nav className="nav-mobile-bg border-t border-white/8 px-5 py-4 md:hidden animate-fade-up">
             <div className="flex flex-col gap-1">{navLinks(true)}</div>
-            <div className="mt-3 border-t border-white/8 pt-3 flex items-center gap-3">
+            <div className="mt-4 border-t border-white/8 pt-4 flex items-center gap-3">
               <div
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-[#618C7C] text-xs font-bold flex-shrink-0"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-[#618C7C] text-sm font-bold flex-shrink-0"
                 style={{ color: 'white' }}
               >
                 {usuario?.nome ? iniciais(usuario.nome) : '?'}

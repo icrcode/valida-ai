@@ -1,7 +1,7 @@
 # ── HTTP: challenge do Certbot + redirect para HTTPS ──────────────
 server {
     listen 80;
-    server_name ${DOMAIN} www.${DOMAIN};
+    server_name ${DOMAIN} www.${DOMAIN} ${DOMAIN_ALT} www.${DOMAIN_ALT};
 
     location /.well-known/acme-challenge/ {
         root /var/www/certbot;
@@ -15,7 +15,7 @@ server {
 # ── HTTPS ──────────────────────────────────────────────────────────
 server {
     listen 443 ssl;
-    server_name ${DOMAIN} www.${DOMAIN};
+    server_name ${DOMAIN} www.${DOMAIN} ${DOMAIN_ALT} www.${DOMAIN_ALT};
 
     ssl_certificate     /etc/letsencrypt/live/${DOMAIN}/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/${DOMAIN}/privkey.pem;
