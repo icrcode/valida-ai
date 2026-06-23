@@ -20,56 +20,38 @@ export function Layout() {
   const [menuAberto, setMenuAberto] = useState(false);
 
 
-  const eEstudante = usuario?.perfil === 'estudante';
-  const eCoordenadorPuro = usuario?.perfil === 'coordenador';
-  const eCoordenador = eCoordenadorPuro || usuario?.perfil === 'admin';
+  const perfil = usuario?.perfil;
 
   function handleLogout() {
     logout();
     navigate('/login');
   }
 
-  const navLinks = (mobile = false) => (
-    <>
-      <NavLink to="/dashboard" className={linkCls} onClick={mobile ? () => setMenuAberto(false) : undefined}>
-        Início
+  const allLinks: { to: string; label: string; perfis?: string[] }[] = [
+    { to: '/dashboard', label: 'Início' },
+    { to: '/documentos', label: 'Documentos' },
+    { to: '/certificados', label: 'Certificados', perfis: ['estudante'] },
+    { to: '/documentos?status=pendente', label: 'Fila de Análise', perfis: ['coordenador', 'admin'] },
+    { to: '/alunos', label: 'Alunos', perfis: ['coordenador'] },
+    { to: '/perfil', label: 'Perfil' },
+    { to: '/usuarios', label: 'Usuários', perfis: ['admin'] },
+    { to: '/instituicoes', label: 'Instituições', perfis: ['admin'] },
+    { to: '/cursos', label: 'Cursos', perfis: ['admin'] },
+  ];
+
+  const visibleLinks = allLinks.filter((l) => !l.perfis || (perfil && l.perfis.includes(perfil)));
+
+  const navLinks = (mobile = false) =>
+    visibleLinks.map((l) => (
+      <NavLink
+        key={l.to}
+        to={l.to}
+        className={linkCls}
+        onClick={mobile ? () => setMenuAberto(false) : undefined}
+      >
+        {l.label}
       </NavLink>
-      <NavLink to="/documentos" className={linkCls} onClick={mobile ? () => setMenuAberto(false) : undefined}>
-        Documentos
-      </NavLink>
-      {eEstudante && (
-        <NavLink to="/certificados" className={linkCls} onClick={mobile ? () => setMenuAberto(false) : undefined}>
-          Certificados
-        </NavLink>
-      )}
-      {eCoordenador && (
-        <NavLink to="/documentos?status=pendente" className={linkCls} onClick={mobile ? () => setMenuAberto(false) : undefined}>
-          Fila de Análise
-        </NavLink>
-      )}
-      {eCoordenadorPuro && (
-        <NavLink to="/alunos" className={linkCls} onClick={mobile ? () => setMenuAberto(false) : undefined}>
-          Alunos
-        </NavLink>
-      )}
-      <NavLink to="/perfil" className={linkCls} onClick={mobile ? () => setMenuAberto(false) : undefined}>
-        Perfil
-      </NavLink>
-      {usuario?.perfil === 'admin' && (
-        <>
-          <NavLink to="/usuarios" className={linkCls} onClick={mobile ? () => setMenuAberto(false) : undefined}>
-            Usuários
-          </NavLink>
-          <NavLink to="/instituicoes" className={linkCls} onClick={mobile ? () => setMenuAberto(false) : undefined}>
-            Instituições
-          </NavLink>
-          <NavLink to="/cursos" className={linkCls} onClick={mobile ? () => setMenuAberto(false) : undefined}>
-            Cursos
-          </NavLink>
-        </>
-      )}
-    </>
-  );
+    ));
 
   return (
     <div className="min-h-screen bg-[#010A26]">
