@@ -142,6 +142,8 @@ function useActiveSection() {
   const [active, setActive] = useState('inicio');
 
   useEffect(() => {
+    if (typeof IntersectionObserver === 'undefined') return;
+
     const observer = new IntersectionObserver(
       (entries) => {
         const visible = entries.filter((e) => e.isIntersecting);

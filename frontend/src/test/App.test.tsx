@@ -40,7 +40,7 @@ describe('App', () => {
 
   it('exibe convite para criar conta na tela de apresentação quando não autenticado', () => {
     render(<App />);
-    const link = screen.queryByRole('link', { name: /criar conta de estudante/i });
+    const link = screen.queryByRole('link', { name: /começar agora/i });
     expect(link).toBeInTheDocument();
   });
 });
