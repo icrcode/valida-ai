@@ -184,11 +184,32 @@ com `ancorado: true/false` e a linha do tempo do documento.
    Clique em **Auditar integridade** → "✗ Adulteração detectada: bloco #1: transação … foi
    adulterada". (Sem desabilitar o trigger, o próprio `UPDATE` já é recusado.)
 
-## 9. Testes
+## 9. Extensão: Hyperledger Fabric e pesquisa com A*
+
+A cadeia própria agora é replicada em uma rede **Hyperledger Fabric** (chaincode com máquina de
+estados, política de endosso `AND(Org1, Org2)`, CouchDB) por meio de um *transactional outbox*
+persistido no PostgreSQL, e é ancorada no Fabric por checkpoints periódicos. Também foram
+adicionados dois problemas de busca resolvidos com **A\***: auditoria de conformidade do ciclo de
+vida e planejamento de endosso.
+
+* Como subir a rede e a persistência do ledger: [fabric/README.md](../fabric/README.md)
+* Artigo/relatório de pesquisa: [docs/pesquisa/PESQUISA.md](pesquisa/PESQUISA.md)
+
+| Método | Rota | Descrição |
+| --- | --- | --- |
+| GET | `/api/blockchain/fabric/status` | Conexão, fila do outbox, último checkpoint e se confere |
+| GET | `/api/blockchain/fabric/documentos/:id` | Registro do documento no ledger do Fabric |
+| GET | `/api/blockchain/fabric/rejeitadas` | Eventos recusados pelo chaincode |
+| GET | `/api/blockchain/conformidade?modo=&estrategia=` | Auditoria A\* de todos os documentos |
+| GET | `/api/blockchain/conformidade/:id` | Auditoria nos dois ledgers + reconciliação |
+| POST | `/api/blockchain/pesquisa/endosso` | Planejamento ótimo de endosso (A\*) |
+
+## 10. Testes
 
 ```bash
 cd backend
-npx jest testes/unitarios/blockchain testes/rotas/blockchain.test.ts testes/rotas/publica.test.ts
+npx jest testes/unitarios/blockchain testes/unitarios/pesquisa testes/rotas/blockchain.test.ts testes/rotas/publica.test.ts
+npm run pesquisa:experimentos      # tabelas da pesquisa (A* × Dijkstra × Weighted × guloso)
 ```
 
 Os testes de `cadeia.test.ts` simulam cada ataque da tabela da seção 4 (alterar hash de arquivo,

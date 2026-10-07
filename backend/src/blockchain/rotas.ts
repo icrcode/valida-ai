@@ -4,6 +4,11 @@ import { tratarErro } from '../utils/erros';
 import { sha256 } from './criptografia';
 import * as repositorio from './repositorio';
 import * as servico from './servico';
+import * as servicoFabric from './fabric/servico';
+import * as outbox from './fabric/outbox';
+import { verificarConformidade, type Rotulo } from '../pesquisa/conformidade';
+import { planejarEndosso, type Peer } from '../pesquisa/endosso';
+import type { Estrategia } from '../pesquisa/astar';
 
 /**
  * Explorador público da blockchain (somente leitura).
@@ -125,6 +130,100 @@ router.post('/verificar-arquivo', upload.single('arquivo'), async (req, res) => 
     res.json({ hashArquivo, registrado: provas.length > 0, provas });
   } catch (err: unknown) {
     tratarErro(res, err);
+  }
+});
+
+// ───────────────────────── Hyperledger Fabric ─────────────────────────
+
+// GET /api/blockchain/fabric/status — conexão, fila do outbox e conferência do último checkpoint
+router.get('/fabric/status', async (_req, res) => {
+  try {
+    res.json(await servicoFabric.statusFabric());
+  } catch (err: unknown) {
+    tratarErro(res, err);
+  }
+});
+
+// GET /api/blockchain/fabric/documentos/:documentoId — registro do documento no ledger do Fabric
+router.get('/fabric/documentos/:documentoId', async (req, res) => {
+  const { documentoId } = req.params as { documentoId: string };
+  try {
+    const doc = await servicoFabric.documentoNoFabric(documentoId);
+    if (!doc) {
+      res.status(404).json({ erro: 'Documento não registrado no Fabric' });
+      return;
+    }
+    res.json(doc);
+  } catch (err: unknown) {
+    tratarErro(res, err);
+  }
+});
+
+// GET /api/blockchain/fabric/rejeitadas — eventos que o chaincode recusou (violações de regra)
+router.get('/fabric/rejeitadas', async (_req, res) => {
+  try {
+    res.json(await outbox.listarRejeitadas());
+  } catch (err: unknown) {
+    tratarErro(res, err);
+  }
+});
+
+// ───────────────────────── Pesquisa: A* ─────────────────────────
+
+const ESTRATEGIAS: Estrategia[] = ['astar', 'dijkstra', 'weighted', 'guloso'];
+
+function lerOpcoesBusca(query: Record<string, unknown>) {
+  const estrategia = ESTRATEGIAS.includes(query.estrategia as Estrategia) ? (query.estrategia as Estrategia) : 'astar';
+  const modo = query.modo === 'prefixo' ? ('prefixo' as const) : ('completo' as const);
+  return { estrategia, modo };
+}
+
+// GET /api/blockchain/conformidade/:documentoId?modo=completo|prefixo&estrategia=astar
+router.get('/conformidade/:documentoId', async (req, res) => {
+  const { documentoId } = req.params as { documentoId: string };
+  try {
+    res.json(await servicoFabric.auditarDocumento(documentoId, lerOpcoesBusca(req.query)));
+  } catch (err: unknown) {
+    tratarErro(res, err);
+  }
+});
+
+// GET /api/blockchain/conformidade?limite=200 — auditoria de todos os documentos da cadeia
+router.get('/conformidade', async (req, res) => {
+  const limite = Math.min(Math.max(Number.parseInt((req.query.limite as string) || '200', 10) || 200, 1), 1000);
+  const opcoes = lerOpcoesBusca(req.query);
+  try {
+    const tracos = await repositorio.listarTracosDocumentos(limite);
+    const resultados = tracos.map((t) => ({
+      documentoId: t.documento_id,
+      traco: t.tipos as Rotulo[],
+      ...verificarConformidade(t.tipos as Rotulo[], opcoes),
+    }));
+    const naoConformes = resultados.filter((r) => !r.conforme);
+    res.json({
+      opcoes,
+      documentos: resultados.length,
+      conformes: resultados.length - naoConformes.length,
+      aptidaoMedia: resultados.length ? resultados.reduce((a, r) => a + r.aptidao, 0) / resultados.length : 1,
+      nosExpandidos: resultados.reduce((a, r) => a + r.metricas.nosExpandidos, 0),
+      naoConformes: naoConformes.map(({ documentoId, traco, custo, anomalias }) => ({ documentoId, traco, custo, anomalias })),
+    });
+  } catch (err: unknown) {
+    tratarErro(res, err);
+  }
+});
+
+// POST /api/blockchain/pesquisa/endosso — { politica: "AND('Org1MSP.peer', ...)", peers: Peer[], estrategia? }
+router.post('/pesquisa/endosso', (req, res) => {
+  const { politica, peers, estrategia } = req.body as { politica?: string; peers?: Peer[]; estrategia?: Estrategia };
+  if (typeof politica !== 'string' || !Array.isArray(peers) || peers.length === 0 || peers.length > 500) {
+    res.status(400).json({ erro: 'Informe politica (texto) e peers (1 a 500 itens)' });
+    return;
+  }
+  try {
+    res.json(planejarEndosso(politica, peers, { estrategia: ESTRATEGIAS.includes(estrategia!) ? estrategia : 'astar', limiteExpansoes: 200_000 }));
+  } catch (err: unknown) {
+    res.status(400).json({ erro: err instanceof Error ? err.message : 'Entrada inválida' });
   }
 });
 

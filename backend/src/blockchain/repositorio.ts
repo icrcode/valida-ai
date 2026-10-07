@@ -114,3 +114,19 @@ export async function obterClienteComBloqueio(): Promise<PoolClient> {
   await cliente.query("SELECT pg_advisory_xact_lock(hashtext('valida_blockchain'))");
   return cliente;
 }
+
+/** Traço (sequência de tipos de evento) de cada documento registrado na cadeia. */
+export async function listarTracosDocumentos(
+  limite: number,
+): Promise<{ documento_id: string; tipos: string[] }[]> {
+  const res = await pool.query(
+    `SELECT documento_id, array_agg(tipo ORDER BY bloco_altura, indice) AS tipos
+       FROM blockchain_transacoes
+      WHERE documento_id IS NOT NULL
+      GROUP BY documento_id
+      ORDER BY MIN(registrado_em) DESC
+      LIMIT $1`,
+    [limite],
+  );
+  return res.rows as { documento_id: string; tipos: string[] }[];
+}

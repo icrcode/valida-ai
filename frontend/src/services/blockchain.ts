@@ -85,6 +85,28 @@ export async function calcularSha256(arquivo: File): Promise<string> {
     .join('');
 }
 
+export interface StatusFabric {
+  habilitado: boolean;
+  conectado: boolean;
+  canal: string;
+  chaincode: string;
+  outbox?: { pendente: number; confirmado: number; rejeitado: number };
+  ultimoCheckpoint?: { altura: number; hashBloco: string; txIdFabric: string; registradoEm: string } | null;
+  checkpointConfere?: boolean | null;
+  erro?: string;
+}
+
+export type EstrategiaBusca = 'astar' | 'dijkstra' | 'weighted' | 'guloso';
+
+export interface AuditoriaConformidade {
+  opcoes: { estrategia: EstrategiaBusca; modo: 'completo' | 'prefixo' };
+  documentos: number;
+  conformes: number;
+  aptidaoMedia: number;
+  nosExpandidos: number;
+  naoConformes: { documentoId: string; traco: TipoTransacao[]; custo: number; anomalias: string[] }[];
+}
+
 export const blockchainService = {
   status: (): Promise<StatusBlockchain> =>
     cliente.get<StatusBlockchain>('/api/blockchain/status').then((r) => r.data),
@@ -99,6 +121,14 @@ export const blockchainService = {
     hash: string,
   ): Promise<{ hashArquivo: string; registrado: boolean; provas: ProvaInclusao[] }> =>
     cliente.get(`/api/blockchain/arquivos/${hash}`).then((r) => r.data),
+
+  statusFabric: (): Promise<StatusFabric> =>
+    cliente.get<StatusFabric>('/api/blockchain/fabric/status').then((r) => r.data),
+
+  auditarConformidade: (estrategia: EstrategiaBusca, modo: 'completo' | 'prefixo'): Promise<AuditoriaConformidade> =>
+    cliente
+      .get<AuditoriaConformidade>('/api/blockchain/conformidade', { params: { estrategia, modo } })
+      .then((r) => r.data),
 
   historicoDocumento: (
     documentoId: string,

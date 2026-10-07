@@ -10,7 +10,8 @@
     "lint:fix": "eslint src --ext .ts --fix",
     "format": "prettier --write src",
     "test": "jest",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "pesquisa:experimentos": "ts-node src/pesquisa/experimentos.ts"
   },
   "keywords": [],
   "author": "",
@@ -19,6 +20,8 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.621.0",
     "@aws-sdk/s3-request-presigner": "^3.621.0",
+    "@grpc/grpc-js": "^1.14.5",
+    "@hyperledger/fabric-gateway": "^1.12.1",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",

@@ -18,6 +18,9 @@ import {
 } from './criptografia';
 import { gerarProvaMerkle, verificarProvaMerkle, type PassoProvaMerkle } from './merkle';
 import * as repositorio from './repositorio';
+import { lerConfigFabric } from './fabric/cliente';
+import { enfileirarBloco } from './fabric/outbox';
+import { acionarSincronizador, iniciarSincronizador } from './fabric/sincronizador';
 
 /**
  * Serviço que conecta o núcleo da blockchain ao banco e ao restante da aplicação.
@@ -104,7 +107,13 @@ async function persistirLote(transacoes: Transacao[]): Promise<Bloco> {
       validador,
     });
     await repositorio.inserirBloco(cliente, bloco);
+
+    // Outbox: a pendência para o Hyperledger Fabric é gravada na MESMA transação do bloco
+    const fabric = lerConfigFabric();
+    if (fabric.habilitado) await enfileirarBloco(cliente, bloco, fabric.checkpointACada);
+
     await cliente.query('COMMIT');
+    acionarSincronizador();
 
     registrador.info(
       `[blockchain] bloco #${bloco.altura} minerado | tx=${transacoes.length} | nonce=${bloco.nonce} | hash=${bloco.hash.slice(0, 16)}…`,
@@ -159,6 +168,8 @@ export async function inicializarBlockchain(): Promise<void> {
       cliente.release();
     }
   }
+
+  iniciarSincronizador();
 
   const resultado = await validarCadeiaCompleta();
   if (resultado.valida) {

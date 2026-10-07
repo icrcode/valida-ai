@@ -2,15 +2,19 @@ import request from 'supertest';
 
 jest.mock('../../src/blockchain/servico');
 jest.mock('../../src/blockchain/repositorio');
+jest.mock('../../src/blockchain/fabric/servico');
+jest.mock('../../src/blockchain/fabric/outbox');
 
 import * as servico from '../../src/blockchain/servico';
 import * as repositorio from '../../src/blockchain/repositorio';
+import * as servicoFabric from '../../src/blockchain/fabric/servico';
 import router from '../../src/blockchain/rotas';
 import { sha256 } from '../../src/blockchain/criptografia';
 import { criarApp } from '../helpers/app';
 
 const mockServico = servico as jest.Mocked<typeof servico>;
 const mockRepo = repositorio as jest.Mocked<typeof repositorio>;
+const mockFabric = servicoFabric as jest.Mocked<typeof servicoFabric>;
 
 const app = criarApp(router);
 
@@ -123,5 +127,52 @@ describe('GET /documentos/:documentoId', () => {
     const res = await request(app).get('/documentos/doc-1');
     expect(res.body.registrado).toBe(true);
     expect(res.body.historico[0].transacao.tipo).toBe('DOCUMENTO_SUBMETIDO');
+  });
+});
+
+describe('GET /conformidade', () => {
+  it('audita todos os documentos e lista apenas os não conformes', async () => {
+    mockRepo.listarTracosDocumentos.mockResolvedValueOnce([
+      { documento_id: 'ok', tipos: ['DOCUMENTO_SUBMETIDO', 'DOCUMENTO_APROVADO', 'CERTIFICADO_EMITIDO'] },
+      { documento_id: 'fraude', tipos: ['DOCUMENTO_SUBMETIDO', 'CERTIFICADO_EMITIDO'] },
+    ]);
+    const res = await request(app).get('/conformidade');
+    expect(res.status).toBe(200);
+    expect(res.body.documentos).toBe(2);
+    expect(res.body.conformes).toBe(1);
+    expect(res.body.naoConformes[0].documentoId).toBe('fraude');
+    expect(res.body.naoConformes[0].custo).toBe(1);
+  });
+});
+
+describe('GET /conformidade/:documentoId', () => {
+  it('repassa modo e estratégia para a auditoria', async () => {
+    mockFabric.auditarDocumento.mockResolvedValueOnce({ documentoId: 'doc-1' } as never);
+    const res = await request(app).get('/conformidade/doc-1?modo=prefixo&estrategia=dijkstra');
+    expect(res.status).toBe(200);
+    expect(mockFabric.auditarDocumento).toHaveBeenCalledWith('doc-1', { modo: 'prefixo', estrategia: 'dijkstra' });
+  });
+});
+
+describe('POST /pesquisa/endosso', () => {
+  it('retorna o plano ótimo de endosso', async () => {
+    const res = await request(app)
+      .post('/pesquisa/endosso')
+      .send({
+        politica: "OR('Org1MSP.peer','Org2MSP.peer')",
+        peers: [
+          { id: 'a', org: 'Org1MSP', latenciaMs: 50, alturaBloco: 10, fila: 0 },
+          { id: 'b', org: 'Org2MSP', latenciaMs: 20, alturaBloco: 10, fila: 0 },
+        ],
+      });
+    expect(res.status).toBe(200);
+    expect(res.body.peers.map((p: { id: string }) => p.id)).toEqual(['b']);
+  });
+
+  it('retorna 400 para política inválida', async () => {
+    const res = await request(app)
+      .post('/pesquisa/endosso')
+      .send({ politica: 'AND(', peers: [{ id: 'a', org: 'Org1MSP', latenciaMs: 1, alturaBloco: 1, fila: 0 }] });
+    expect(res.status).toBe(400);
   });
 });

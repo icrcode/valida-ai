@@ -60,3 +60,9 @@ Thumbs.db
 tmp/
 temp/
 server.log
+
+# Hyperledger Fabric (baixados/gerados por fabric/rede/rede.sh)
+fabric/fabric-samples/
+fabric/install-fabric.sh
+fabric/backups/
+backend/.env.fabric

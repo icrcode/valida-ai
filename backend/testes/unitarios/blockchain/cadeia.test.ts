@@ -1,4 +1,5 @@
 import {
+  calcularIdTransacao,
   criarBlocoGenese,
   criarTransacao,
   minerarBloco,
@@ -121,5 +122,20 @@ describe('validarCadeia', () => {
     cadeia[1].dificuldade = 64;
     const motivos = validarCadeia(cadeia).erros.map((e) => e.motivo);
     expect(motivos.some((m) => m.includes('proof of work'))).toBe(true);
+  });
+});
+
+describe('compatibilidade com o chaincode do Fabric', () => {
+  it('calcula o mesmo id que fabric/chaincode/valida-documentos (vetor de teste)', () => {
+    expect(
+      calcularIdTransacao({
+        tipo: 'DOCUMENTO_SUBMETIDO',
+        documentoId: 'doc-vetor',
+        hashArquivo: 'a'.repeat(64),
+        dados: { tipoDocumento: 'outro', curso: 'b'.repeat(64) },
+        timestamp: '2026-01-01T00:00:00.000Z',
+        sal: '0011223344556677',
+      }),
+    ).toBe('bd10495930100b82164a5c2e3a2adfd7513820867e08897c2e35b5bbd35a045f');
   });
 });

@@ -10,6 +10,10 @@ O **Valida AI** é uma aplicação web voltada para **instituições de ensino**
 > **⛓ Fork acadêmico — Blockchain de Documentos.** Esta versão grava todo o ciclo de vida dos documentos
 > (submissão, decisões, certificados) em uma blockchain permissionada com árvore de Merkle, proof of work e
 > assinaturas Ed25519, com explorador público em `/blockchain`. Veja [docs/BLOCKCHAIN.md](docs/BLOCKCHAIN.md).
+>
+> Inclui também uma rede **Hyperledger Fabric** com ledger persistente ([fabric/README.md](fabric/README.md)) e uma
+> pesquisa sobre **busca A\*** aplicada à auditoria de conformidade e ao planejamento de endosso
+> ([docs/pesquisa/PESQUISA.md](docs/pesquisa/PESQUISA.md)).
 
 ---
 

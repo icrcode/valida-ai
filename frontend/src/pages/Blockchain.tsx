@@ -6,6 +6,7 @@ import {
   calcularSha256,
   ROTULO_TRANSACAO,
   type Bloco,
+  type EstrategiaBusca,
   type ProvaInclusao,
 } from '../services/blockchain';
 
@@ -82,6 +83,139 @@ function StatusCadeia() {
         )}
         {validacao.isError && <span className="text-sm text-amber-300">Erro ao auditar.</span>}
       </div>
+    </Painel>
+  );
+}
+
+function PainelFabric() {
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['blockchain', 'fabric'],
+    queryFn: blockchainService.statusFabric,
+    refetchInterval: 10_000,
+  });
+
+  let conferencia: React.ReactNode = '—';
+  if (data?.checkpointConfere === true) conferencia = <span className="text-[#7fb8a3]">✓ sim</span>;
+  if (data?.checkpointConfere === false) {
+    conferencia = <span className="text-red-400">✗ NÃO — a cadeia própria foi reescrita?</span>;
+  }
+
+  return (
+    <Painel titulo="Hyperledger Fabric">
+      {isLoading && <p className="text-sm text-white/50">Carregando…</p>}
+      {isError && <p className="text-sm text-amber-300">Não foi possível consultar o Fabric.</p>}
+      {data && !data.habilitado && (
+        <p className="text-sm text-white/50">
+          Integração desabilitada (FABRIC_HABILITADO=false). A cadeia própria continua funcionando sozinha.
+        </p>
+      )}
+      {data?.habilitado && (
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Campo
+            rotulo="Conexão"
+            valor={
+              data.conectado ? (
+                <span className="text-[#7fb8a3]">● conectado</span>
+              ) : (
+                <span className="text-red-400">● offline {data.erro ?? ''}</span>
+              )
+            }
+          />
+          <Campo rotulo="Canal / chaincode" valor={`${data.canal} / ${data.chaincode}`} />
+          <Campo
+            rotulo="Outbox (pendente · confirmado · rejeitado)"
+            valor={data.outbox ? `${data.outbox.pendente} · ${data.outbox.confirmado} · ${data.outbox.rejeitado}` : '—'}
+          />
+          <Campo
+            rotulo="Último checkpoint ancorado"
+            valor={data.ultimoCheckpoint ? `bloco #${data.ultimoCheckpoint.altura}` : 'nenhum ainda'}
+          />
+          <Campo rotulo="Checkpoint confere com a cadeia própria?" valor={conferencia} />
+          <Campo rotulo="Tx do checkpoint no Fabric" valor={data.ultimoCheckpoint?.txIdFabric ?? '—'} mono />
+        </div>
+      )}
+    </Painel>
+  );
+}
+
+const NOMES_ESTRATEGIA: Record<EstrategiaBusca, string> = {
+  astar: 'A*',
+  dijkstra: 'Dijkstra',
+  weighted: 'Weighted A* (w=2)',
+  guloso: 'Guloso',
+};
+
+function AuditoriaConformidade() {
+  const [estrategia, setEstrategia] = useState<EstrategiaBusca>('astar');
+  const [modo, setModo] = useState<'completo' | 'prefixo'>('prefixo');
+  const auditoria = useMutation({ mutationFn: () => blockchainService.auditarConformidade(estrategia, modo) });
+
+  return (
+    <Painel titulo="Auditoria de conformidade (busca A*)">
+      <p className="mb-4 text-sm text-white/50">
+        Compara o histórico de cada documento gravado na cadeia com o processo correto (submissão → decisão →
+        certificado) e encontra, com A*, o menor conjunto de desvios que explica as diferenças.
+      </p>
+      <div className="flex flex-wrap items-center gap-3">
+        <select
+          value={estrategia}
+          onChange={(e) => setEstrategia(e.target.value as EstrategiaBusca)}
+          className="rounded-lg border border-white/10 bg-[#011640] px-3 py-2 text-sm text-white"
+        >
+          {Object.entries(NOMES_ESTRATEGIA).map(([v, n]) => (
+            <option key={v} value={v}>
+              {n}
+            </option>
+          ))}
+        </select>
+        <select
+          value={modo}
+          onChange={(e) => setModo(e.target.value as 'completo' | 'prefixo')}
+          className="rounded-lg border border-white/10 bg-[#011640] px-3 py-2 text-sm text-white"
+        >
+          <option value="prefixo">Aceitar documentos em andamento</option>
+          <option value="completo">Exigir processo concluído</option>
+        </select>
+        <button
+          type="button"
+          onClick={() => auditoria.mutate()}
+          disabled={auditoria.isPending}
+          className="rounded-lg bg-[#618C7C] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#557a6c] disabled:opacity-50"
+        >
+          {auditoria.isPending ? 'Auditando…' : 'Executar auditoria'}
+        </button>
+      </div>
+
+      {auditoria.data && (
+        <div className="mt-5 space-y-4">
+          <div className="grid gap-4 sm:grid-cols-4">
+            <Campo rotulo="Documentos" valor={auditoria.data.documentos} />
+            <Campo rotulo="Conformes" valor={auditoria.data.conformes} />
+            <Campo rotulo="Aptidão média" valor={auditoria.data.aptidaoMedia.toFixed(3)} />
+            <Campo rotulo="Nós expandidos" valor={auditoria.data.nosExpandidos} />
+          </div>
+          {auditoria.data.naoConformes.length === 0 ? (
+            <p className="text-sm text-[#7fb8a3]">✓ Nenhuma anomalia encontrada.</p>
+          ) : (
+            <ul className="space-y-2">
+              {auditoria.data.naoConformes.map((d) => (
+                <li key={d.documentoId} className="rounded-xl border border-red-500/20 bg-red-500/5 p-4">
+                  <p className="font-mono text-xs text-white/60 break-all">doc {d.documentoId}</p>
+                  <p className="mt-1 text-xs text-white/40">
+                    {d.traco.map((t) => ROTULO_TRANSACAO[t] ?? t).join(' → ')}
+                  </p>
+                  <ul className="mt-2 list-inside list-disc text-sm text-red-300">
+                    {d.anomalias.map((a) => (
+                      <li key={a}>{a}</li>
+                    ))}
+                  </ul>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+      {auditoria.isError && <p className="mt-4 text-sm text-amber-300">Erro ao executar a auditoria.</p>}
     </Painel>
   );
 }
@@ -257,7 +391,9 @@ export function Blockchain() {
           <p className="mt-1 text-sm text-white/40">Explorador da blockchain de documentos</p>
         </header>
         <StatusCadeia />
+        <PainelFabric />
         <VerificarArquivo />
+        <AuditoriaConformidade />
         <ListaBlocos />
       </div>
     </div>
