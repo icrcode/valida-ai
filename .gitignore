@@ -45,6 +45,9 @@ build/
 coverage/
 cobertura/
 
+# Chave privada do validador da blockchain
+.blockchain/
+
 # Certificados Let's Encrypt
 certbot/
 

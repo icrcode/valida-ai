@@ -33,6 +33,7 @@ export function Layout() {
     { to: '/certificados', label: 'Certificados', perfis: ['estudante'] },
     { to: '/documentos?status=pendente', label: 'Fila de Análise', perfis: ['coordenador', 'admin'] },
     { to: '/alunos', label: 'Alunos', perfis: ['coordenador'] },
+    { to: '/blockchain', label: 'Blockchain' },
     { to: '/perfil', label: 'Perfil' },
     { to: '/usuarios', label: 'Usuários', perfis: ['admin'] },
     { to: '/instituicoes', label: 'Instituições', perfis: ['admin'] },

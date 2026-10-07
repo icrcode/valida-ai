@@ -13,6 +13,7 @@ services:
       # 01_ roda primeiro (schema), 02_ roda depois (seed)
       - ./infra/banco.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
       - ./infra/banco.seed.sql:/docker-entrypoint-initdb.d/02_seed.sql:ro
+      - ./infra/migrations/006_add_blockchain.sql:/docker-entrypoint-initdb.d/03_blockchain.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d valida_db"]
       interval: 5s

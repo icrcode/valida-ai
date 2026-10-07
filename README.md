@@ -6,6 +6,11 @@
 
 O **Valida AI** é uma aplicação web voltada para **instituições de ensino** que precisam validar o cumprimento de **horas complementares acadêmicas** (cursos, eventos, monitorias, artigos, estágios extracurriculares etc.) por parte de seus estudantes. O sistema permite que estudantes **submetam comprovantes em PDF**, que **coordenadores de curso avaliem** (aprovando, reprovando ou solicitando revisão) e que, ao final, seja **emitido automaticamente um certificado em PDF com QR Code**, verificável publicamente sem necessidade de login. Sua arquitetura é baseada em **Node.js/Express, React e PostgreSQL**, com armazenamento de arquivos compatível com S3 (MinIO/AWS), autenticação **JWT** e controle de acesso por papéis (estudante, coordenador, administrador).
 
+
+> **⛓ Fork acadêmico — Blockchain de Documentos.** Esta versão grava todo o ciclo de vida dos documentos
+> (submissão, decisões, certificados) em uma blockchain permissionada com árvore de Merkle, proof of work e
+> assinaturas Ed25519, com explorador público em `/blockchain`. Veja [docs/BLOCKCHAIN.md](docs/BLOCKCHAIN.md).
+
 ---
 
 ## 1. Introdução

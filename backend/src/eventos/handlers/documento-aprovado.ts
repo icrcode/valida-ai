@@ -1,4 +1,6 @@
+import crypto from 'node:crypto';
 import registrador from '../../utils/registrador';
+import { barramento } from '../barramento';
 import { buscarPorId as buscarUsuario } from '../../modulos/usuarios/repositorio';
 import { buscarPorId as buscarDocumento } from '../../modulos/documentos/repositorio';
 import { notificar } from '../../servicos/notificacao';
@@ -26,7 +28,7 @@ export async function aoDocumentoAprovado(payload: EventoDocumentoAprovado): Pro
     const coordenadorNome = coordenador?.nome ?? 'Coordenador';
 
     // Gerar e armazenar certificado PDF
-    const { hash, caminhoArquivo } = await gerarEArmazenarCertificado(
+    const { hash, caminhoArquivo, pdfBuffer } = await gerarEArmazenarCertificado(
       {
         documentoId: documento.id,
         estudanteNome: estudante.nome,
@@ -46,6 +48,14 @@ export async function aoDocumentoAprovado(payload: EventoDocumentoAprovado): Pro
       estudante_id: estudante.id,
       hash,
       caminho_arquivo: caminhoArquivo,
+    });
+
+    // Ancorar o certificado na blockchain (código de verificação + hash do PDF)
+    barramento.emitir('certificado_emitido', {
+      documentoId: documento.id,
+      estudanteId: estudante.id,
+      codigoVerificacao: hash,
+      hashArquivo: crypto.createHash('sha256').update(pdfBuffer).digest('hex'),
     });
 
     const urlVerificacao = `${FRONTEND_URL.replace(/\/+$/, '')}/verificar/${hash}`;

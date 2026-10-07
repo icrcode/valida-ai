@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 
@@ -16,7 +16,23 @@ interface RespostaVerificacao {
   certificado: { id: string; hash: string; emitido_em: string; };
   documento: { titulo: string; tipo: string; carga_horaria: number; status: string; } | null;
   estudante: { nome: string; email: string; } | null;
+  blockchain?:
+    | { disponivel: false }
+    | {
+        disponivel: true;
+        ancorado: boolean;
+        linhaDoTempo: { tipo: string; timestamp: string; transacaoId: string; bloco: number; hashBloco: string; provaValida: boolean }[];
+      };
 }
+
+const ROTULO_EVENTO: Record<string, string> = {
+  DOCUMENTO_SUBMETIDO: 'Documento submetido',
+  DOCUMENTO_APROVADO: 'Documento aprovado',
+  DOCUMENTO_REPROVADO: 'Documento reprovado',
+  REVISAO_SOLICITADA: 'Revisão solicitada',
+  DOCUMENTO_CANCELADO: 'Documento cancelado',
+  CERTIFICADO_EMITIDO: 'Certificado emitido',
+};
 
 const API_URL = import.meta.env.VITE_API_URL ?? '';
 
@@ -130,6 +146,38 @@ export function Verificar() {
                 <p className="mt-1 font-mono text-xs text-white/45 break-all">{data.certificado.hash}</p>
               </div>
             </div>
+
+            {/* Ancoragem na blockchain */}
+            {data.blockchain?.disponivel && (
+              <div
+                className={`mt-6 rounded-xl border p-5 ${
+                  data.blockchain.ancorado
+                    ? 'border-[#618C7C]/30 bg-[#618C7C]/10'
+                    : 'border-amber-500/25 bg-amber-500/8'
+                }`}
+              >
+                <p className={`text-sm font-semibold ${data.blockchain.ancorado ? 'text-[#7fb8a3]' : 'text-amber-300'}`}>
+                  {data.blockchain.ancorado
+                    ? '⛓ Registrado na blockchain — histórico imutável'
+                    : 'Certificado ainda não confirmado na blockchain'}
+                </p>
+                {data.blockchain.linhaDoTempo.length > 0 && (
+                  <ol className="mt-3 space-y-2 border-l border-white/10 pl-4">
+                    {data.blockchain.linhaDoTempo.map((ev) => (
+                      <li key={ev.transacaoId} className="text-xs text-white/60">
+                        <span className="text-white">{ROTULO_EVENTO[ev.tipo] ?? ev.tipo}</span>
+                        {' · '}
+                        {new Date(ev.timestamp).toLocaleString('pt-BR')} · bloco #{ev.bloco}
+                        {ev.provaValida ? ' ✓' : ' ✗'}
+                      </li>
+                    ))}
+                  </ol>
+                )}
+                <Link to="/blockchain" className="mt-3 inline-block text-xs text-[#618C7C] hover:underline">
+                  Abrir explorador da blockchain →
+                </Link>
+              </div>
+            )}
           </div>
         )}
       </div>

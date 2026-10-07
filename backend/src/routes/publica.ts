@@ -3,6 +3,7 @@ import * as repositorioCert from '../modulos/certificados/repositorio';
 import * as repositorioDoc from '../modulos/documentos/repositorio';
 import * as repositorioUsr from '../modulos/usuarios/repositorio';
 import { tratarErro } from '../utils/erros';
+import { historicoDocumento } from '../blockchain/servico';
 
 const router = Router();
 
@@ -17,10 +18,18 @@ router.get('/verificar/:hash', async (req, res) => {
       return;
     }
 
-    const [documento, estudante] = await Promise.all([
+    const [documento, estudante, historicoCadeia] = await Promise.all([
       repositorioDoc.buscarPorId(certificado.documento_id),
       repositorioUsr.buscarPorId(certificado.estudante_id),
+      // A verificação continua funcionando mesmo se a blockchain estiver indisponível
+      historicoDocumento(certificado.documento_id).catch(() => null),
     ]);
+
+    const ancoragem = historicoCadeia?.find(
+      (p) =>
+        p.transacao.tipo === 'CERTIFICADO_EMITIDO' &&
+        p.transacao.dados.codigoVerificacao === certificado.hash,
+    );
 
     res.json({
       valido: true,
@@ -43,6 +52,22 @@ router.get('/verificar/:hash', async (req, res) => {
             email: estudante.email,
           }
         : null,
+      blockchain:
+        historicoCadeia === null
+          ? { disponivel: false }
+          : {
+              disponivel: true,
+              ancorado: !!ancoragem && ancoragem.provaValida,
+              certificado: ancoragem ?? null,
+              linhaDoTempo: historicoCadeia.map((p) => ({
+                tipo: p.transacao.tipo,
+                timestamp: p.transacao.timestamp,
+                transacaoId: p.transacao.id,
+                bloco: p.bloco.altura,
+                hashBloco: p.bloco.hash,
+                provaValida: p.provaValida,
+              })),
+            },
     });
   } catch (err: unknown) {
     tratarErro(res, err);

@@ -143,6 +143,7 @@ router.post('/', autenticar, exigirPerfil('estudante'), upload.single('arquivo')
       cursoId: documento.curso_id,
       titulo: documento.titulo,
       tipo: documento.tipo,
+      hashArquivo: crypto.createHash('sha256').update(req.file.buffer).digest('hex'),
     });
 
     res.status(201).json(documento);
@@ -162,6 +163,10 @@ router.delete('/:id', autenticar, exigirPerfil('estudante'), async (req, res) =>
         .json({ erro: 'Documento não encontrado, não está pendente, ou sem permissão' });
       return;
     }
+    barramento.emitir('documento_cancelado', {
+      documentoId: documento.id,
+      estudanteId: documento.estudante_id,
+    });
     res.json({ mensagem: 'Documento cancelado com sucesso', documento });
   } catch (err: unknown) {
     tratarErro(res, err);

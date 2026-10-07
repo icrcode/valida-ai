@@ -15,6 +15,9 @@ import rotasCursos from './modulos/cursos/rotas';
 import rotasInstituicoes from './modulos/instituicoes/rotas';
 import { garantirBalde, garantirBaldeCertificados } from './servicos/armazenamento';
 import { registrarHandlers } from './eventos/registrar';
+import rotasBlockchain from './blockchain/rotas';
+import { registrarHandlersBlockchain } from './blockchain/handlers';
+import { inicializarBlockchain } from './blockchain/servico';
 
 const aplicativo: Express = express();
 
@@ -73,6 +76,7 @@ aplicativo.use('/api/documentos', rotasValidacao);
 aplicativo.use('/api/certificados', rotasCertificados);
 aplicativo.use('/api/cursos', rotasCursos);
 aplicativo.use('/api/instituicoes', rotasInstituicoes);
+aplicativo.use('/api/blockchain', rotasBlockchain);
 
 // Manipulador de 404
 aplicativo.use((_req, res) => {
@@ -93,6 +97,13 @@ aplicativo.use((err: unknown, _req: express.Request, res: express.Response, _nex
 
 // Registrar handlers de eventos
 registrarHandlers();
+registrarHandlersBlockchain();
+
+// Criar bloco gênese (se necessário) e auditar a integridade da cadeia
+inicializarBlockchain().catch((err: unknown) => {
+  const mensagem = err instanceof Error ? err.message : String(err);
+  registrador.warn(`Não foi possível inicializar a blockchain: ${mensagem}`);
+});
 
 // Verificar acesso aos buckets S3
 garantirBalde().catch((err: unknown) => {

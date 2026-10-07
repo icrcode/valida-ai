@@ -20,6 +20,7 @@ import { Alunos } from './pages/Alunos';
 import { Instituicoes } from './pages/Instituicoes';
 import { Cursos } from './pages/Cursos';
 import { Verificar } from './pages/Verificar';
+import { Blockchain } from './pages/Blockchain';
 import { NaoEncontrado } from './pages/NaoEncontrado';
 
 function TelaCarregamento() {
@@ -44,6 +45,7 @@ function AppRoutes() {
         <Route path="/login" element={<Login />} />
         <Route path="/cadastro" element={<Cadastro />} />
         <Route path="/verificar/:hash" element={<Verificar />} />
+        <Route path="/blockchain" element={<Blockchain />} />
 
         {/* Rotas autenticadas */}
         <Route element={<PrivateRoute />}>
